@@ -16,6 +16,9 @@
   },
   "homepage": "https://github.com/dashevo/dash-network-e2e-tests#readme",
   "devDependencies": {
+    "@dashevo/dashcore-lib": "git+ssh://git@github.com/dashevo/dashcore-lib.git#v1.0.0-alpha.15",
+    "@dashevo/dapi-client": "git+ssh://git@github.com/dashevo/dapi-client.git#develop",
+    "@dashevo/dash-schema": "git+ssh://git@github.com/dashevo/dash-schema.git#v3_develop",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dirty-chai": "^2.0.1",
@@ -23,6 +26,9 @@
     "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "sha256": "^0.2.0",
+    "cbor": "^4.1.1",
+    "crypto": "0.0.3"
   }
 }
