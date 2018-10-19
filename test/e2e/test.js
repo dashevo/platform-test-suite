@@ -8,6 +8,8 @@ const {
   Address,
 } = require('@dashevo/dashcore-lib');
 
+const { SubTxRegisterPayload } = Transaction.Payload;
+
 const Schema = require('@dashevo/dash-schema/dash-schema-lib');
 const DashPay = require('@dashevo/dash-schema/dash-core-daps');
 
@@ -38,9 +40,10 @@ describe('Contacts app', () => {
         .toString();
 
       privateForUser = new PrivateKey();
-      const validPayload = new Transaction.Payload.SubTxRegisterPayload()
+      const validPayload = new SubTxRegisterPayload()
         .setUserName(userName)
-        .setPubKeyIdFromPrivateKey(privateForUser).sign(privateForUser);
+        .setPubKeyIdFromPrivateKey(privateForUser)
+        .sign(privateForUser);
 
       const inputs = await dapi.getUTXO(address);
 
