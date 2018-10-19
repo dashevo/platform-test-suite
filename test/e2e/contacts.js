@@ -12,8 +12,7 @@ const Schema = require('@dashevo/dash-schema/dash-schema-lib');
 const DashPay = require('@dashevo/dash-schema/dash-core-daps');
 
 const doubleSha256 = require('../../lib/doubleSha256');
-
-const timeout = ms => new Promise(res => setTimeout(res, ms));
+const wait = require('../../lib/wait');
 
 describe('Contacts app', () => {
   let dapiClient;
@@ -63,14 +62,14 @@ describe('Contacts app', () => {
 
       ({ txid: bobRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
 
-      await timeout(5000);// await dapiClient.generate(1);
+      await wait(5000);// await dapiClient.generate(1);
 
       const userByName = await dapiClient.getUserByName(bobUserName);
       expect(userByName.uname).to.be.equal(bobUserName);
     });
 
     it('should create "Contacts" app', async function it() {
-      this.timeout(50000);
+      this.timeout(100000);
 
       // 1. Create schema
       const dapSchema = Object.assign({}, DashPay);
@@ -110,7 +109,7 @@ describe('Contacts app', () => {
       // await dapiClient.generate(1);
 
       // 6. Wait until Drive synced this block
-      await timeout(10 * 5000);
+      await wait(10 * 5000);
 
       const dapContractFromDAPI = await dapiClient.fetchDapContract(dapId);
 
