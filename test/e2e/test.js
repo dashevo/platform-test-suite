@@ -1,30 +1,19 @@
-const sha256 = require('sha256');
 const cbor = require('cbor');
-const crypto = require('crypto');
-
 const DAPIClient = require('@dashevo/dapi-client');
-const BitcoreLib = require('@dashevo/dashcore-lib');
+
+const {
+  Transaction,
+  PrivateKey,
+  PublicKey,
+  Address,
+} = require('@dashevo/dashcore-lib');
+
 const Schema = require('@dashevo/dash-schema/dash-schema-lib');
 const DashPay = require('@dashevo/dash-schema/dash-core-daps');
 
+const doubleSha256 = require('../../lib/doubleSha256');
 
-const Transaction = BitcoreLib.Transaction;
-const Payload = BitcoreLib.Transaction.Payload;
-const SubTxRegisterPayload = Payload.SubTxRegisterPayload;
-const SubTxTransitionPayload = Payload.SubTxTransitionPayload;
-
-
-const { PrivateKey, PublicKey, Address } = BitcoreLib;
 const timeout = ms => new Promise(res => setTimeout(res, ms));
-
-const doubleSha256 = (data, cryptoLib = crypto) => {
-  // The implementation of hash in Node.js is stateful and requires separate objects
-  const hasher1 = cryptoLib.createHash('sha256');
-  const firstHash = hasher1.update(data).digest();
-  const hasher2 = cryptoLib.createHash('sha256');
-  const secondHashHexDigest = hasher2.update(firstHash).digest('hex');
-  return secondHashHexDigest;
-};
 
 describe('Contacts app', () => {
   const options = {
@@ -34,22 +23,22 @@ describe('Contacts app', () => {
     warnings: false,
     seeds: [{ ip: '54.191.116.37' }],
   };
-  let dashPayId = 'b4de10e1ddb8e225cd04a406deb98e6081f9bd26f98f46c0932d0bdfb2bd0623';
   let privateForUser;
-  let regTxId;
-  const userName = Math.random().toString(36).substring(7);
   const dapi = new DAPIClient(options, 3000);
-  const privateKey = new BitcoreLib.PrivateKey('cR4t6evwVZoCp1JsLk4wURK4UmBCZzZotNzn9T1mhBT19SH9JtNt');
+  const privateKey = new PrivateKey('cR4t6evwVZoCp1JsLk4wURK4UmBCZzZotNzn9T1mhBT19SH9JtNt');
 
   describe('Bob', () => {
+    const userName = Math.random().toString(36).substring(7);
+    let regTxId;
+
     it('should register blockchain user', async () => {
       const publicKey = PublicKey.fromPrivateKey(privateKey);
       const address = Address
         .fromPublicKey(publicKey, 'testnet')
         .toString();
 
-      privateForUser = new BitcoreLib.PrivateKey();
-      const validPayload = new SubTxRegisterPayload()
+      privateForUser = new PrivateKey();
+      const validPayload = new Transaction.Payload.SubTxRegisterPayload()
         .setUserName(userName)
         .setPubKeyIdFromPrivateKey(privateForUser).sign(privateForUser);
 
@@ -72,45 +61,42 @@ describe('Contacts app', () => {
     });
 
     it('should create "Contacts" app', async () => {
-      DashPay.title = `title_${userName}`;
-      const dapContract = Schema.create.dapcontract(DashPay);
-      const dashPayIdNew = sha256(sha256(cbor.encodeCanonical(dapContract.dapcontract)));
-      // let blockchainUser = await dapi.getUserByName('ilf3qb');
-      const blockchainUser = await dapi.getUserByName(userName);
-      let dashPayDataContract = await dapi.fetchDapContract(dashPayIdNew);
+      // 1. Create schema
+      const dapSchema = Object.assign({}, DashPay);
+      dapSchema.title = `TestContacts_${userName}`;
 
-      if (dashPayDataContract.error.message === 'Dap Contract not found' || dashPayDataContract.error.message === 'Initial sync in progress') {
-        console.log('DashPay data contract not found. Creating one');
+      // 2. Create contract
+      const dapContract = Schema.create.dapcontract(dapSchema);
+      const dapId = doubleSha256(cbor.encodeCanonical(dapContract.dapcontract));
 
-        dashPayId = sha256(sha256(cbor.encodeCanonical(dapContract.dapcontract)));
-        const stpacket = Schema.create.stpacket(dapContract, dashPayId);
+      // 3. Create ST packet
+      const { stpacket: packet } = Schema.create.stpacket(dapContract, dapId);
+      delete packet.meta;
 
-        // const stheader = Schema.create.stheader(stpacket, blockchainUser.pubkeyid, dashPayId);
+      // 4. Create State Transition
+      const transaction = new Transaction()
+        .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
 
-        const transaction = new Transaction()
-          .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
+      transaction.extraPayload
+        .setRegTxId(regTxId)
+        .setHashPrevSubTx(regTxId)
+        .setHashSTPacket(dapId)
+        .setCreditFee(1000)
+        .sign(privateForUser);
 
-        delete stpacket.stpacket.meta;
+      const st = await dapi.sendRawTransition(
+        transaction.serialize(),
+        Schema.serialize.encode(packet),
+      );
 
-        transaction.extraPayload
-          .setRegTxId(blockchainUser.regtxid)
-          .setHashPrevSubTx(blockchainUser.regtxid)
-          .setHashSTPacket(doubleSha256(Buffer.from(Schema.serialize.encode(stpacket).toString('hex'), 'hex')))
-          .setCreditFee(1000)
-          .sign(privateForUser);
+      console.log(st);
+      await timeout(5000);// await dapi.generate(1);
 
-        console.dir(stpacket);
-        dashPayId = await dapi.sendRawTransition(
-          transaction.serialize(),
-          Schema.serialize.encode(stpacket).toString('hex'),
-        );
+      const dapContractFromDAPI = await dapi.fetchDapContract(dashPayId);
 
-        console.log(dashPayId);
-        await timeout(5000);// await dapi.generate(1);
-        dashPayDataContract = await dapi.fetchDapContract(doubleSha256(Buffer.from(Schema.serialize.encode(dapContract.dapcontract).toString('hex'), 'hex')));
-        console.log(dashPayDataContract);
-        expect(dashPayDataContract.error).to.be.empty();
-      }
+      console.log(dapContractFromDAPI);
+
+      expect(dapContractFromDAPI.error).to.be.empty();
     });
 
     xit('should create profile in "Contacts" app', async () => {
