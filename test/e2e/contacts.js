@@ -80,20 +80,20 @@ describe('Contacts app', () => {
       const dapId = doubleSha256(cbor.encodeCanonical(dapContract.dapcontract));
 
       // 3. Create ST packet
-      const { stpacket: packet } = Schema.create.stpacket(dapContract, dapId);
-      delete packet.meta;
+      let { stpacket: stPacket } = Schema.create.stpacket();
+      stPacket = Object.assign(stPacket, dapContract);
 
       // 4. Create State Transition
       const transaction = new Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
 
-      const serializedPacket = Schema.serialize.encode(packet);
-      const packetHash = doubleSha256(serializedPacket);
+      const serializedPacket = Schema.serialize.encode(stPacket);
+      const stPacketHash = doubleSha256(serializedPacket);
 
       transaction.extraPayload
         .setRegTxId(bobRegTxId)
         .setHashPrevSubTx(bobRegTxId)
-        .setHashSTPacket(packetHash)
+        .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
@@ -109,7 +109,10 @@ describe('Contacts app', () => {
       // await dapiClient.generate(1);
 
       // 6. Wait until Drive synced this block
-      await wait(10 * 5000);
+      await wait(5000);
+
+      console.dir(stPacket);
+      console.dir(stPacketHash);
 
       const dapContractFromDAPI = await dapiClient.fetchDapContract(dapId);
 
