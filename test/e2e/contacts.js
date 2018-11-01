@@ -1,4 +1,3 @@
-const cbor = require('cbor');
 const DAPIClient = require('@dashevo/dapi-client');
 
 const {
@@ -40,7 +39,9 @@ describe('Contacts app', () => {
   });
 
   describe('Bob', () => {
-    it('should register blockchain user', async () => {
+    it('should register blockchain user', async function it() {
+      this.timeout(150000);
+
       const faucetAddress = Address
         .fromPublicKey(faucetPublicKey, process.env.NETWORK === 'devnet' ? 'testnet' : process.env.NETWORK)
         .toString();
@@ -62,14 +63,15 @@ describe('Contacts app', () => {
 
       ({ txid: bobRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
 
-      await wait(5000);// await dapiClient.generate(1);
+      // await dapiClient.generate(1);
+      await wait(5000);
 
       const userByName = await dapiClient.getUserByName(bobUserName);
       expect(userByName.uname).to.be.equal(bobUserName);
     });
 
-    it('should create "Contacts" app', async function it() {
-      this.timeout(100000);
+    it('should publish "Contacts" contract', async function it() {
+      this.timeout(200000);
 
       // 1. Create schema
       const dapSchema = Object.assign({}, DashPay);
@@ -77,7 +79,7 @@ describe('Contacts app', () => {
 
       // 2. Create contract
       const dapContract = Schema.create.dapcontract(dapSchema);
-      const dapId = doubleSha256(cbor.encodeCanonical(dapContract.dapcontract));
+      const dapId = doubleSha256(Schema.serialize.encode(dapContract.dapcontract));
 
       // 3. Create ST packet
       let { stpacket: stPacket } = Schema.create.stpacket();
@@ -105,20 +107,14 @@ describe('Contacts app', () => {
       expect(transactionId).to.be.a('string');
       expect(transactionId).to.be.not.empty();
 
-      // 5. Mine transaction
+      // 5. Mine transaction and Wait until Drive synced this block
       // await dapiClient.generate(1);
-
-      // 6. Wait until Drive synced this block
-      await wait(5000);
-
-      console.dir(stPacket);
-      console.dir(stPacketHash);
+      await wait(150000);
 
       const dapContractFromDAPI = await dapiClient.fetchDapContract(dapId);
 
-      console.log(dapContractFromDAPI);
-
-      expect(dapContractFromDAPI.error).to.be.empty();
+      expect(dapContractFromDAPI).to.have.property('dapName');
+      expect(dapContractFromDAPI.dapName).to.be.equal(dapSchema.title);
     });
 
     xit('should create profile in "Contacts" app', async () => {
