@@ -344,6 +344,6 @@ describe('Contacts app', () => {
 
   describe('Alice', () => {
     it('should be able to approve contact request');
-    it('should be able to remove approvement');
+    it('should be able to remove contract approvement');
   });
 });
