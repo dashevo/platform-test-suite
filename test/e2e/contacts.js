@@ -14,7 +14,6 @@ const doubleSha256 = require('../../lib/doubleSha256');
 const wait = require('../../lib/wait');
 
 describe('Contacts app', () => {
-
   const timeout = 1000;
   const attempts = 300;
 
@@ -65,7 +64,7 @@ describe('Contacts app', () => {
 
   describe('Bob', () => {
     it('should register blockchain user', async function it() {
-      this.timeout(150000);
+      this.timeout(50000);
 
       bobPrivateKey = new PrivateKey();
       const validPayload = new Transaction.Payload.SubTxRegisterPayload()
@@ -141,12 +140,12 @@ describe('Contacts app', () => {
       const userRequest = Schema.create.dapobject('user');
       userRequest.aboutme = 'This is story about me';
       userRequest.avatar = 'My avatar here';
+      userRequest.act = 0;
 
       // 1. Create ST user packet
       const { stpacket: stPacket } = Schema.create.stpacket();
       stPacket.dapobjects = [userRequest];
       stPacket.dapid = dapId;
-      console.dir(stPacket);
 
       // 2. Create State Transition
       const transaction = new Transaction()
@@ -162,9 +161,6 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      console.dir(transaction);
-      console.dir(serializedPacket);
-
       bobProfileTransactionId = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
@@ -175,19 +171,31 @@ describe('Contacts app', () => {
       let bobSpace;
       for (let i = 0; i <= attempts; i++) {
         bobSpace = await dapiClient.fetchDapObjects(dapId, 'user', {});
-        if (bobSpace) {
-          await wait(timeout);
-        } else {
+        if (bobSpace.length > 0) {
           break;
+        } else {
+          await wait(timeout);
         }
       }
-      expect(bobSpace.dapid).to.be.deep.equal(dapId);
+
+      expect(bobSpace).to.have.lengthOf(1);
+      expect(bobSpace[0].blockchainUserId).to.be.equal(bobRegTxId);
+      expect(bobSpace[0].object).to.be.deep.equal(
+        {
+          act: 0,
+          idx: 0,
+          rev: 0,
+          avatar: 'My avatar here',
+          aboutme: 'This is story about me',
+          objtype: 'user',
+        },
+      );
     });
   });
 
-  xdescribe('Alice', () => {
+  describe('Alice', () => {
     it('should register blockchain user', async function it() {
-      this.timeout(150000);
+      this.timeout(50000);
 
       alicePrivateKey = new PrivateKey();
       const validPayload = new Transaction.Payload.SubTxRegisterPayload()
@@ -219,20 +227,18 @@ describe('Contacts app', () => {
       const userRequest = Schema.create.dapobject('user');
       userRequest.aboutme = 'I am Alice';
       userRequest.avatar = 'Alice\'s avatar here';
-
-      const dashPayContract = await dapiClient.fetchDapContract(dapId);
+      userRequest.act = 0;
 
       // 1. Create ST user packet
-      const tsp = Schema.create.stpacket();
-      tsp.stpacket.dapobjects = [userRequest];
-      Schema.object.setID(tsp, dashPayContract.schema);
-      tsp.stPacket = Object.assign(tsp.stpacket, dapContract);
+      const { stpacket: stPacket } = Schema.create.stpacket();
+      stPacket.dapobjects = [userRequest];
+      stPacket.dapid = dapId;
 
       // 2. Create State Transition
       const transaction = new Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
 
-      const serializedPacket = Schema.serialize.encode(tsp);
+      const serializedPacket = Schema.serialize.encode(stPacket);
       const stPacketHash = doubleSha256(serializedPacket);
 
       transaction.extraPayload
@@ -252,14 +258,24 @@ describe('Contacts app', () => {
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
         aliceSpace = await dapiClient.fetchDapObjects(dapId, 'user', {});
-        if (aliceSpace) {
-          await wait(timeout);
-        } else {
+        if (aliceSpace.length > 1) {
           break;
+        } else {
+          await wait(timeout);
         }
       }
-      expect(aliceSpace.dapid).to.be.deep.equal(dapId);
-      // TODO: check profile
+      expect(aliceSpace).to.have.lengthOf(2);
+      expect(aliceSpace[1].blockchainUserId).to.be.equal(aliceRegTxId);
+      expect(aliceSpace[1].object).to.be.deep.equal(
+        {
+          act: 0,
+          idx: 0,
+          rev: 0,
+          avatar: 'Alice\'s avatar here',
+          aboutme: 'I am Alice',
+          objtype: 'user',
+        },
+      );
     });
 
     it('should update only her profile', async function it() {
@@ -268,20 +284,19 @@ describe('Contacts app', () => {
       const userRequest = Schema.create.dapobject('user');
       userRequest.aboutme = 'I am Alice2';
       userRequest.avatar = 'Alice\'s avatar here2';
+      // userRequest.act = 0;
 
-      const dashPayContract = await dapiClient.fetchDapContract(dapId);
+      // 1. Create ST user packet
+      const { stpacket: stPacket } = Schema.create.stpacket();
+      stPacket.dapobjects = [userRequest];
+      stPacket.dapid = dapId;
 
-      // 1. Create ST user profile packet
-      const tsp = Schema.create.stpacket();
-      tsp.stpacket.dapobjects = [userRequest];
-      Schema.object.setID(tsp, dashPayContract.schema);
-      tsp.stPacket = Object.assign(tsp.stpacket, dapContract);
 
       // 2. Create State Transition
       const transaction = new Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
 
-      const serializedPacket = Schema.serialize.encode(tsp);
+      const serializedPacket = Schema.serialize.encode(stPacket);
       const stPacketHash = doubleSha256(serializedPacket);
 
       transaction.extraPayload
@@ -301,14 +316,24 @@ describe('Contacts app', () => {
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
         aliceSpace = await dapiClient.fetchDapObjects(dapId, 'user', {});
-        if (aliceSpace) {
-          await wait(timeout);
-        } else {
+        if (aliceSpace.length === 2 && aliceSpace[1].object.act === 1) {
           break;
+        } else {
+          await wait(timeout);
         }
       }
-      expect(aliceSpace.dapid).to.be.deep.equal(dapId);
-      // TODO: check profile
+      expect(aliceSpace).to.have.lengthOf(2);
+      expect(aliceSpace[1].blockchainUserId).to.be.equal(aliceRegTxId);
+      expect(aliceSpace[1].object).to.be.deep.equal(
+        {
+          act: 0,
+          idx: 0,
+          rev: 0,
+          avatar: 'Alice\'s avatar here2',
+          aboutme: 'I am Alice2',
+          objtype: 'user',
+        },
+      );
     });
   });
 
