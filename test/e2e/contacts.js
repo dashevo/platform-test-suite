@@ -83,7 +83,8 @@ describe('Contacts app', () => {
 
       ({ txid: bobRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
 
-      await wait(5000); // await dapiClient.generate(1);
+      // await dapiClient.generate(1);
+      await wait(5000);
 
       const userByName = await dapiClient.getUserByName(bobUserName);
       expect(userByName.uname).to.be.equal(bobUserName);
@@ -326,7 +327,7 @@ describe('Contacts app', () => {
       expect(aliceSpace[1].blockchainUserId).to.be.equal(aliceRegTxId);
       expect(aliceSpace[1].object).to.be.deep.equal(
         {
-          act: 0,
+          act: 1,
           idx: 0,
           rev: 0,
           avatar: 'Alice\'s avatar here2',
@@ -339,50 +340,6 @@ describe('Contacts app', () => {
 
   xdescribe('Bob', () => {
     it('should be able to send contact request', async () => {
-      const bobContactRequest = Schema.create.dapobject('contact');
-      bobContactRequest.hdextpubkey = bobPrivateKey.toPublicKey().toString('hex');
-      bobContactRequest.relation = aliceRegTxId;
-
-      const dashPayContract = await dapiClient.fetchDapContract(dapId);
-
-      // 1. Create ST contact request packet
-      const tsp = Schema.create.stpacket();
-      tsp.stpacket.dapobjects = [bobContactRequest];
-      Schema.object.setID(tsp, dashPayContract.schema);
-      tsp.stPacket = Object.assign(tsp.stpacket, dapContract);
-
-      // 2. Create State Transition
-      const transaction = new Transaction()
-        .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
-
-      const serializedPacket = Schema.serialize.encode(tsp);
-      const stPacketHash = doubleSha256(serializedPacket);
-
-      transaction.extraPayload
-        .setRegTxId(bobRegTxId)
-        .setHashPrevSubTx(bobProfileTransactionId)
-        .setHashSTPacket(stPacketHash)
-        .setCreditFee(1000)
-        .sign(bobPrivateKey);
-
-      const bobContactRequestTransactionId = await dapiClient.sendRawTransition(
-        transaction.serialize(),
-        serializedPacket.toString('hex'),
-      );
-      expect(bobContactRequestTransactionId).to.be.a('string');
-      expect(bobContactRequestTransactionId).to.be.not.empty();
-
-      let bobContract;
-      for (let i = 0; i <= attempts; i++) {
-        bobContract = await dapiClient.fetchDapObjects(dapId, 'contract', {});
-        if (bobContract) {
-          await wait(timeout);
-        } else {
-          break;
-        }
-      }
-      expect(bobContract.dapid).to.be.deep.equal(dapId);
-      // TODO: check profile
     });
   });
 
