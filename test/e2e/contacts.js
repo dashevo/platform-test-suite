@@ -279,7 +279,7 @@ describe('Contacts app', () => {
       );
     });
 
-    it('should update only her profile', async function it() {
+    it('should be able to update her profile', async function it() {
       this.timeout(320000);
 
       const userRequest = Schema.create.dapobject('user');
@@ -338,17 +338,12 @@ describe('Contacts app', () => {
     });
   });
 
-  xdescribe('Bob', () => {
-    it('should be able to send contact request', async () => {
-    });
+  describe('Bob', () => {
+    it('should be able to send contact request');
   });
 
-  xdescribe('Alice', () => {
-    it('should be able to approve contact request', async () => {
-
-    });
-    it('should be able to remove only here contact object', async () => {
-
-    });
+  describe('Alice', () => {
+    it('should be able to approve contact request');
+    it('should be able to remove approvement');
   });
 });
