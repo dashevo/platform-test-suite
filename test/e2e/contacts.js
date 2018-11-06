@@ -171,6 +171,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(bobProfileTransactionId).to.be.a('string');
       expect(bobProfileTransactionId).to.be.not.empty();
 
@@ -225,6 +226,7 @@ describe('Contacts app', () => {
       await wait(5000);
 
       const userByName = await dapiClient.getUserByName(aliceUserName);
+
       expect(userByName.uname).to.be.equal(aliceUserName);
     });
 
@@ -259,6 +261,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(aliceProfileTransactionId).to.be.a('string');
       expect(aliceProfileTransactionId).to.be.not.empty();
 
@@ -272,6 +275,7 @@ describe('Contacts app', () => {
           await wait(timeout);
         }
       }
+
       expect(aliceSpace).to.have.lengthOf(2);
       expect(aliceSpace[1].blockchainUserId).to.be.equal(aliceRegTxId);
       expect(aliceSpace[1].object).to.be.deep.equal(
@@ -316,6 +320,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(aliceUpdateProfileTransactionId).to.be.a('string');
       expect(aliceUpdateProfileTransactionId).to.be.not.empty();
 
@@ -329,6 +334,7 @@ describe('Contacts app', () => {
           await wait(timeout);
         }
       }
+
       expect(aliceSpace).to.have.lengthOf(2);
       expect(aliceSpace[1].blockchainUserId).to.be.equal(aliceRegTxId);
       expect(aliceSpace[1].object).to.be.deep.equal(
@@ -347,6 +353,7 @@ describe('Contacts app', () => {
   describe('Bob', () => {
     it('should be able to send contact request', async function it() {
       this.timeout(testTimeout);
+
       const bobContactRequest = Schema.create.dapobject('contact');
       bobContactRequest.hdextpubkey = bobPrivateKey.toPublicKey().toString('hex');
       bobContactRequest.relation = aliceRegTxId;
@@ -375,6 +382,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(bobContactRequestTransactionId).to.be.a('string');
       expect(bobContactRequestTransactionId).to.be.not.empty();
 
@@ -388,6 +396,7 @@ describe('Contacts app', () => {
           await wait(timeout);
         }
       }
+
       expect(bobContact).to.have.lengthOf(1);
       expect(bobContact[0].blockchainUserId).to.be.equal(bobRegTxId);
       expect(bobContact[0].object).to.be.deep.equal(
@@ -434,6 +443,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(aliceContactAcceptTransactionId).to.be.a('string');
       expect(aliceContactAcceptTransactionId).to.be.not.empty();
 
@@ -447,6 +457,7 @@ describe('Contacts app', () => {
           await wait(timeout);
         }
       }
+
       expect(aliceContact).to.have.lengthOf(2);
       expect(aliceContact[0].blockchainUserId).to.be.equal(bobRegTxId);
       expect(aliceContact[1].blockchainUserId).to.be.equal(aliceRegTxId);
@@ -464,6 +475,7 @@ describe('Contacts app', () => {
 
     it('should be able to remove contact approvement', async function it() {
       this.timeout(testTimeout);
+
       const contactDeleteRequest = Schema.create.dapobject('contact');
       contactDeleteRequest.hdextpubkey = alicePrivateKey.toPublicKey().toString('hex');
       contactDeleteRequest.relation = bobRegTxId;
@@ -492,6 +504,7 @@ describe('Contacts app', () => {
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
+
       expect(aliceContactDeleteTransactionId).to.be.a('string');
       expect(aliceContactDeleteTransactionId).to.be.not.empty();
 
@@ -505,6 +518,7 @@ describe('Contacts app', () => {
           await wait(timeout);
         }
       }
+
       expect(aliceContact).to.have.lengthOf(1);
       expect(aliceContact[0].blockchainUserId).to.be.equal(bobRegTxId);
       expect(aliceContact[0].object).to.be.deep.equal(
