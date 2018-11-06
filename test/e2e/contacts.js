@@ -34,7 +34,6 @@ describe('Contacts app', () => {
   let aliceUserName;
   let aliceRegTxId;
 
-  let contactsTransactionId;
   let bobProfileTransactionId;
   let aliceProfileTransactionId;
   let bobContactRequestTransactionId;
@@ -67,6 +66,8 @@ describe('Contacts app', () => {
   });
 
   describe('Bob', () => {
+    let contactsTransactionId;
+
     it('should register blockchain user', async function it() {
       this.timeout(50000);
 
