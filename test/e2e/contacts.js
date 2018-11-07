@@ -82,6 +82,8 @@ describe('Contacts app', () => {
 
       ({ txid: bobRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
 
+      bobPreviousST = bobRegTxId;
+
       // await dapiClient.generate(1);
       await wait(5000);
 
@@ -105,18 +107,20 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(bobRegTxId)
-        .setHashPrevSubTx(bobRegTxId)
+        .setHashPrevSubTx(bobPreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      bobPreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(bobPreviousST).to.be.a('string');
-      expect(bobPreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      bobPreviousST = transitionHash;
 
       let dapContractFromDAPI;
 
@@ -161,13 +165,15 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      bobPreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(bobPreviousST).to.be.a('string');
-      expect(bobPreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      bobPreviousST = transitionHash;
 
       let bobSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -216,6 +222,8 @@ describe('Contacts app', () => {
 
       ({ txid: aliceRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
 
+      alicePreviousST = aliceRegTxId;
+
       // await dapiClient.generate(1);
       await wait(5000);
 
@@ -246,18 +254,20 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(aliceRegTxId)
-        .setHashPrevSubTx(aliceRegTxId)
+        .setHashPrevSubTx(alicePreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      alicePreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(alicePreviousST).to.be.a('string');
-      expect(alicePreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      alicePreviousST = transitionHash;
 
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -310,13 +320,15 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      alicePreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(alicePreviousST).to.be.a('string');
-      expect(alicePreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      alicePreviousST = transitionHash;
 
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -372,13 +384,15 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      const bobContactRequestTransactionId = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(bobContactRequestTransactionId).to.be.a('string');
-      expect(bobContactRequestTransactionId).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      bobPreviousST = transitionHash;
 
       let bobContact;
       for (let i = 0; i <= attempts; i++) {
@@ -433,13 +447,15 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      alicePreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(alicePreviousST).to.be.a('string');
-      expect(alicePreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      alicePreviousST = transitionHash;
 
       let aliceContact;
       for (let i = 0; i <= attempts; i++) {
@@ -494,13 +510,15 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      alicePreviousST = await dapiClient.sendRawTransition(
+      const transitionHash = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(alicePreviousST).to.be.a('string');
-      expect(alicePreviousST).to.be.not.empty();
+      expect(transitionHash).to.be.a('string');
+      expect(transitionHash).to.be.not.empty();
+
+      alicePreviousST = transitionHash;
 
       let aliceContact;
       for (let i = 0; i <= attempts; i++) {
