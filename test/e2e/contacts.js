@@ -24,7 +24,6 @@ describe('Contacts app', () => {
   let dapContract;
 
   let faucetPrivateKey;
-  let faucetPublicKey;
   let faucetAddress;
 
   let bobPrivateKey;
@@ -34,11 +33,8 @@ describe('Contacts app', () => {
   let aliceUserName;
   let aliceRegTxId;
 
-  let bobProfileTransactionId;
-  let aliceProfileTransactionId;
-  let bobContactRequestTransactionId;
-  let aliceUpdateProfileTransactionId;
-  let aliceContactAcceptTransactionId;
+  let bobPreviousST;
+  let alicePreviousST;
 
   before(() => {
     const seeds = process.env.DAPI_CLIENT_SEEDS
@@ -51,7 +47,7 @@ describe('Contacts app', () => {
     });
 
     faucetPrivateKey = new PrivateKey(process.env.FAUCET_PRIVATE_KEY);
-    faucetPublicKey = PublicKey.fromPrivateKey(faucetPrivateKey);
+    const faucetPublicKey = PublicKey.fromPrivateKey(faucetPrivateKey);
     faucetAddress = Address
       .fromPublicKey(faucetPublicKey, process.env.NETWORK === 'devnet' ? 'testnet' : process.env.NETWORK)
       .toString();
@@ -66,8 +62,6 @@ describe('Contacts app', () => {
   });
 
   describe('Bob', () => {
-    let contactsTransactionId;
-
     it('should register blockchain user', async function it() {
       this.timeout(50000);
 
@@ -116,13 +110,13 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      contactsTransactionId = await dapiClient.sendRawTransition(
+      bobPreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(contactsTransactionId).to.be.a('string');
-      expect(contactsTransactionId).to.be.not.empty();
+      expect(bobPreviousST).to.be.a('string');
+      expect(bobPreviousST).to.be.not.empty();
 
       let dapContractFromDAPI;
 
@@ -162,18 +156,18 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(bobRegTxId)
-        .setHashPrevSubTx(contactsTransactionId)
+        .setHashPrevSubTx(bobPreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      bobProfileTransactionId = await dapiClient.sendRawTransition(
+      bobPreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(bobProfileTransactionId).to.be.a('string');
-      expect(bobProfileTransactionId).to.be.not.empty();
+      expect(bobPreviousST).to.be.a('string');
+      expect(bobPreviousST).to.be.not.empty();
 
       let bobSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -257,13 +251,13 @@ describe('Contacts app', () => {
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      aliceProfileTransactionId = await dapiClient.sendRawTransition(
+      alicePreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(aliceProfileTransactionId).to.be.a('string');
-      expect(aliceProfileTransactionId).to.be.not.empty();
+      expect(alicePreviousST).to.be.a('string');
+      expect(alicePreviousST).to.be.not.empty();
 
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -311,18 +305,18 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(aliceRegTxId)
-        .setHashPrevSubTx(aliceProfileTransactionId)
+        .setHashPrevSubTx(alicePreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      aliceUpdateProfileTransactionId = await dapiClient.sendRawTransition(
+      alicePreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(aliceUpdateProfileTransactionId).to.be.a('string');
-      expect(aliceUpdateProfileTransactionId).to.be.not.empty();
+      expect(alicePreviousST).to.be.a('string');
+      expect(alicePreviousST).to.be.not.empty();
 
       let aliceSpace;
       for (let i = 0; i <= attempts; i++) {
@@ -373,12 +367,12 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(bobRegTxId)
-        .setHashPrevSubTx(bobProfileTransactionId)
+        .setHashPrevSubTx(bobPreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(bobPrivateKey);
 
-      bobContactRequestTransactionId = await dapiClient.sendRawTransition(
+      const bobContactRequestTransactionId = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
@@ -434,18 +428,18 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(aliceRegTxId)
-        .setHashPrevSubTx(aliceUpdateProfileTransactionId)
+        .setHashPrevSubTx(alicePreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      aliceContactAcceptTransactionId = await dapiClient.sendRawTransition(
+      alicePreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(aliceContactAcceptTransactionId).to.be.a('string');
-      expect(aliceContactAcceptTransactionId).to.be.not.empty();
+      expect(alicePreviousST).to.be.a('string');
+      expect(alicePreviousST).to.be.not.empty();
 
       let aliceContact;
       for (let i = 0; i <= attempts; i++) {
@@ -495,18 +489,18 @@ describe('Contacts app', () => {
 
       transaction.extraPayload
         .setRegTxId(aliceRegTxId)
-        .setHashPrevSubTx(aliceContactAcceptTransactionId)
+        .setHashPrevSubTx(alicePreviousST)
         .setHashSTPacket(stPacketHash)
         .setCreditFee(1000)
         .sign(alicePrivateKey);
 
-      const aliceContactDeleteTransactionId = await dapiClient.sendRawTransition(
+      alicePreviousST = await dapiClient.sendRawTransition(
         transaction.serialize(),
         serializedPacket.toString('hex'),
       );
 
-      expect(aliceContactDeleteTransactionId).to.be.a('string');
-      expect(aliceContactDeleteTransactionId).to.be.not.empty();
+      expect(alicePreviousST).to.be.a('string');
+      expect(alicePreviousST).to.be.not.empty();
 
       let aliceContact;
       for (let i = 0; i <= attempts; i++) {
