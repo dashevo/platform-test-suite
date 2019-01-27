@@ -17,9 +17,8 @@
   "homepage": "https://github.com/dashevo/dash-network-e2e-tests#readme",
   "devDependencies": {
     "@dashevo/dapi-client": "git+ssh://git@github.com/dashevo/dapi-client.git#develop",
-    "@dashevo/dash-schema": "^3.0.0-alpha.3",
-    "@dashevo/dashcore-lib": "1.0.0-alpha.15",
-    "cbor": "^4.1.1",
+    "@dashevo/dashcore-lib": "1.0.0-alpha.24",
+    "@dashevo/dpp": "^0.4.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dirty-chai": "^2.0.1",
