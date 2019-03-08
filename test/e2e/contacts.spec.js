@@ -41,11 +41,10 @@ describe('Contacts app', () => {
 
     const seeds = process.env.DAPI_CLIENT_SEEDS
       .split(',')
-      .map(ip => ({ ip }));
+      .map(ip => ({ service: `${ip}:${process.env.DAPI_CLIENT_PORT}` }));
 
     dapiClient = new DAPIClient({
       seeds,
-      port: process.env.DAPI_CLIENT_PORT,
     });
 
     faucetPrivateKey = new PrivateKey(process.env.FAUCET_PRIVATE_KEY);
