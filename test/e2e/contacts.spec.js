@@ -1,7 +1,7 @@
 const DAPIClient = require('@dashevo/dapi-client');
 const DashPlatformProtocol = require('@dashevo/dpp');
 const entropy = require('@dashevo/dpp/lib/util/entropy');
-const DPObject = require('@dashevo/dpp/lib/object/DPObject');
+const Document = require('@dashevo/dpp/lib/document/Document');
 
 const {
   Transaction,
@@ -30,7 +30,7 @@ describe('Contacts app', () => {
   let alicePrivateKey;
   let aliceUserName;
   let aliceRegTxId;
-  let aliceUser;
+  let aliceProfile;
   let aliceContactAcceptance;
 
   let bobPreviousST;
@@ -56,8 +56,11 @@ describe('Contacts app', () => {
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
 
-    const dpContract = dpp.contract.create(entropy.generate(), {
-      user: {
+    const contract = dpp.contract.create(entropy.generate(), {
+      profile: {
+        indices: [
+          { properties: [{ $userId: 'asc' }], unique: true },
+        ],
         properties: {
           avatarUrl: {
             type: 'string',
@@ -71,6 +74,9 @@ describe('Contacts app', () => {
         additionalProperties: false,
       },
       contact: {
+        indices: [
+          { properties: [{ $userId: 'asc', toUserId: 'asc' }], unique: true },
+        ],
         properties: {
           toUserId: {
             type: 'string',
@@ -84,7 +90,7 @@ describe('Contacts app', () => {
       },
     });
 
-    dpp.setDPContract(dpContract);
+    dpp.setContract(contract);
   });
 
   describe('Bob', () => {
@@ -96,7 +102,9 @@ describe('Contacts app', () => {
         .setUserName(bobUserName)
         .setPubKeyIdFromPrivateKey(bobPrivateKey).sign(bobPrivateKey);
 
-      const inputs = await dapiClient.getUTXO(faucetAddress);
+      const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
+
+      expect(inputs).to.not.be.empty();
 
       const transaction = Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
@@ -106,7 +114,7 @@ describe('Contacts app', () => {
         .change(faucetAddress)
         .sign(faucetPrivateKey);
 
-      ({ txid: bobRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
+      bobRegTxId = await dapiClient.sendRawTransaction(transaction.serialize());
 
       expect(bobRegTxId).to.be.a('string');
 
@@ -123,7 +131,7 @@ describe('Contacts app', () => {
       this.timeout(testTimeout);
 
       // 1. Create ST packet
-      const stPacket = dpp.packet.create(dpp.getDPContract());
+      const stPacket = dpp.packet.create(dpp.getContract());
 
       // 2. Create State Transition
       const transaction = new Transaction()
@@ -154,14 +162,14 @@ describe('Contacts app', () => {
       for (let i = 0; i <= attempts; i++) {
         try {
           // waiting for Contacts to be added
-          dpContract = await dapiClient.fetchDapContract(dpp.getDPContract().getId());
+          dpContract = await dapiClient.fetchContract(dpp.getContract().getId());
           break;
         } catch (e) {
           await wait(timeout);
         }
       }
 
-      expect(dpContract).to.be.deep.equal(dpp.getDPContract().getId());
+      expect(dpContract).to.be.deep.equal(dpp.getContract().getId());
     });
 
     it('should create profile in "Contacts" app', async function it() {
@@ -169,13 +177,13 @@ describe('Contacts app', () => {
 
       dpp.setUserId(bobRegTxId);
 
-      const user = dpp.object.create('user', {
+      const profile = dpp.document.create('profile', {
         avatarUrl: 'http://test.com/bob.jpg',
         about: 'This is story about me',
       });
 
       // 1. Create ST profile packet
-      const stPacket = dpp.packet.create([user]);
+      const stPacket = dpp.packet.create([profile]);
 
       // 2. Create State Transition
       const transaction = new Transaction()
@@ -201,25 +209,25 @@ describe('Contacts app', () => {
       // 3. Mine block with ST
       await dapiClient.generate(1);
 
-      // 4. Fetch users
-      let users;
+      // 4. Fetch profiles
+      let profiles;
       for (let i = 0; i <= attempts; i++) {
-        users = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
-          'user',
+        profiles = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
+          'profile',
           {},
         );
 
         // waiting for Bob's profile to be added
-        if (users.length > 0) {
+        if (profiles.length > 0) {
           break;
         } else {
           await wait(timeout);
         }
       }
 
-      expect(users).to.have.lengthOf(1);
-      expect(users[0]).to.be.deep.equal(user.toJSON());
+      expect(profiles).to.have.lengthOf(1);
+      expect(profiles[0]).to.be.deep.equal(profile.toJSON());
     });
   });
 
@@ -232,7 +240,9 @@ describe('Contacts app', () => {
         .setUserName(aliceUserName)
         .setPubKeyIdFromPrivateKey(alicePrivateKey).sign(alicePrivateKey);
 
-      const inputs = await dapiClient.getUTXO(faucetAddress);
+      const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
+
+      expect(inputs).to.not.be.empty();
 
       const transaction = Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
@@ -242,7 +252,7 @@ describe('Contacts app', () => {
         .change(faucetAddress)
         .sign(faucetPrivateKey);
 
-      ({ txid: aliceRegTxId } = await dapiClient.sendRawTransaction(transaction.serialize()));
+      aliceRegTxId = await dapiClient.sendRawTransaction(transaction.serialize());
 
       alicePreviousST = aliceRegTxId;
 
@@ -259,13 +269,13 @@ describe('Contacts app', () => {
 
       dpp.setUserId(aliceRegTxId);
 
-      aliceUser = dpp.object.create('user', {
+      aliceProfile = dpp.document.create('profile', {
         avatarUrl: 'http://test.com/alice.jpg',
         about: 'I am Alice',
       });
 
-      // 1. Create ST user packet
-      const stPacket = dpp.packet.create([aliceUser]);
+      // 1. Create ST Packet
+      const stPacket = dpp.packet.create([aliceProfile]);
 
       // 2. Create State Transition
       const transaction = new Transaction()
@@ -291,25 +301,25 @@ describe('Contacts app', () => {
       // 3. Mine block with ST
       await dapiClient.generate(1);
 
-      // 4. Fetch users
-      let users;
+      // 4. Fetch profiles
+      let profiles;
       for (let i = 0; i <= attempts; i++) {
-        users = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
-          'user',
+        profiles = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
+          'profile',
           {},
         );
 
         // waiting for Alice's profile to be added
-        if (users.length > 1) {
+        if (profiles.length > 1) {
           break;
         } else {
           await wait(timeout);
         }
       }
 
-      expect(users).to.have.lengthOf(2);
-      expect(users[1]).to.be.deep.equal(aliceUser.toJSON());
+      expect(profiles).to.have.lengthOf(2);
+      expect(profiles[1]).to.be.deep.equal(aliceProfile.toJSON());
     });
 
     it('should be able to update her profile', async function it() {
@@ -317,11 +327,11 @@ describe('Contacts app', () => {
 
       dpp.setUserId(aliceRegTxId);
 
-      aliceUser.setAction(DPObject.ACTIONS.UPDATE);
-      aliceUser.set('avatarUrl', 'http://test.com/alice2.jpg');
+      aliceProfile.setAction(Document.ACTIONS.UPDATE);
+      aliceProfile.set('avatarUrl', 'http://test.com/alice2.jpg');
 
       // 1. Create ST update profile packet
-      const stPacket = dpp.packet.create([aliceUser]);
+      const stPacket = dpp.packet.create([aliceProfile]);
 
       // 2. Create State Transition
       const transaction = new Transaction()
@@ -347,25 +357,25 @@ describe('Contacts app', () => {
       // 3. Mine block with ST
       await dapiClient.generate(1);
 
-      // 4. Fetch users
-      let users;
+      // 4. Fetch profile
+      let profiles;
       for (let i = 0; i <= attempts; i++) {
-        users = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
-          'user',
+        profiles = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
+          'profile',
           {},
         );
 
         // waiting for Alice's profile modified
-        if (users.length === 2 && users[1].act === 1) {
+        if (profiles.length === 2 && profiles[1].act === 1) {
           break;
         } else {
           await wait(timeout);
         }
       }
 
-      expect(users).to.have.lengthOf(2);
-      expect(users[1]).to.be.deep.equal(aliceUser.toJSON());
+      expect(profiles).to.have.lengthOf(2);
+      expect(profiles[1]).to.be.deep.equal(aliceProfile.toJSON());
     });
   });
 
@@ -375,7 +385,7 @@ describe('Contacts app', () => {
 
       dpp.setUserId(bobRegTxId);
 
-      const contactRequest = dpp.object.create('contact', {
+      const contactRequest = dpp.document.create('contact', {
         toUserId: aliceRegTxId,
         publicKey: bobPrivateKey.toPublicKey().toString('hex'),
       });
@@ -410,8 +420,8 @@ describe('Contacts app', () => {
       // 4. Fetch contacts
       let contacts;
       for (let i = 0; i <= attempts; i++) {
-        contacts = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
+        contacts = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
           'contact',
           {},
         );
@@ -435,7 +445,7 @@ describe('Contacts app', () => {
 
       dpp.setUserId(aliceRegTxId);
 
-      aliceContactAcceptance = dpp.object.create('contact', {
+      aliceContactAcceptance = dpp.document.create('contact', {
         toUserId: bobRegTxId,
         publicKey: alicePrivateKey.toPublicKey().toString('hex'),
       });
@@ -470,8 +480,8 @@ describe('Contacts app', () => {
       // 4. Fetch contacts
       let contacts;
       for (let i = 0; i <= attempts; i++) {
-        contacts = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
+        contacts = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
           'contact',
           {},
         );
@@ -493,7 +503,7 @@ describe('Contacts app', () => {
 
       dpp.setUserId(aliceRegTxId);
 
-      aliceContactAcceptance.setAction(DPObject.ACTIONS.DELETE);
+      aliceContactAcceptance.setAction(Document.ACTIONS.DELETE);
 
       // 1. Create ST contact delete packet
       const stPacket = dpp.packet.create([aliceContactAcceptance]);
@@ -526,8 +536,8 @@ describe('Contacts app', () => {
       let contacts;
       for (let i = 0; i <= attempts; i++) {
         // waiting for Bob's contact to be deleted from Alice
-        contacts = await dapiClient.fetchDapObjects(
-          dpp.getDPContract().getId(),
+        contacts = await dapiClient.fetchDocuments(
+          dpp.getContract().getId(),
           'contact',
           {},
         );
