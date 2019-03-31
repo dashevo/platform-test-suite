@@ -45,6 +45,7 @@ describe('Contacts app', () => {
 
     dapiClient = new DAPIClient({
       seeds,
+      timeout: 30000,
     });
 
     faucetPrivateKey = new PrivateKey(process.env.FAUCET_PRIVATE_KEY);
@@ -104,7 +105,7 @@ describe('Contacts app', () => {
 
       const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
 
-      expect(inputs).to.not.be.empty();
+      expect(inputs).to.be.an('array').and.not.empty();
 
       const transaction = Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
@@ -242,7 +243,7 @@ describe('Contacts app', () => {
 
       const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
 
-      expect(inputs).to.not.be.empty();
+      expect(inputs).to.be.an('array').and.not.empty();
 
       const transaction = Transaction()
         .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
