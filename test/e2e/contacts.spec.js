@@ -339,6 +339,7 @@ describe('Contacts app', () => {
       dpp.setUserId(aliceRegTxId);
 
       aliceProfile.setAction(Document.ACTIONS.UPDATE);
+      aliceProfile.setRevision(2);
       aliceProfile.set('avatarUrl', 'http://test.com/alice2.jpg');
 
       const result = dpp.document.validate(aliceProfile);
@@ -381,7 +382,7 @@ describe('Contacts app', () => {
         );
 
         // waiting for Alice's profile modified
-        if (profiles.length === 2 && profiles[1].act === 1) {
+        if (profiles.length === 2 && profiles[1].$rev === 2) {
           break;
         } else {
           await wait(timeout);
@@ -524,6 +525,7 @@ describe('Contacts app', () => {
       dpp.setUserId(aliceRegTxId);
 
       aliceContactAcceptance.setAction(Document.ACTIONS.DELETE);
+      aliceContactAcceptance.setRevision(2);
 
       const result = dpp.document.validate(aliceContactAcceptance);
       expect(result.isValid(), 'Contact acceptance must be valid').to.be.true();
