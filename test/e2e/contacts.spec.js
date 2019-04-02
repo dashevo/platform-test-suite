@@ -526,6 +526,7 @@ describe('Contacts app', () => {
 
       aliceContactAcceptance.setAction(Document.ACTIONS.DELETE);
       aliceContactAcceptance.setRevision(2);
+      aliceContactAcceptance.setData({});
 
       const result = dpp.document.validate(aliceContactAcceptance);
       expect(result.isValid(), 'Contact acceptance must be valid').to.be.true();
