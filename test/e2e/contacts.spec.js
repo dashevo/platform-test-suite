@@ -1,6 +1,5 @@
 const DAPIClient = require('@dashevo/dapi-client');
 const DashPlatformProtocol = require('@dashevo/dpp');
-const entropy = require('@dashevo/dpp/lib/util/entropy');
 const Document = require('@dashevo/dpp/lib/document/Document');
 
 const {
@@ -57,7 +56,8 @@ describe('Contacts app', () => {
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
 
-    const contract = dpp.contract.create(entropy.generate(), {
+    const contractName = Math.random().toString(36).substring(7);
+    const contract = dpp.contract.create(contractName, {
       profile: {
         indices: [
           { properties: [{ $userId: 'asc' }], unique: true },
@@ -76,7 +76,7 @@ describe('Contacts app', () => {
       },
       contact: {
         indices: [
-          { properties: [{ $userId: 'asc', toUserId: 'asc' }], unique: true },
+          { properties: [{ $userId: 'asc' }, { toUserId: 'asc' }], unique: true },
         ],
         properties: {
           toUserId: {
@@ -101,7 +101,8 @@ describe('Contacts app', () => {
       bobPrivateKey = new PrivateKey();
       const validPayload = new Transaction.Payload.SubTxRegisterPayload()
         .setUserName(bobUserName)
-        .setPubKeyIdFromPrivateKey(bobPrivateKey).sign(bobPrivateKey);
+        .setPubKeyIdFromPrivateKey(bobPrivateKey)
+        .sign(bobPrivateKey);
 
       const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
 
