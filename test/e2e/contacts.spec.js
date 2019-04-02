@@ -91,6 +91,9 @@ describe('Contacts app', () => {
       },
     });
 
+    const result = dpp.contract.validate(contract);
+    expect(result.isValid(), 'Contract must be valid').to.be.true();
+
     dpp.setContract(contract);
   });
 
@@ -184,6 +187,9 @@ describe('Contacts app', () => {
         about: 'This is story about me',
       });
 
+      const result = dpp.document.validate(profile);
+      expect(result.isValid(), 'Profile must be valid').to.be.true();
+
       // 1. Create ST profile packet
       const stPacket = dpp.packet.create([profile]);
 
@@ -276,6 +282,9 @@ describe('Contacts app', () => {
         about: 'I am Alice',
       });
 
+      const result = dpp.document.validate(aliceProfile);
+      expect(result.isValid(), 'Profile must be valid').to.be.true();
+
       // 1. Create ST Packet
       const stPacket = dpp.packet.create([aliceProfile]);
 
@@ -331,6 +340,9 @@ describe('Contacts app', () => {
 
       aliceProfile.setAction(Document.ACTIONS.UPDATE);
       aliceProfile.set('avatarUrl', 'http://test.com/alice2.jpg');
+
+      const result = dpp.document.validate(aliceProfile);
+      expect(result.isValid(), 'Profile must be valid').to.be.true();
 
       // 1. Create ST update profile packet
       const stPacket = dpp.packet.create([aliceProfile]);
@@ -392,6 +404,9 @@ describe('Contacts app', () => {
         publicKey: bobPrivateKey.toPublicKey().toString('hex'),
       });
 
+      const result = dpp.document.validate(contactRequest);
+      expect(result.isValid(), 'Contact request must be valid').to.be.true();
+
       // 1. Create ST contact request packet
       const stPacket = dpp.packet.create([contactRequest]);
 
@@ -452,6 +467,9 @@ describe('Contacts app', () => {
         publicKey: alicePrivateKey.toPublicKey().toString('hex'),
       });
 
+      const result = dpp.document.validate(aliceContactAcceptance);
+      expect(result.isValid(), 'Contact acceptance must be valid').to.be.true();
+
       // 1. Create ST approve contact packet
       const stPacket = dpp.packet.create([aliceContactAcceptance]);
 
@@ -506,6 +524,9 @@ describe('Contacts app', () => {
       dpp.setUserId(aliceRegTxId);
 
       aliceContactAcceptance.setAction(Document.ACTIONS.DELETE);
+
+      const result = dpp.document.validate(aliceContactAcceptance);
+      expect(result.isValid(), 'Contact acceptance must be valid').to.be.true();
 
       // 1. Create ST contact delete packet
       const stPacket = dpp.packet.create([aliceContactAcceptance]);
