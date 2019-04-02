@@ -2,6 +2,7 @@
   "name": "@dashevo/dash-network-e2e-tests",
   "version": "1.0.0",
   "description": "Dash Network end-to-end tests",
+  "private": true,
   "scripts": {
     "test": "mocha './test/**/*.spec.js'",
     "lint": "eslint ."
@@ -16,9 +17,9 @@
   },
   "homepage": "https://github.com/dashevo/dash-network-e2e-tests#readme",
   "devDependencies": {
-    "@dashevo/dapi-client": "0.4.0",
+    "@dashevo/dapi-client": "^0.4.1",
     "@dashevo/dashcore-lib": "^0.17.1",
-    "@dashevo/dpp": "^0.6.1",
+    "@dashevo/dpp": "^0.6.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dirty-chai": "^2.0.1",
