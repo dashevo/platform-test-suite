@@ -14,7 +14,7 @@ const wait = require('../../lib/wait');
 describe('Contacts app', () => {
   const timeout = 1000;
   const attempts = 400;
-  const testTimeout = 500000;
+  const testTimeout = 600000;
 
   let dpp;
 
