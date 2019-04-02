@@ -163,18 +163,18 @@ describe('Contacts app', () => {
       await dapiClient.generate(1);
 
       // 4. Fetch DAP Contract
-      let dpContract;
+      let contract;
       for (let i = 0; i <= attempts; i++) {
         try {
           // waiting for Contacts to be added
-          dpContract = await dapiClient.fetchContract(dpp.getContract().getId());
+          contract = await dapiClient.fetchContract(dpp.getContract().getId());
           break;
         } catch (e) {
           await wait(timeout);
         }
       }
 
-      expect(dpContract).to.be.deep.equal(dpp.getContract().getId());
+      expect(contract).to.be.deep.equal(dpp.getContract().toJSON());
     });
 
     it('should create profile in "Contacts" app', async function it() {
