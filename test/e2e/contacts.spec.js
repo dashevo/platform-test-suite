@@ -26,11 +26,11 @@ describe('Contacts app', () => {
   let bobPrivateKey;
   let bobUserName;
   let bobRegTxId;
+  let bobContactRequest;
   let alicePrivateKey;
   let aliceUserName;
   let aliceRegTxId;
   let aliceProfile;
-  let bobContactRequest;
   let aliceContactAcceptance;
 
   let bobPreviousST;
