@@ -1,8 +1,6 @@
-# dash-network-e2e-tests
+# Dash network end-to-end tests
 
-> Dash network end-to-end tests
-
-This repo tests the Dash Platform by running some end-to-end tests against a Dash network.
+> The test suite for end-to-end testing the Dash Platform by running some real-life scenarios against a Dash network
 
 ## Table of Contents
 - [Pre-Requisites](#pre-requisites)
