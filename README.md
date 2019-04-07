@@ -1,6 +1,6 @@
-# Dash network end-to-end tests
+# Dash Network end-to-end tests
 
-> The test suite for end-to-end testing the Dash Platform by running some real-life scenarios against a Dash network
+> The test suite for end-to-end testing the Dash Platform by running some real-life scenarios against a Dash Network
 
 ## Table of Contents
 - [Pre-Requisites](#pre-requisites)
