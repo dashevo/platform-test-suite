@@ -57,50 +57,59 @@ describe('Contacts app', () => {
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
 
-    const contractName = Math.random().toString(36).substring(7);
-    const contract = dpp.contract.create(contractName, {
-      profile: {
-        indices: [
-          { properties: [{ $userId: 'asc' }], unique: true },
-        ],
-        properties: {
-          avatarUrl: {
-            type: 'string',
-            format: 'url',
-          },
-          about: {
-            type: 'string',
-          },
-        },
-        required: ['avatarUrl', 'about'],
-        additionalProperties: false,
-      },
-      contact: {
-        indices: [
-          { properties: [{ $userId: 'asc' }, { toUserId: 'asc' }], unique: true },
-        ],
-        properties: {
-          toUserId: {
-            type: 'string',
-          },
-          publicKey: {
-            type: 'string',
-          },
-        },
-        required: ['toUserId', 'publicKey'],
-        additionalProperties: false,
-      },
-    });
-
-    const result = dpp.contract.validate(contract);
-    expect(result.isValid(), 'Contract must be valid').to.be.true();
-
-    dpp.setContract(contract);
+    // const contractName = Math.random().toString(36).substring(7);
+    // const contract = dpp.contract.create(contractName, {
+    //   profile: {
+    //     indices: [
+    //       { properties: [{ $userId: 'asc' }], unique: true },
+    //     ],
+    //     properties: {
+    //       avatarUrl: {
+    //         type: 'string',
+    //         format: 'url',
+    //       },
+    //       about: {
+    //         type: 'string',
+    //       },
+    //     },
+    //     required: ['avatarUrl', 'about'],
+    //     additionalProperties: false,
+    //   },
+    //   contact: {
+    //     indices: [
+    //       { properties: [{ $userId: 'asc' }, { toUserId: 'asc' }], unique: true },
+    //     ],
+    //     properties: {
+    //       toUserId: {
+    //         type: 'string',
+    //       },
+    //       publicKey: {
+    //         type: 'string',
+    //       },
+    //     },
+    //     required: ['toUserId', 'publicKey'],
+    //     additionalProperties: false,
+    //   },
+    // });
+    //
+    // const result = dpp.contract.validate(contract);
+    // expect(result.isValid(), 'Contract must be valid').to.be.true();
+    //
+    // dpp.setContract(contract);
   });
 
   describe('Bob', () => {
     it('should register blockchain user', async function it() {
       this.timeout(50000);
+
+      // Fetch contract
+      const contractJSON = await dapiClient.fetchContract('84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmPJ36pkVdzHw7');
+
+      expect(contractJSON).to.not.be.null();
+
+      const contract = dpp.contract.createFromObject(contractJSON);
+
+      dpp.setContract(contract);
 
       bobPrivateKey = new PrivateKey();
       const validPayload = new Transaction.Payload.SubTxRegisterPayload()
@@ -133,7 +142,7 @@ describe('Contacts app', () => {
       expect(userByName.uname).to.be.equal(bobUserName);
     });
 
-    it('should publish "Contacts" contract', async function it() {
+    it.skip('should publish "Contacts" contract', async function it() {
       this.timeout(testTimeout);
 
       // 1. Create ST packet
@@ -183,9 +192,11 @@ describe('Contacts app', () => {
 
       dpp.setUserId(bobRegTxId);
 
+      const randomAbout = Math.random().toString(36).substring(7);
+
       const profile = dpp.document.create('profile', {
         avatarUrl: 'http://test.com/bob.jpg',
-        about: 'This is story about me',
+        about: randomAbout,
       });
 
       const result = dpp.document.validate(profile);
@@ -219,24 +230,24 @@ describe('Contacts app', () => {
       await dapiClient.generate(1);
 
       // 4. Fetch profiles
-      let profiles;
+      let bobProfile;
       for (let i = 0; i <= attempts; i++) {
-        profiles = await dapiClient.fetchDocuments(
+        const profiles = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'profile',
           {},
         );
 
         // waiting for Bob's profile to be added
-        if (profiles.length > 0) {
+        bobProfile = profiles.find(p => p.about === randomAbout);
+        if (bobProfile) {
           break;
         } else {
           await wait(timeout);
         }
       }
 
-      expect(profiles).to.have.lengthOf(1);
-      expect(profiles[0]).to.be.deep.equal(profile.toJSON());
+      expect(bobProfile).to.be.deep.equal(profile.toJSON());
     });
   });
 
@@ -273,7 +284,7 @@ describe('Contacts app', () => {
       expect(userByName.uname).to.be.equal(aliceUserName);
     });
 
-    it('should create profile in "Contacts" app', async function it() {
+    it.skip('should create profile in "Contacts" app', async function it() {
       this.timeout(testTimeout);
 
       dpp.setUserId(aliceRegTxId);
@@ -334,7 +345,7 @@ describe('Contacts app', () => {
       expect(profiles[1]).to.be.deep.equal(aliceProfile.toJSON());
     });
 
-    it('should be able to update her profile', async function it() {
+    it.skip('should be able to update her profile', async function it() {
       this.timeout(testTimeout);
 
       dpp.setUserId(aliceRegTxId);
@@ -403,7 +414,7 @@ describe('Contacts app', () => {
 
       bobContactRequest = dpp.document.create('contact', {
         toUserId: aliceRegTxId,
-        publicKey: bobPrivateKey.toPublicKey().toString('hex'),
+        extendedPublicKey: bobPrivateKey.toPublicKey().toString('hex'),
       });
 
       const result = dpp.document.validate(bobContactRequest);
@@ -437,28 +448,28 @@ describe('Contacts app', () => {
       await dapiClient.generate(1);
 
       // 4. Fetch contacts
-      let contacts;
+      let contactToAlice;
       for (let i = 0; i <= attempts; i++) {
-        contacts = await dapiClient.fetchDocuments(
+        const contacts = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'contact',
           {},
         );
 
         // waiting for Bob's contact request to be added
-        if (contacts.length > 0) {
+        contactToAlice = contacts.find(c => c.toUserId === aliceRegTxId);
+        if (contactToAlice) {
           break;
         } else {
           await wait(timeout);
         }
       }
 
-      expect(contacts).to.have.lengthOf(1);
-      expect(contacts[0]).to.be.deep.equal(bobContactRequest.toJSON());
+      expect(contactToAlice).to.be.deep.equal(bobContactRequest.toJSON());
     });
   });
 
-  describe('Alice', () => {
+  describe.skip('Alice', () => {
     it('should be able to approve contact request', async function it() {
       this.timeout(testTimeout);
 
@@ -466,7 +477,7 @@ describe('Contacts app', () => {
 
       aliceContactAcceptance = dpp.document.create('contact', {
         toUserId: bobRegTxId,
-        publicKey: alicePrivateKey.toPublicKey().toString('hex'),
+        extendedPublicKey: alicePrivateKey.toPublicKey().toString('hex'),
       });
 
       const result = dpp.document.validate(aliceContactAcceptance);
