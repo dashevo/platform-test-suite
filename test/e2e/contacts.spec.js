@@ -56,52 +56,10 @@ describe('Contacts app', () => {
 
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
-
-    // const contractName = Math.random().toString(36).substring(7);
-    // const contract = dpp.contract.create(contractName, {
-    //   profile: {
-    //     indices: [
-    //       { properties: [{ $userId: 'asc' }], unique: true },
-    //     ],
-    //     properties: {
-    //       avatarUrl: {
-    //         type: 'string',
-    //         format: 'url',
-    //       },
-    //       about: {
-    //         type: 'string',
-    //       },
-    //     },
-    //     required: ['avatarUrl', 'about'],
-    //     additionalProperties: false,
-    //   },
-    //   contact: {
-    //     indices: [
-    //       { properties: [{ $userId: 'asc' }, { toUserId: 'asc' }], unique: true },
-    //     ],
-    //     properties: {
-    //       toUserId: {
-    //         type: 'string',
-    //       },
-    //       publicKey: {
-    //         type: 'string',
-    //       },
-    //     },
-    //     required: ['toUserId', 'publicKey'],
-    //     additionalProperties: false,
-    //   },
-    // });
-    //
-    // const result = dpp.contract.validate(contract);
-    // expect(result.isValid(), 'Contract must be valid').to.be.true();
-    //
-    // dpp.setContract(contract);
   });
 
   describe('Bob', () => {
-    it('should register blockchain user', async function it() {
-      this.timeout(50000);
-
+    it('should fetch exists contract', async function it() {
       // Fetch contract
       const contractJSON = await dapiClient.fetchContract('84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmPJ36pkVdzHw7');
 
@@ -110,6 +68,10 @@ describe('Contacts app', () => {
       const contract = dpp.contract.createFromObject(contractJSON);
 
       dpp.setContract(contract);
+    });
+
+    it('should register blockchain user', async function it() {
+      this.timeout(50000);
 
       bobPrivateKey = new PrivateKey();
       const validPayload = new Transaction.Payload.SubTxRegisterPayload()
