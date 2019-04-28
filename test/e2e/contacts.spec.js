@@ -333,6 +333,9 @@ describe('Contacts app', () => {
         }
       }
 
+      expect(actualAliceProfile).to.not.be.null();
+      expect(actualAliceProfile.$meta).to.equal(aliceRegTxId);
+
       delete actualAliceProfile.$meta;
 
       expect(actualAliceProfile).to.be.deep.equal(aliceProfile.toJSON());
