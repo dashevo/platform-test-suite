@@ -334,7 +334,7 @@ describe('Contacts app', () => {
       }
 
       expect(actualAliceProfile).to.not.be.null();
-      expect(actualAliceProfile.$meta).to.equal(aliceRegTxId);
+      expect(actualAliceProfile.$meta.userId).to.equal(aliceRegTxId);
 
       delete actualAliceProfile.$meta;
 
@@ -588,7 +588,7 @@ describe('Contacts app', () => {
 
       expect(contacts).to.have.lengthOf(1);
 
-      const [actualBobContactRequest] = contacts[0];
+      const actualBobContactRequest = contacts[0];
 
       delete actualBobContactRequest.$meta;
 
