@@ -226,7 +226,7 @@ describe('Contacts app', () => {
         [actualProfile] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'profile',
-          { where: { _id: profile.getId() } },
+          { where: [['_id', '==', profile.getId()]] },
         );
 
         // waiting for Bob's profile to be added
@@ -322,7 +322,7 @@ describe('Contacts app', () => {
         [actualAliceProfile] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'profile',
-          { where: { _id: aliceProfile.getId() } },
+          { where: [['_id', '==', aliceProfile.getId()]] },
         );
 
         // waiting for Alice's profile to be added
@@ -387,7 +387,7 @@ describe('Contacts app', () => {
         [actualAliceProfile] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'profile',
-          { where: { _id: aliceProfile.getId() } },
+          { where: [['_id', '==', aliceProfile.getId()]] },
         );
 
         // waiting for Alice's profile modified
@@ -451,7 +451,7 @@ describe('Contacts app', () => {
         [actualBobContactRequest] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'contact',
-          { where: { _id: bobContactRequest.getId() } },
+          { where: [['_id', '==', bobContactRequest.getId()]] },
         );
 
         // waiting for Bob's contact request to be added
@@ -515,7 +515,7 @@ describe('Contacts app', () => {
         [actualAliceContactAcceptance] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'contact',
-          { where: { _id: aliceContactAcceptance.getId() } },
+          { where: [['_id', '==', aliceContactAcceptance.getId()]] },
         );
 
         // waiting for Bob's contact to be approved from Alice
