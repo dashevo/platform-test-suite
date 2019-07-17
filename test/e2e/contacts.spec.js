@@ -322,7 +322,7 @@ describe('Contacts app', () => {
         [actualAliceProfile] = await dapiClient.fetchDocuments(
           dpp.getContract().getId(),
           'profile',
-          { where: [['$id', '==', aliceProfile.getId()]] ,
+          { where: [['$id', '==', aliceProfile.getId()]] },
         );
 
         // waiting for Alice's profile to be added
