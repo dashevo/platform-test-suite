@@ -1,6 +1,7 @@
 const DAPIClient = require('@dashevo/dapi-client');
 const DashPlatformProtocol = require('@dashevo/dpp');
 const Document = require('@dashevo/dpp/lib/document/Document');
+const crypto = require('crypto');
 
 const {
   Transaction,
@@ -17,6 +18,7 @@ describe('Contacts app', () => {
   const testTimeout = 600000;
 
   let dpp;
+  let dataContract;
 
   let dapiClient;
 
@@ -37,7 +39,16 @@ describe('Contacts app', () => {
   let alicePreviousST;
 
   before(() => {
-    dpp = new DashPlatformProtocol();
+    const dataProvider = {
+      dataContract: null,
+      fetchDataContract() {
+        return dataContract;
+      },
+    };
+
+    dpp = new DashPlatformProtocol({
+      dataProvider,
+    });
 
     const seeds = process.env.DAPI_CLIENT_SEEDS
       .split(',')
@@ -57,8 +68,8 @@ describe('Contacts app', () => {
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
 
-    const contractName = Math.random().toString(36).substring(7);
-    const contract = dpp.contract.create(contractName, {
+    const contractId = crypto.randomBytes(32).toString('hex');
+    dataContract = dpp.dataContract.create(contractId, {
       profile: {
         indices: [
           { properties: [{ $userId: 'asc' }], unique: true },
@@ -92,10 +103,10 @@ describe('Contacts app', () => {
       },
     });
 
-    const result = dpp.contract.validate(contract);
+    const result = dpp.dataContract.validate(dataContract);
     expect(result.isValid(), 'Contract must be valid').to.be.true();
 
-    dpp.setContract(contract);
+    dataProvider.dataContract = dataContract;
   });
 
   describe('Bob', () => {
@@ -136,48 +147,27 @@ describe('Contacts app', () => {
     it('should publish "Contacts" contract', async function it() {
       this.timeout(testTimeout);
 
-      // 1. Create ST packet
-      const stPacket = dpp.packet.create(dpp.getContract());
+      // 1. Create Data Contract State Transition
+      const stateTransition = dpp.dataContract.createStateTransition(dataContract);
 
-      // 2. Create State Transition
-      const transaction = new Transaction()
-        .setType(Transaction.TYPES.TRANSACTION_SUBTX_TRANSITION);
+      const result = await dpp.stateTransition.validateStructure(stateTransition);
+      expect(result.isValid(), 'State Transition must be valid').to.be.true();
 
-      transaction.extraPayload
-        .setRegTxId(bobRegTxId)
-        .setHashPrevSubTx(bobPreviousST)
-        .setHashSTPacket(stPacket.hash())
-        .setCreditFee(1000)
-        .sign(bobPrivateKey);
-
-      const transitionHash = await dapiClient.sendRawTransition(
-        transaction.serialize(),
-        stPacket.serialize().toString('hex'),
-      );
+      // 2. Send Data Contract State Transition
+      let transitionHash;
+      try {
+        transitionHash = await dapiClient.updateState(stateTransition);
+      } catch (e) {
+        expect(e);
+      }
 
       expect(transitionHash).to.be.a('string');
       expect(transitionHash).to.be.not.empty();
 
-      bobPreviousST = transitionHash;
+      // 3. Fetch Data Contract
+      const actualContract = await dapiClient.fetchContract(dataContract.getId());
 
-      // 3. Mine block with ST
-      await dapiClient.generate(1);
-
-      // 4. Fetch DAP Contract
-      let actualContract;
-      for (let i = 0; i <= attempts; i++) {
-        try {
-          // waiting for Contacts to be added
-          actualContract = await dapiClient.fetchContract(dpp.getContract().getId());
-          if (actualContract) {
-            break;
-          }
-        } catch (e) {
-          await wait(timeout);
-        }
-      }
-
-      expect(actualContract).to.be.deep.equal(dpp.getContract().toJSON());
+      expect(actualContract).to.be.deep.equal(dataContract.toJSON());
     });
 
     it('should create profile in "Contacts" app', async function it() {
