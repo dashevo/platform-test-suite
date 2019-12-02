@@ -157,7 +157,7 @@ describe('Contacts app', () => {
         throwGrpcErrorWithMetadata(e);
       }
 
-      // 3. Fetch Data Contract
+      // 4. Fetch Data Contract
       const actualContract = await dapiClient.fetchContract(dataContract.getId());
 
       expect(actualContract).to.be.deep.equal(dataContract.toJSON());
