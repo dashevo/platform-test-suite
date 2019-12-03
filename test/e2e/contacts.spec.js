@@ -316,7 +316,7 @@ describe('Contacts app', () => {
 
       // 4. Fetch contacts
       const [actualBobContactRequest] = await dapiClient.fetchDocuments(
-        dpp.getContract().getId(),
+        dataContract.getId(),
         'contact',
         { where: [['$id', '==', bobContactRequest.getId()]] },
       );
