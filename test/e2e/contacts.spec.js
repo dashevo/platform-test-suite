@@ -181,15 +181,11 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch profiles
-      try {
-        const [actualProfileSerialized] = await dapiClient.getDocuments(
-          dataContract.getId(),
-          'profile',
-          { where: [['$id', '==', profile.getId()]] },
-        );
-      } catch (e) {
-        throwGrpcErrorWithMetadata(e);
-      }
+      const [actualProfileSerialized] = await dapiClient.getDocuments(
+        dataContract.getId(),
+        'profile',
+        { where: [['$id', '==', profile.getId()]] },
+      );
 
       const actualProfile = dpp.document.createFromSerialized(
         Buffer.from(actualProfileSerialized),
