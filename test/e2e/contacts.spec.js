@@ -146,9 +146,11 @@ describe('Contacts app', () => {
       // 5. Fetch Data Contract
       const actualContractSerialized = await dapiClient.getDataContract(dataContract.getId());
 
-      const actualDataContract = dpp.dataContract.createFromSerialized(actualContractSerialized);
+      const actualDataContract = dpp.dataContract.createFromSerialized(
+        Buffer.from(actualContractSerialized),
+      );
 
-      expect(actualDataContract).to.be.deep.equal(dataContract.toJSON());
+      expect(actualDataContract).to.be.deep.equal(dataContract);
     });
 
     it('should create profile in "Contacts" app', async function it() {
@@ -179,13 +181,21 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch profiles
-      const [actualProfile] = await dapiClient.getDocuments(
-        dataContract.getId(),
-        'profile',
-        { where: [['$id', '==', profile.getId()]] },
+      try {
+        const [actualProfileSerialized] = await dapiClient.getDocuments(
+          dataContract.getId(),
+          'profile',
+          { where: [['$id', '==', profile.getId()]] },
+        );
+      } catch (e) {
+        throwGrpcErrorWithMetadata(e);
+      }
+
+      const actualProfile = dpp.document.createFromSerialized(
+        Buffer.from(actualProfileSerialized),
       );
 
-      expect(actualProfile).to.be.deep.equal(profile.toJSON());
+      expect(actualProfile).to.be.deep.equal(profile);
     });
   });
 
@@ -234,13 +244,17 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch profile
-      const [actualAliceProfile] = await dapiClient.getDocuments(
+      const [actualAliceProfileSerialized] = await dapiClient.getDocuments(
         dataContract.getId(),
         'profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
 
-      expect(actualAliceProfile).to.be.deep.equal(aliceProfile.toJSON());
+      const actualAliceProfile = dpp.document.createFromSerialized(
+        Buffer.from(actualAliceProfileSerialized),
+      );
+
+      expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
     });
 
     it('should be able to update her profile', async function it() {
@@ -270,13 +284,17 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch profile
-      const [actualAliceProfile] = await dapiClient.getDocuments(
+      const [actualAliceProfileSerialized] = await dapiClient.getDocuments(
         dataContract.getId(),
         'profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
 
-      expect(actualAliceProfile).to.be.deep.equal(aliceProfile.toJSON());
+      const actualAliceProfile = dpp.document.createFromSerialized(
+        Buffer.from(actualAliceProfileSerialized),
+      );
+
+      expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
     });
   });
 
@@ -309,13 +327,17 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch contacts
-      const [actualBobContactRequest] = await dapiClient.getDocuments(
+      const [actualBobContactRequestSerialized] = await dapiClient.getDocuments(
         dataContract.getId(),
         'contact',
         { where: [['$id', '==', bobContactRequest.getId()]] },
       );
 
-      expect(actualBobContactRequest).to.be.deep.equal(bobContactRequest.toJSON());
+      const actualBobContactRequest = dpp.document.createFromSerialized(
+        Buffer.from(actualBobContactRequestSerialized),
+      );
+
+      expect(actualBobContactRequest).to.be.deep.equal(bobContactRequest);
     });
   });
 
@@ -348,13 +370,17 @@ describe('Contacts app', () => {
       }
 
       // 4. Fetch contacts
-      const [actualAliceContactAcceptance] = await dapiClient.getDocuments(
+      const [actualAliceContactAcceptanceSerialized] = await dapiClient.getDocuments(
         dataContract.getId(),
         'contact',
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
       );
 
-      expect(actualAliceContactAcceptance).to.be.deep.equal(aliceContactAcceptance.toJSON());
+      const actualAliceContactAcceptance = dpp.document.createFromSerialized(
+        Buffer.from(actualAliceContactAcceptanceSerialized),
+      );
+
+      expect(actualAliceContactAcceptance).to.be.deep.equal(aliceContactAcceptance);
     });
 
     it('should be able to remove contact approvement', async function it() {
