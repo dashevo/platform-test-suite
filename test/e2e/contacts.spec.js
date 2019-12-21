@@ -3,15 +3,10 @@ const DashPlatformProtocol = require('@dashevo/dpp');
 const Document = require('@dashevo/dpp/lib/document/Document');
 const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
-const {
-  Transaction,
-  PrivateKey,
-} = require('@dashevo/dashcore-lib');
+const { PrivateKey } = require('@dashevo/dashcore-lib');
 
 const createIdentity = require('../../lib/test/createIdentity');
 const throwGrpcErrorWithMetadata = require('../../lib/test/throwGrpcErrorWithMetadata');
-
-const wait = require('../../lib/wait');
 
 describe('Contacts app', () => {
   const testTimeout = 600000;
@@ -22,10 +17,10 @@ describe('Contacts app', () => {
   let dapiClient;
 
   let bobIdentity;
-  let bobUserName;
+  let bobPrivateKey;
   let bobContactRequest;
   let aliceIdentity;
-  let aliceUserName;
+  let alicePrivateKey;
   let aliceProfile;
   let aliceContactAcceptance;
 
@@ -57,9 +52,6 @@ describe('Contacts app', () => {
       seeds,
       timeout: 30000,
     });
-
-    bobUserName = Math.random().toString(36).substring(7);
-    aliceUserName = Math.random().toString(36).substring(7);
 
     dataContractDocumentSchemas = {
       profile: {
@@ -97,48 +89,73 @@ describe('Contacts app', () => {
   });
 
   describe('Bob', () => {
-    it('should register user identity', async function it() {
-      this.timeout(90000);
+    it('should create user identity', async function it() {
+      this.timeout(70000);
 
-      bobIdentity = await createIdentity(dapiClient, Identity.TYPES.USER);
+      bobPrivateKey = new PrivateKey();
+
+      bobIdentity = await createIdentity(
+        dapiClient,
+        bobPrivateKey,
+        Identity.TYPES.USER,
+      );
 
       expect(bobIdentity).to.be.instanceOf(Identity);
     });
 
-    it('should register name');
+    it('should register username');
 
-    it('should publish "Contacts" contract', async function it() {
+    it('should publish "Contacts" data contract', async function it() {
       this.timeout(testTimeout);
 
-      // 1. Create Data Contract
-      dataContract = dpp.dataContract.create(bobRegTxId, dataContractDocumentSchemas);
+      // 1. Create Data Contract Identity
+      const dataContractPrivateKey = new PrivateKey();
+
+      const dataContractIdentity = await createIdentity(
+        dapiClient,
+        dataContractPrivateKey,
+        Identity.TYPES.APPLICATION,
+      );
+
+      // 2. Create Data Contract
+      dataContract = dpp.dataContract.create(
+        dataContractIdentity.getId(),
+        dataContractDocumentSchemas,
+      );
 
       const result = dpp.dataContract.validate(dataContract);
       expect(result.isValid(), 'Contract must be valid').to.be.true();
 
       dataProvider.dataContract = dataContract;
 
-      // 2. Create State Transition
+      // 3. Create State Transition
       const stateTransition = dpp.dataContract.createStateTransition(dataContract);
 
-      // 3. Send State Transition
+      stateTransition.sign(
+        dataContractIdentity.getPublicKeyById(1),
+        dataContractPrivateKey,
+      );
+
+      // 4. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
-      // 4. Fetch Data Contract
-      const actualContract = await dapiClient.fetchContract(dataContract.getId());
+      // 5. Fetch Data Contract
+      const actualContractSerialized = await dapiClient.getDataContract(dataContract.getId());
 
-      expect(actualContract).to.be.deep.equal(dataContract.toJSON());
+      const actualDataContract = dpp.dataContract.createFromSerialized(actualContractSerialized);
+
+      expect(actualDataContract).to.be.deep.equal(dataContract.toJSON());
     });
 
     it('should create profile in "Contacts" app', async function it() {
       this.timeout(testTimeout);
 
       // 1. Create profile
-      const profile = dpp.document.create(dataContract, bobRegTxId, 'profile', {
+      const profile = dpp.document.create(dataContract, bobIdentity.getId(), 'profile', {
         avatarUrl: 'http://test.com/bob.jpg',
         about: 'This is story about me',
       });
@@ -149,15 +166,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([profile]);
 
+      stateTransition.sign(
+        bobIdentity.getPublicKeyById(1),
+        bobPrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch profiles
-      const [actualProfile] = await dapiClient.fetchDocuments(
+      const [actualProfile] = await dapiClient.getDocuments(
         dataContract.getId(),
         'profile',
         { where: [['$id', '==', profile.getId()]] },
@@ -169,18 +191,26 @@ describe('Contacts app', () => {
 
   describe('Alice', () => {
     it('should create user identity', async function it() {
-      this.timeout(50000);
+      this.timeout(70000);
 
-      aliceIdentity = await createIdentity(dapiClient, Identity.TYPES.USER);
+      alicePrivateKey = new PrivateKey();
+
+      aliceIdentity = await createIdentity(
+        dapiClient,
+        alicePrivateKey,
+        Identity.TYPES.USER,
+      );
 
       expect(bobIdentity).to.be.instanceOf(Identity);
     });
+
+    it('should register username');
 
     it('should create profile in "Contacts" app', async function it() {
       this.timeout(testTimeout);
 
       // 1. Create Profile
-      aliceProfile = dpp.document.create(dataContract, aliceRegTxId, 'profile', {
+      aliceProfile = dpp.document.create(dataContract, aliceIdentity.getId(), 'profile', {
         avatarUrl: 'http://test.com/alice.jpg',
         about: 'I am Alice',
       });
@@ -191,15 +221,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([aliceProfile]);
 
+      stateTransition.sign(
+        aliceIdentity.getPublicKeyById(1),
+        alicePrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch profile
-      const [actualAliceProfile] = await dapiClient.fetchDocuments(
+      const [actualAliceProfile] = await dapiClient.getDocuments(
         dataContract.getId(),
         'profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
@@ -222,15 +257,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([aliceProfile]);
 
+      stateTransition.sign(
+        aliceIdentity.getPublicKeyById(1),
+        alicePrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch profile
-      const [actualAliceProfile] = await dapiClient.fetchDocuments(
+      const [actualAliceProfile] = await dapiClient.getDocuments(
         dataContract.getId(),
         'profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
@@ -245,9 +285,9 @@ describe('Contacts app', () => {
       this.timeout(testTimeout);
 
       // 1. Create contact document
-      bobContactRequest = dpp.document.create(dataContract, bobRegTxId, 'contact', {
-        toUserId: aliceRegTxId,
-        publicKey: bobPrivateKey.toPublicKey().toString('hex'),
+      bobContactRequest = dpp.document.create(dataContract, bobIdentity.getId(), 'contact', {
+        toUserId: aliceIdentity.getId(),
+        publicKey: bobIdentity.getPublicKeyById(1).getData(),
       });
 
       const result = await dpp.document.validate(bobContactRequest);
@@ -256,15 +296,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([bobContactRequest]);
 
+      stateTransition.sign(
+        bobIdentity.getPublicKeyById(1),
+        bobPrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch contacts
-      const [actualBobContactRequest] = await dapiClient.fetchDocuments(
+      const [actualBobContactRequest] = await dapiClient.getDocuments(
         dataContract.getId(),
         'contact',
         { where: [['$id', '==', bobContactRequest.getId()]] },
@@ -279,9 +324,9 @@ describe('Contacts app', () => {
       this.timeout(testTimeout);
 
       // 1. Create approve contract
-      aliceContactAcceptance = dpp.document.create(dataContract, aliceRegTxId, 'contact', {
-        toUserId: bobRegTxId,
-        publicKey: alicePrivateKey.toPublicKey().toString('hex'),
+      aliceContactAcceptance = dpp.document.create(dataContract, aliceIdentity.getId(), 'contact', {
+        toUserId: bobIdentity.getId(),
+        publicKey: aliceIdentity.getPublicKeyById(1).getData(),
       });
 
       const result = await dpp.document.validate(aliceContactAcceptance);
@@ -290,15 +335,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([aliceContactAcceptance]);
 
+      stateTransition.sign(
+        aliceIdentity.getPublicKeyById(1),
+        alicePrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch contacts
-      const [actualAliceContactAcceptance] = await dapiClient.fetchDocuments(
+      const [actualAliceContactAcceptance] = await dapiClient.getDocuments(
         dataContract.getId(),
         'contact',
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
@@ -321,15 +371,20 @@ describe('Contacts app', () => {
       // 2. Create State Transition
       const stateTransition = dpp.document.createStateTransition([aliceContactAcceptance]);
 
+      stateTransition.sign(
+        aliceIdentity.getPublicKeyById(1),
+        alicePrivateKey,
+      );
+
       // 3. Send State Transition
       try {
-        await dapiClient.updateState(stateTransition);
+        await dapiClient.applyStateTransition(stateTransition);
       } catch (e) {
         throwGrpcErrorWithMetadata(e);
       }
 
       // 4. Fetch contacts
-      const [actualAliceContactAcceptance] = await dapiClient.fetchDocuments(
+      const [actualAliceContactAcceptance] = await dapiClient.getDocuments(
         dataContract.getId(),
         'contact',
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
