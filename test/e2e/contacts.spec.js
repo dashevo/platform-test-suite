@@ -1,14 +1,14 @@
 const DAPIClient = require('@dashevo/dapi-client');
 const DashPlatformProtocol = require('@dashevo/dpp');
 const Document = require('@dashevo/dpp/lib/document/Document');
+const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
 const {
   Transaction,
   PrivateKey,
-  PublicKey,
-  Address,
 } = require('@dashevo/dashcore-lib');
 
+const createIdentity = require('../../lib/test/createIdentity');
 const throwGrpcErrorWithMetadata = require('../../lib/test/throwGrpcErrorWithMetadata');
 
 const wait = require('../../lib/wait');
@@ -24,6 +24,7 @@ describe('Contacts app', () => {
   let faucetPrivateKey;
   let faucetAddress;
 
+  let bobIdentity;
   let bobPrivateKey;
   let bobUserName;
   let bobRegTxId;
@@ -41,8 +42,12 @@ describe('Contacts app', () => {
   before(() => {
     dataProvider = {
       dataContract: null,
+      identity: null,
       fetchDataContract() {
-        return dataContract;
+        return this.dataContract;
+      },
+      fetchIdentity() {
+        return this.identity;
       },
     };
 
@@ -58,12 +63,6 @@ describe('Contacts app', () => {
       seeds,
       timeout: 30000,
     });
-
-    faucetPrivateKey = new PrivateKey(process.env.FAUCET_PRIVATE_KEY);
-    const faucetPublicKey = PublicKey.fromPrivateKey(faucetPrivateKey);
-    faucetAddress = Address
-      .fromPublicKey(faucetPublicKey, process.env.NETWORK === 'devnet' ? 'testnet' : process.env.NETWORK)
-      .toString();
 
     bobUserName = Math.random().toString(36).substring(7);
     aliceUserName = Math.random().toString(36).substring(7);
@@ -104,37 +103,15 @@ describe('Contacts app', () => {
   });
 
   describe('Bob', () => {
-    it('should register blockchain user', async function it() {
+    it('should register user identity', async function it() {
       this.timeout(50000);
 
-      bobPrivateKey = new PrivateKey();
-      const validPayload = new Transaction.Payload.SubTxRegisterPayload()
-        .setUserName(bobUserName)
-        .setPubKeyIdFromPrivateKey(bobPrivateKey)
-        .sign(bobPrivateKey);
+      bobIdentity = await createIdentity(dapiClient, Identity.TYPES.USER);
 
-      const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
-
-      expect(inputs).to.be.an('array').and.not.empty();
-
-      const transaction = Transaction()
-        .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
-        .setExtraPayload(validPayload)
-        .from(inputs.slice(-1)[0])
-        .addFundingOutput(10000)
-        .change(faucetAddress)
-        .sign(faucetPrivateKey);
-
-      bobRegTxId = await dapiClient.sendRawTransaction(transaction.serialize());
-
-      expect(bobRegTxId).to.be.a('string');
-
-      await dapiClient.generate(1);
-      await wait(5000);
-
-      const userByName = await dapiClient.getUserByName(bobUserName);
-      expect(userByName.uname).to.be.equal(bobUserName);
+      expect(bobIdentity).to.be.instanceOf(Identity);
     });
+
+    it('should register name');
 
     it('should publish "Contacts" contract', async function it() {
       this.timeout(testTimeout);
