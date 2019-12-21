@@ -21,17 +21,11 @@ describe('Contacts app', () => {
 
   let dapiClient;
 
-  let faucetPrivateKey;
-  let faucetAddress;
-
   let bobIdentity;
-  let bobPrivateKey;
   let bobUserName;
-  let bobRegTxId;
   let bobContactRequest;
-  let alicePrivateKey;
+  let aliceIdentity;
   let aliceUserName;
-  let aliceRegTxId;
   let aliceProfile;
   let aliceContactAcceptance;
 
@@ -104,7 +98,7 @@ describe('Contacts app', () => {
 
   describe('Bob', () => {
     it('should register user identity', async function it() {
-      this.timeout(50000);
+      this.timeout(90000);
 
       bobIdentity = await createIdentity(dapiClient, Identity.TYPES.USER);
 
@@ -174,34 +168,12 @@ describe('Contacts app', () => {
   });
 
   describe('Alice', () => {
-    it('should register blockchain user', async function it() {
+    it('should create user identity', async function it() {
       this.timeout(50000);
 
-      alicePrivateKey = new PrivateKey();
-      const validPayload = new Transaction.Payload.SubTxRegisterPayload()
-        .setUserName(aliceUserName)
-        .setPubKeyIdFromPrivateKey(alicePrivateKey).sign(alicePrivateKey);
+      aliceIdentity = await createIdentity(dapiClient, Identity.TYPES.USER);
 
-      const { items: inputs } = await dapiClient.getUTXO(faucetAddress);
-
-      expect(inputs).to.be.an('array').and.not.empty();
-
-      const transaction = Transaction()
-        .setType(Transaction.TYPES.TRANSACTION_SUBTX_REGISTER)
-        .setExtraPayload(validPayload)
-        .from(inputs.slice(-1)[0])
-        .addFundingOutput(10000)
-        .change(faucetAddress)
-        .sign(faucetPrivateKey);
-
-      aliceRegTxId = await dapiClient.sendRawTransaction(transaction.serialize());
-
-      await dapiClient.generate(1);
-      await wait(5000);
-
-      const userByName = await dapiClient.getUserByName(aliceUserName);
-
-      expect(userByName.uname).to.be.equal(aliceUserName);
+      expect(bobIdentity).to.be.instanceOf(Identity);
     });
 
     it('should create profile in "Contacts" app', async function it() {
