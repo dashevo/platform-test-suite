@@ -147,7 +147,7 @@ describe('Contacts app', () => {
       const actualContractSerialized = await dapiClient.getDataContract(dataContract.getId());
 
       const actualDataContract = dpp.dataContract.createFromSerialized(
-        Buffer.from(actualContractSerialized),
+        actualContractSerialized,
       );
 
       expect(actualDataContract).to.be.deep.equal(dataContract);
@@ -188,7 +188,7 @@ describe('Contacts app', () => {
       );
 
       const actualProfile = dpp.document.createFromSerialized(
-        Buffer.from(actualProfileSerialized),
+        actualProfileSerialized,
       );
 
       expect(actualProfile).to.be.deep.equal(profile);
@@ -247,7 +247,7 @@ describe('Contacts app', () => {
       );
 
       const actualAliceProfile = dpp.document.createFromSerialized(
-        Buffer.from(actualAliceProfileSerialized),
+        actualAliceProfileSerialized,
       );
 
       expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
@@ -287,7 +287,7 @@ describe('Contacts app', () => {
       );
 
       const actualAliceProfile = dpp.document.createFromSerialized(
-        Buffer.from(actualAliceProfileSerialized),
+        actualAliceProfileSerialized,
       );
 
       expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
@@ -330,7 +330,7 @@ describe('Contacts app', () => {
       );
 
       const actualBobContactRequest = dpp.document.createFromSerialized(
-        Buffer.from(actualBobContactRequestSerialized),
+        actualBobContactRequestSerialized,
       );
 
       expect(actualBobContactRequest).to.be.deep.equal(bobContactRequest);
@@ -373,7 +373,7 @@ describe('Contacts app', () => {
       );
 
       const actualAliceContactAcceptance = dpp.document.createFromSerialized(
-        Buffer.from(actualAliceContactAcceptanceSerialized),
+        actualAliceContactAcceptanceSerialized,
       );
 
       expect(actualAliceContactAcceptance).to.be.deep.equal(aliceContactAcceptance);
