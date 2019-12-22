@@ -31,12 +31,8 @@ describe('Contacts app', () => {
   before(() => {
     dataProvider = {
       dataContract: null,
-      identity: null,
       fetchDataContract() {
         return this.dataContract;
-      },
-      fetchIdentity() {
-        return this.identity;
       },
     };
 
