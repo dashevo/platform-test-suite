@@ -146,7 +146,7 @@ describe('Contacts app', () => {
         actualContractSerialized,
       );
 
-      expect(actualDataContract).to.be.deep.equal(dataContract);
+      expect(actualDataContract.toJSON()).to.be.deep.equal(dataContract.toJSON());
     });
 
     it('should create profile in "Contacts" app', async function it() {
@@ -183,11 +183,11 @@ describe('Contacts app', () => {
         { where: [['$id', '==', profile.getId()]] },
       );
 
-      const actualProfile = dpp.document.createFromSerialized(
+      const actualProfile = await dpp.document.createFromSerialized(
         actualProfileSerialized,
       );
 
-      expect(actualProfile).to.be.deep.equal(profile);
+      expect(actualProfile.toJSON()).to.be.deep.equal(profile.toJSON());
     });
   });
 
@@ -242,11 +242,11 @@ describe('Contacts app', () => {
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
 
-      const actualAliceProfile = dpp.document.createFromSerialized(
+      const actualAliceProfile = await dpp.document.createFromSerialized(
         actualAliceProfileSerialized,
       );
 
-      expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
+      expect(actualAliceProfile.toJSON()).to.be.deep.equal(aliceProfile.toJSON());
     });
 
     it('should be able to update her profile', async function it() {
@@ -282,11 +282,11 @@ describe('Contacts app', () => {
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
 
-      const actualAliceProfile = dpp.document.createFromSerialized(
+      const actualAliceProfile = await dpp.document.createFromSerialized(
         actualAliceProfileSerialized,
       );
 
-      expect(actualAliceProfile).to.be.deep.equal(aliceProfile);
+      expect(actualAliceProfile.toJSON()).to.be.deep.equal(aliceProfile.toJSON());
     });
   });
 
@@ -325,11 +325,11 @@ describe('Contacts app', () => {
         { where: [['$id', '==', bobContactRequest.getId()]] },
       );
 
-      const actualBobContactRequest = dpp.document.createFromSerialized(
+      const actualBobContactRequest = await dpp.document.createFromSerialized(
         actualBobContactRequestSerialized,
       );
 
-      expect(actualBobContactRequest).to.be.deep.equal(bobContactRequest);
+      expect(actualBobContactRequest.toJSON()).to.be.deep.equal(bobContactRequest.toJSON());
     });
   });
 
@@ -368,11 +368,13 @@ describe('Contacts app', () => {
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
       );
 
-      const actualAliceContactAcceptance = dpp.document.createFromSerialized(
+      const actualAliceContactAcceptance = await dpp.document.createFromSerialized(
         actualAliceContactAcceptanceSerialized,
       );
 
-      expect(actualAliceContactAcceptance).to.be.deep.equal(aliceContactAcceptance);
+      expect(actualAliceContactAcceptance.toJSON()).to.be.deep.equal(
+        aliceContactAcceptance.toJSON(),
+      );
     });
 
     it('should be able to remove contact approvement', async function it() {
