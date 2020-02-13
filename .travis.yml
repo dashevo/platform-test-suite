@@ -25,6 +25,7 @@ before_install:
 
 install:
   - npm ci
+  - cp .env.example .env
 
 script:
   - pushd ~/dash-network-configs/$NETWORK
