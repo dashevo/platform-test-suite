@@ -28,5 +28,5 @@ install:
 script:
   - cd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
   - ~/.local/bin/dash-network test $DEVNET
-  - cd -
+  - cd $TRAVIS_BUILD_DIR
   - npm run test
