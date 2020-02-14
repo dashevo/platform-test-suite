@@ -21,13 +21,13 @@ before_install:
   - mkdir -p ~/.local/bin
   - curl -fsSL -o ~/.local/bin/dash-network https://raw.github.com/dashpay/dash-network-deploy/master/bin/dash-network && chmod +x ~/.local/bin/dash-network
   - git clone https://$NETWORK_CONFIGS_GITHUB_USERNAME:$NETWORK_CONFIGS_GITHUB_TOKEN@github.com/nmarley/dash-network-configs ~/dash-network-configs
-  - cp ~/dash-network-configs/$DEVNET/.env.example ~/dash-network-configs/$DEVNET/.env
+  - cp ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env.example ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env
 
 install:
   - npm ci
 
 script:
-  - pushd ~/dash-network-configs/$DEVNET
+  - pushd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
   - ~/.local/bin/dash-network test $DEVNET
   - popd
   - npm run test
