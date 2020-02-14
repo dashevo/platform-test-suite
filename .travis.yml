@@ -27,7 +27,7 @@ install:
   - npm ci
 
 script:
-  - pushd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
+  - cd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
   - ~/.local/bin/dash-network test $DEVNET
-  - popd
+  - cd -
   - npm run test
