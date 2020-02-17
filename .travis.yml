@@ -34,7 +34,7 @@ script:
 notifications:
   slack:
     rooms:
-      - secure: $SLACK_TOKEN
+      - $SLACK_TOKEN
     on_success: never
     on_failure: always
 
