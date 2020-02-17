@@ -40,12 +40,10 @@ notifications:
       - djavid@dash.org
     on_success: never
     on_failure: always
-    if: type = cron
   slack:
     rooms:
       - secure: n16Ae3rLliwoJdaCGkVzlzgips7w1+bKYA07spnj9NU4IoI1kfVBhLkQbNkAnwshYuYAjMmMxG+sQr0oNSLLIA3EFL8Eg91PuGA4nl7g0Hp+KN6Ow2/xmPOQChr0VfI+wgPr5koSXzzboR2EV4VsFf7WGDFBmvbrGLIWHqyTTn4oJmi3YFT47A1lm7qcRsIZ+S4q4OQUcRTRorHQcIHfIpB+DfuSGonw+VGZ1xcuwfJDT86flgU2t7zyxD41F+Z/WUNS9IdxSGCBJOtD2WSVj0JXxyEPoPZN1GSqEoflHvqNbqIOvCAFAb0SftmS9obbEF9rTFjFAOwasS1LXDl5N9o9ifM5lvoCQET6ddphIGbdqzwCJc453OcorJr1QNtxTLM9GPPeeCkkgTipjLv3iaq9Ayq09kG6DZG6sffsCJdYFGZqQrWVQEYBGbLXEhL1kh/x4JoJFRPYMnRE4TW3Crp2pW4cO24ofZvRwtZlLkKu/+lVMA3Io4NTonxg4Q2lQ5nJpTJy+DO4tIQ34tviFjbC4207iDEpY4cRaObTqSTPLN11JQqKo+/Dwt1r/EiQH+fYM0n/ZmCE4VDRr9TBnbXuOQyGP/KZ28VbZrnltScWuABFdWNqmZFGKbZTNG1o+Q0PnhHbuwPAGF17P/5YcFD4nzdAuq3/x3q28PULxmw=
     on_success: never
     on_failure: always
-    if: type = cron
-
-
+    template:
+      - "Smoke and e2e tests <%{build_url}|#%{build_number}> against Evonet are %{result} in %{duration}"
