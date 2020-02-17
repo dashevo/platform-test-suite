@@ -34,7 +34,7 @@ script:
 notifications:
   slack:
     rooms:
-      - dashpay:zp7QAibBWt0ALllpLqhb51q0
+      - secure: $SLACK_TOKEN
     on_success: never
     on_failure: always
 
