@@ -30,3 +30,12 @@ script:
   - ~/.local/bin/dash-network test $DEVNET
   - cd $TRAVIS_BUILD_DIR
   - npm run test
+
+notifications:
+  slack:
+    rooms:
+      - secure: oEq1llu55fQy+JNfChvGUHCIrjaFVzF9S7yWtTS0GCbD2lIZmSBLmCX/Ps9NnIYoAM1MjoPuwsnrs9C1F7gRdC7xN13txpnlw5fFcLrKD4S32LWOujjoRvFEdXvFKuW4bOeUczS9pK1FXq6UC7GEiAbCy2g3SaV2MfhERbqFhGR/YhvT9vJ5XPe7nn3ArmYemZYGssaD86fVknt4OLC4+LiQXjtBq21xv2QyARqzLhxSiTPMkBKmtL6zL22Q/wpv57isZAw3EBGlXuXYokciTIA0SC4JvoRrtdaaATEp3ofzapi9vt7P2YeI8z0rJh2zBL4aQDPYSZUhJfKGeFnpJTgfNjAB/ggGpccppVbdyWJorPc4wMSgPFwS13G7dKMsWQEOOq+6F2TJknJY0Dsd+gTJh2ESYjrntVHC1+b5rLOsAUbdAVUqquX9G1PXTyEmvB1YAeqeBH1r/naJJ65ZyM81G9Wd7refiPSKOn7WF1cQG763k8noOGJCWPPmAB0Hf75DvVAiOXaqVbGRc0vUQ96X01rfMX5iCKdVKIE7wt+9372mrDby2lbiJbRwO7jPc4Oj9jxaEwZMGBswILSPX7ARaunA0PqpFJbW9p5zljtK0XQkPouVud1ydLPkmeEBL7/3EdfdT/jAymDIFb1yzM+QRWLw759pQL5yhU4k5HU=
+    on_success: never
+    on_failure: always
+
+
