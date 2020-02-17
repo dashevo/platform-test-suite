@@ -32,6 +32,11 @@ script:
   - npm run test
 
 notifications:
+  email:
+    - konstantin.shuplenkov@dash.org
+    - ivan.shumkov@dash.org
+    - anton.suprunchuk@dash.org
+    - djavid@dash.org
   slack:
     rooms:
       - dashpay:zp7QAibBWt0ALllpLqhb51q0
