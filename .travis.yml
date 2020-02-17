@@ -34,7 +34,7 @@ script:
 notifications:
   slack:
     rooms:
-      - secure: sm4iPQj4SepZ9l3gUkeXKhSt7QrjTz2adHvM4cYk5Oaih9gn0Pfyfy4xnGRRrDvDtXWQgERv8R6OEAj8EHimwm82VfQWwJonrZB3GawlcAAdJ7F/USzrp/OyiI8+pm1jd8Sy8ZbC5ml0guzLqjfstXPk0eWibJeSRU5xDOxO4zNBR7xVB/mp6zv6lG/hLQ9V8gL2oWuizL5oha+4NDCSyMd+gF5R1zvEMQdg4NxQ4Gn0LrKSLldu/HiaiLFr0F3Q4zmxy2uhSFvoNsNyCmfacgXFyPaEovu66DL2LMhWsRFjwkoIsn4wOth87ibSAWOeAzh83o4EeGEBdzxiXgku7ASeUJyjQOWMRemVn0Z66+OQicSMnYG+7PLmGfYGmBNMeQvvOBmjWtSVVjyyXYKb+njYoDsplXTB/JjgXX1Fcsus5iJmGDQ8r5GHo0+YQ6O9k4GApClZ/sYhWgTJiaVwvkEJkHLE9P3tEURjI4N5Tp48naDQkT4nW6a4pRYbQRRfSD2OrWIscQ7lDmk6rxkQiBuN4B1kZI51OJR40fNH/XdC2tASbe5QalXUNOsOOJfw9HdyEu7oOFX+N/lt/5w3SvCL1gNFHuqhSVneQ/90oiISKkbmkhBBjuVqzO0zvSFfxcUlkTCcTTYXKHazgSUkKs2fjpOHzmmRAnzWww1KXWk=
+      - dashpay:zp7QAibBWt0ALllpLqhb51q0
     on_success: never
     on_failure: always
 
