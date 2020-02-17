@@ -34,7 +34,7 @@ script:
 notifications:
   slack:
     rooms:
-      - $SLACK_TOKEN
+      - secure: "F87WqGUDxnABHsjzPf3sfolch6cAcz52q1+lFMu8LOhzbDPM+QgHt+kWZFNBJwbn5e/e5l10X3+XuNZ0SqPz/2EvHHRw9q5VkJX4rPYP+kdxMb2OfH5HOZiog4CHrKEyAj7M1GuNNr7Fbf29xY4C74BmgZvQWbTfT6O4CsPoDvbZG2qsay1evopr+Rq0bBN53z/fsnCEuhFqn+kYD9QDZqAk3Xx1mDXrSusvYkiCJLKpWqWVYrBTNReMdgJ2pk/6lG92BKfaglPXneuj1swuegI3RWi9uM6fz72leoXuqI63Nxa+kVkoSL30PrG28aDWxEompmNkfQZPv+5E6wEkHsMi4mTbikn/wWckB5t3zgh+VX/tIfRRMUdseMZPSIvVpxhsZYPE0zXKZvAD1knvfsLzlPOvS6j7dmg6ij48c1YN4SDhU/HB/teQ57y5LtGrU1OR/gdhdF34xa8HiA76ycIic7z6zEhG2rVJEXDXguePUEfJQuWknlcWCaCyFTV3oXURZvT0nx/b/YJ4S+avJM+dC8OlI+YQ7VCXAEq15ovgSeE8XCESXX8jTyL98aC//dceZUnisyCyf9JwSVZb7f64/2URVTtGn/JVo+JN3UViih/DdTcJ2Z0qeZITKt1eCncl0N3B4pndxucgXR28u4a84pfz8sFLFY9BSJ10/tw="
     on_success: never
     on_failure: always
 
