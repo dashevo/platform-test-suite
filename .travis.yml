@@ -1,32 +1,30 @@
 dist: bionic
 language: node_js
-
 node_js:
-  - '12'
-
+- '12'
 branches:
   only:
-    - master
-
+  - master
 services:
-  - docker
-
+- docker
 addons:
   apt:
     packages:
-      - docker-ce
-
+    - docker-ce
 before_install:
-  - mkdir -p ~/.local/bin
-  - curl -fsSL -o ~/.local/bin/dash-network https://raw.github.com/dashpay/dash-network-deploy/master/bin/dash-network && chmod +x ~/.local/bin/dash-network
-  - git clone https://$NETWORK_CONFIGS_GITHUB_USERNAME:$NETWORK_CONFIGS_GITHUB_TOKEN@github.com/nmarley/dash-network-configs ~/dash-network-configs
-  - cp ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env.example ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env
-
+- mkdir -p ~/.local/bin
+- curl -fsSL -o ~/.local/bin/dash-network https://raw.github.com/dashpay/dash-network-deploy/master/bin/dash-network
+  && chmod +x ~/.local/bin/dash-network
+- git clone https://$NETWORK_CONFIGS_GITHUB_USERNAME:$NETWORK_CONFIGS_GITHUB_TOKEN@github.com/nmarley/dash-network-configs
+  ~/dash-network-configs
+- cp ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env.example ~/dash-network-configs/$NETWORK_CONFIGS_PATH/.env
 install:
-  - npm ci
-
+- npm ci
 script:
-  - cd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
-  - ~/.local/bin/dash-network test $DEVNET
-  - cd $TRAVIS_BUILD_DIR
-  - npm run test
+- cd ~/dash-network-configs/$NETWORK_CONFIGS_PATH
+- "~/.local/bin/dash-network test $DEVNET"
+- cd $TRAVIS_BUILD_DIR
+- npm run test
+notifications:
+  slack:
+    secure: k8JmR8ejboUI8v69LhDkV2Yb5iKyxErwT0MEkogkNVg6LC+5ws7tjtX69Zf6O3Af7Zi9TKqWaxs/rnSCkCWEafJW5mueYh9ivo6eewNjMjDv2x1RsW/qI094LEDxJO/JlJuL8Q5LoRAgavTYqE5npCU/2b1Dcwg5IGiKscf0RxxhsFQ37SDWlut7YuCjM6Z/IYtw1//DJSmW2XOCQ4Ah7YKmpVHWs5JFPYvCI1IeZfSWzRBs5MstVbDWREH0Z8Z5pN4Ul2qzh+kBEZrXHhFxDut7isWkrtiMnkm0Ci+WZH3sLgY94H29rSfR36R14MTMBK6O8ivg/QsKj3FIC/Y1L7pFiJvTF5ufaGLJ6ODRQ0Px+BaoB+d2b3W96KHyFtSNT3lFeLCONyKdxtNUe2IVPYDWc1zm8wm4XuMG+oCvmjJPtrMfRPaYrnZANtH2tFblPqnxOisMFHIg+yV65Z1ejOKi4vKICK76eEzQhJiLA2imhN8tkM81NFw2+HwO6mkla19ORKMBDnIDzmpX6k0+C766CRf3JJ9v70N5BKDOJLcg6/6JHEtbsLW6xLAuS2l4CMg2OLyhnTu41plxiQXdSqRcNXFFbO4FoS/A8cRbWpYj71fMATI3o9S0R4QGD9XOgxRekQ8ipCW3MXdymM1Ab2E24KzPA3B9tocWskMWSkk=
