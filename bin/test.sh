@@ -4,13 +4,14 @@ set -ea
 
 cmd_usage="Run test suite
 
-Usage: run-test <seed> <faucet-private-key> [options]
+Usage: run-test <seed> [options]
 
   <seed> can be IP or IP:port
 
   Options:
   -ni=pkg   --npm-install=pkg   - install npm package before running the suite
-  -s=a,b,c  --scope=a,b,c       - test scope tp run
+  -s=a,b,c  --scope=a,b,c       - test scope to run
+  -k=key    --faucet-key=key    - faucet private key string
   -h        --help              - show help
 
   Possible scopes:
@@ -24,17 +25,10 @@ Usage: run-test <seed> <faucet-private-key> [options]
   functional:platform"
 
 DAPI_SEED="$1"
-FAUCET_PRIVATE_KEY="$2"
 
 if [ -z "$DAPI_SEED" ] || [[ $DAPI_SEED == -* ]]
 then
   echo "Seed is not specified"
-  exit 0
-fi
-
-if [ -z "$FAUCET_PRIVATE_KEY" ] || [[ $FAUCET_PRIVATE_KEY == -* ]]
-then
-  echo "Faucet private key is not specified"
   exit 0
 fi
 
@@ -45,11 +39,14 @@ case ${i} in
         echo "$cmd_usage"
         exit 0
     ;;
-    -ni|--npm-install)
+    -ni=*|--npm-install=*)
     npm_package_to_install="${i#*=}"
     ;;
     -s=*|--scope=*)
     scope="${i#*=}"
+    ;;
+    -k=*|--faucet-key=*)
+    faucet_key="${i#*=}"
     ;;
 esac
 done
@@ -61,7 +58,7 @@ fi
 
 if [ -n "$scope" ]
 then
-  cd .. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$FAUCET_PRIVATE_KEY" npm run test:"$scope"
+  cd .. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$faucet_key" npm run test:"$scope"
 else
-  cd .. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$FAUCET_PRIVATE_KEY" npm run test
+  cd .. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$faucet_key" npm run test
 fi
