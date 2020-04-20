@@ -38,4 +38,4 @@ deploy:
   script: bash bin/travis-deploy.sh
   on:
     tags: true
-    repo: dashevo/dash-platform-test-suite
+    repo: dashevo/platform-test-suite
