@@ -4,7 +4,7 @@ set -ea
 
 cmd_usage="Run test suite
 
-Usage: run-test <seed> [options]
+Usage: test <seed> [options]
 
   <seed> can be IP or IP:port
 
