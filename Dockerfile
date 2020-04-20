@@ -3,8 +3,6 @@ FROM node:12-alpine
 RUN apk update && \
     apk --no-cache upgrade && \
     apk add --no-cache git \
-                       openssh-client \
-                       python \
                        alpine-sdk
 
 # Install dependencies first, in a different location
@@ -17,7 +15,7 @@ RUN npm ci --production
 FROM node:12-alpine
 
 LABEL maintainer="Dash Developers <dev@dash.org>"
-LABEL description="Test suite Node.JS"
+LABEL description="Test suite for Dash Platform"
 
 # Copy NPM modules
 COPY package.json package-lock.json ./
