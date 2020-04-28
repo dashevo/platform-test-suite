@@ -12,8 +12,8 @@
     "test:functional": "NODE_ENV=test mocha 'test/functional/**/*.spec.js'",
     "test:functional:core": "NODE_ENV=test mocha 'test/functional/core/**/*.spec.js'",
     "test:functional:platform": "NODE_ENV=test mocha 'test/functional/platform/**/*.spec.js'",
-    "test:core": "NODE_ENV=test mocha 'test/core/**/*.spec.js'",
-    "test:platform": "NODE_ENV=test mocha 'test/platform/**/*.spec.js'"
+    "test:core": "NODE_ENV=test mocha 'test/functional/core/**/*.spec.js'",
+    "test:platform": "NODE_ENV=test mocha 'test/functional/platform/**/*.spec.js'"
   },
   "repository": {
     "type": "git",
