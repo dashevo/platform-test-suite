@@ -8,7 +8,9 @@ describe('Contacts', function contacts() {
   let dpp;
   let dataContract;
 
-  let dashClient;
+  let faucetDashClient;
+  let bobDashClient;
+  let aliceDashClient;
 
   let bobIdentity;
   let bobContactRequest;
@@ -23,10 +25,40 @@ describe('Contacts', function contacts() {
       .split(',')
       .map(seed => ({ service: `${seed}` }));
 
-    dashClient = new Dash.Client({
+    faucetDashClient = new Dash.Client({
       seeds,
-      mnemonic: '', // TODO: find a way to get it
+      wallet: {
+        privateKey: process.env.FAUCET_PRIVATE_KEY,
+      },
     });
+
+    await faucetDashClient.isReady();
+
+    bobDashClient = new Dash.Client({
+      seeds,
+    });
+
+    await bobDashClient.isReady();
+
+    aliceDashClient = new Dash.Client({
+      seeds,
+    });
+
+    await aliceDashClient.isReady();
+
+    // Send some Dash to Bob and Alice
+    const bobTopUpTx = faucetDashClient.account.createTransaction({
+      amount: 10,
+      recipient: bobDashClient.account.getAddress(),
+    });
+
+    const aliceTopUpTx = faucetDashClient.account.createTransaction({
+      amount: 10,
+      recipient: aliceDashClient.account.getAddress(),
+    });
+
+    await faucetDashClient.account.broadcastTransaction(bobTopUpTx);
+    await faucetDashClient.account.broadcastTransaction(aliceTopUpTx);
 
     dataContractDocumentSchemas = {
       profile: {
@@ -67,26 +99,31 @@ describe('Contacts', function contacts() {
 
   describe('Bob', () => {
     it('should create user identity', async () => {
-      bobIdentity = await dashClient.platform.identities.register();
+      bobIdentity = await bobDashClient.platform.identities.register();
 
       expect(bobIdentity).to.be.instanceOf(Identity);
     });
 
     it('should publish "Contacts" data contract', async () => {
       // 1. Create and broadcast data contract
-      dataContract = await dashClient.platform.contracts.create(
+      dataContract = await bobDashClient.platform.contracts.create(
         dataContractDocumentSchemas, bobIdentity,
       );
 
-      await dashClient.platform.contracts.broadcast(dataContract, bobIdentity);
+      await bobDashClient.platform.contracts.broadcast(dataContract, bobIdentity);
 
-      dashClient.apps.contacts = {
+      bobDashClient.apps.contacts = {
+        contractId: dataContract.getId(),
+        contract: dataContract,
+      };
+
+      aliceDashClient.apps.contacts = {
         contractId: dataContract.getId(),
         contract: dataContract,
       };
 
       // 2. Fetch and check data contract
-      const fetchedDataContract = await dashClient.platform.contracts.get(
+      const fetchedDataContract = await bobDashClient.platform.contracts.get(
         dataContract.getId(),
       );
 
@@ -95,17 +132,17 @@ describe('Contacts', function contacts() {
 
     it('should create profile in "Contacts" app', async () => {
       // 1. Create and broadcast profile
-      const profile = await dashClient.platform.documents.create('contacts.profile', bobIdentity, {
+      const profile = await bobDashClient.platform.documents.create('contacts.profile', bobIdentity, {
         avatarUrl: 'http://test.com/bob.jpg',
         about: 'This is story about me',
       });
 
-      await dashClient.platform.documents.broadcast({
+      await bobDashClient.platform.documents.broadcast({
         create: [profile],
       }, bobIdentity);
 
       // 2. Fetch and compare profiles
-      const [fetchedProfile] = await dashClient.platform.documents.get(
+      const [fetchedProfile] = await bobDashClient.platform.documents.get(
         'contacts.profile',
         { where: [['$id', '==', profile.getId()]] },
       );
@@ -116,24 +153,24 @@ describe('Contacts', function contacts() {
 
   describe('Alice', () => {
     it('should create user identity', async () => {
-      aliceIdentity = await dashClient.platform.identities.register();
+      aliceIdentity = await aliceDashClient.platform.identities.register();
 
       expect(aliceIdentity).to.be.instanceOf(Identity);
     });
 
     it('should create profile in "Contacts" app', async () => {
       // 1. Create and broadcast profile
-      aliceProfile = dashClient.platform.documents.create('contacts.profile', aliceIdentity, {
+      aliceProfile = aliceDashClient.platform.documents.create('contacts.profile', aliceIdentity, {
         avatarUrl: 'http://test.com/alice.jpg',
         about: 'I am Alice',
       });
 
-      await dashClient.platform.documents.broadcast({
+      await aliceDashClient.platform.documents.broadcast({
         create: [aliceProfile],
       }, aliceIdentity);
 
       // 2. Fetch and compare profile
-      const [fetchedProfile] = await dashClient.platform.documents.get(
+      const [fetchedProfile] = await aliceDashClient.platform.documents.get(
         'contacts.profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
@@ -146,12 +183,12 @@ describe('Contacts', function contacts() {
       aliceProfile.set('avatarUrl', 'http://test.com/alice2.jpg');
 
       // 2. Broadcast change
-      await dashClient.platform.documents.broadcast({
+      await aliceDashClient.platform.documents.broadcast({
         replace: [aliceProfile],
       }, aliceIdentity);
 
       // 3. Fetch and compare profile
-      const [fetchedProfile] = await dashClient.platform.documents.get(
+      const [fetchedProfile] = await aliceDashClient.platform.documents.get(
         'contacts.profile',
         { where: [['$id', '==', aliceProfile.getId()]] },
       );
@@ -166,15 +203,15 @@ describe('Contacts', function contacts() {
   describe('Bob', () => {
     it('should be able to send contact request', async () => {
       // 1. Create and broadcast contact document
-      bobContactRequest = dashClient.platform.documents.create('contacts.contact', bobIdentity, {
+      bobContactRequest = bobDashClient.platform.documents.create('contacts.contact', bobIdentity, {
         toUserId: aliceIdentity.getId(),
         publicKey: bobIdentity.getPublicKeyById(0).getData(),
       });
 
-      await dashClient.platform.documents.broadcast(bobContactRequest, bobIdentity);
+      await bobDashClient.platform.documents.broadcast(bobContactRequest, bobIdentity);
 
       // 2. Fetch and compare contacts
-      const [fetchedContactRequest] = await dashClient.platform.documents.get(
+      const [fetchedContactRequest] = await bobDashClient.platform.documents.get(
         'contacts.contact',
         { where: [['$id', '==', bobContactRequest.getId()]] },
       );
@@ -186,15 +223,17 @@ describe('Contacts', function contacts() {
   describe('Alice', () => {
     it('should be able to approve contact request', async () => {
       // 1. Create and broadcast contact approval document
-      aliceContactAcceptance = dpp.document.create('contacts.contact', aliceIdentity, {
-        toUserId: bobIdentity.getId(),
-        publicKey: aliceIdentity.getPublicKeyById(0).getData(),
-      });
+      aliceContactAcceptance = aliceDashClient.platform.documents.create(
+        'contacts.contact', aliceIdentity, {
+          toUserId: bobIdentity.getId(),
+          publicKey: aliceIdentity.getPublicKeyById(0).getData(),
+        },
+      );
 
-      await dashClient.platform.documents.broadcast(aliceContactAcceptance, aliceIdentity);
+      await aliceDashClient.platform.documents.broadcast(aliceContactAcceptance, aliceIdentity);
 
       // 2. Fetch and compare contacts
-      const [fetchedAliceContactAcceptance] = await dashClient.platform.documents.get(
+      const [fetchedAliceContactAcceptance] = await aliceDashClient.platform.documents.get(
         'contacts.contact',
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
       );
@@ -206,12 +245,12 @@ describe('Contacts', function contacts() {
 
     it('should be able to remove contact approval', async () => {
       // 1. Broadcast document deletion
-      await dashClient.platform.documents.broadcast({
+      await aliceDashClient.platform.documents.broadcast({
         delete: [aliceContactAcceptance],
       }, aliceIdentity);
 
       // 2. Fetch contact documents and check it does not exists
-      const [fetchedAliceContactAcceptance] = await dashClient.platform.documents.get(
+      const [fetchedAliceContactAcceptance] = await aliceDashClient.platform.documents.get(
         'contacts.contact',
         { where: [['$id', '==', aliceContactAcceptance.getId()]] },
       );
