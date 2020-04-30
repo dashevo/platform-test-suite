@@ -1,14 +1,19 @@
+const {
+  PrivateKey,
+} = require('@dashevo/dashcore-lib');
+
 const Dash = require('dash');
+const DAPIClient = require('@dashevo/dapi-client');
 
 const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
-describe('Contacts', function contacts() {
-  this.timeout(150000);
+const fundAddress = require('../../lib/test/fundAddress');
 
-  let dpp;
+describe('Contacts', function contacts() {
+  this.timeout(950000);
+
   let dataContract;
 
-  let faucetDashClient;
   let bobDashClient;
   let aliceDashClient;
 
@@ -20,45 +25,47 @@ describe('Contacts', function contacts() {
 
   let dataContractDocumentSchemas;
 
-  before(() => {
+  before(async () => {
     const seeds = process.env.DAPI_SEED
       .split(',')
       .map(seed => ({ service: `${seed}` }));
 
-    faucetDashClient = new Dash.Client({
+    // Prepare to fund Bob and Alice wallets
+    const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
+    const faucetAddress = faucetPrivateKey
+      .toAddress(process.env.NETWORK)
+      .toString();
+
+    const dapiClient = new DAPIClient({
       seeds,
-      wallet: {
-        privateKey: process.env.FAUCET_PRIVATE_KEY,
-      },
+      timeout: 5000,
     });
 
-    await faucetDashClient.isReady();
-
+    // Create Bob and Alice wallets
     bobDashClient = new Dash.Client({
       seeds,
+      wallet: { mnemonic: null },
+      network: process.env.NETWORK,
     });
 
     await bobDashClient.isReady();
 
     aliceDashClient = new Dash.Client({
       seeds,
+      wallet: { mnemonic: null },
+      network: process.env.NETWORK,
     });
 
     await aliceDashClient.isReady();
 
     // Send some Dash to Bob and Alice
-    const bobTopUpTx = faucetDashClient.account.createTransaction({
-      amount: 10,
-      recipient: bobDashClient.account.getAddress(),
-    });
+    await fundAddress(
+      dapiClient, faucetAddress, faucetPrivateKey, bobDashClient.account.getAddress().address,
+    );
 
-    const aliceTopUpTx = faucetDashClient.account.createTransaction({
-      amount: 10,
-      recipient: aliceDashClient.account.getAddress(),
-    });
-
-    await faucetDashClient.account.broadcastTransaction(bobTopUpTx);
-    await faucetDashClient.account.broadcastTransaction(aliceTopUpTx);
+    await fundAddress(
+      dapiClient, faucetAddress, faucetPrivateKey, aliceDashClient.account.getAddress().address,
+    );
 
     dataContractDocumentSchemas = {
       profile: {
