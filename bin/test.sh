@@ -100,7 +100,7 @@ then
     esac
   done
 
-  cd "$DIR"/.. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$faucet_key" NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
+  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
 else
-  cd "$DIR"/.. && DAPI_SEED="$DAPI_SEED" FAUCET_PRIVATE_KEY="$faucet_key" npm run test
+  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} npm run test
 fi
