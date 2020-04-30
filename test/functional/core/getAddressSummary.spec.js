@@ -1,0 +1,4 @@
+describe('Core', () => {
+  describe('getAddressSummary', () => {
+  });
+});

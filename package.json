@@ -7,13 +7,7 @@
     "test": "mocha './test/**/*.spec.js'",
     "lint": "eslint .",
     "test:e2e": "NODE_ENV=test mocha 'test/e2e/**/*.spec.js'",
-    "test:e2e:dpns": "NODE_ENV=test mocha 'test/e2e/dpns/**/*.spec.js'",
-    "test:e2e:contacts": "NODE_ENV=test mocha 'test/e2e/contracts/**/*.spec.js'",
-    "test:functional": "NODE_ENV=test mocha 'test/functional/**/*.spec.js'",
-    "test:functional:core": "NODE_ENV=test mocha 'test/functional/core/**/*.spec.js'",
-    "test:functional:platform": "NODE_ENV=test mocha 'test/functional/platform/**/*.spec.js'",
-    "test:core": "NODE_ENV=test mocha 'test/functional/core/**/*.spec.js'",
-    "test:platform": "NODE_ENV=test mocha 'test/functional/platform/**/*.spec.js'"
+    "test:functional": "NODE_ENV=test mocha 'test/functional/**/*.spec.js'"
   },
   "repository": {
     "type": "git",
@@ -32,10 +26,10 @@
     "chai-as-promised": "^7.1.1",
     "dash": "^2.0.0",
     "dirty-chai": "^2.0.1",
-    "dotenv-safe": "^6.1.0",
-    "eslint": "^5.7.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "mocha": "^5.2.0"
+    "dotenv-safe": "^8.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "mocha": "^7.1.2"
   }
 }
