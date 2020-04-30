@@ -10,7 +10,7 @@ const Identity = require('@dashevo/dpp/lib/identity/Identity');
 const fundAddress = require('../../lib/test/fundAddress');
 
 describe('Contacts', function contacts() {
-  this.timeout(950000);
+  this.timeout(150000);
 
   let dataContract;
 
