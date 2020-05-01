@@ -8,7 +8,7 @@ const createIdentity = require('../../lib/test/createIdentity');
 const throwGrpcErrorWithMetadata = require('../../lib/test/throwGrpcErrorWithMetadata');
 
 describe('e2e', () => {
-    describe('Contacts', function contacts() {
+  describe('Contacts', function contacts() {
     this.timeout(150000);
 
     let dpp;
@@ -42,7 +42,7 @@ describe('e2e', () => {
 
       const seeds = process.env.DAPI_SEED
         .split(',')
-        .map(seed => ({ service: `${seed}` }));
+        .map((seed) => ({ service: `${seed}` }));
 
       dapiClient = new DAPIClient({
         seeds,
