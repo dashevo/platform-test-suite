@@ -10,7 +10,7 @@ const Identity = require('@dashevo/dpp/lib/identity/Identity');
 const fundAddress = require('../../lib/test/fundAddress');
 
 describe('Contacts', function contacts() {
-  this.timeout(150000);
+  this.timeout(950000);
 
   let dataContract;
 
@@ -38,13 +38,22 @@ describe('Contacts', function contacts() {
 
     const dapiClient = new DAPIClient({
       seeds,
-      timeout: 5000,
+      timeout: 15000,
+      retries: 10,
     });
 
     // Create Bob and Alice wallets
     bobDashClient = new Dash.Client({
       seeds,
-      wallet: { mnemonic: null },
+      wallet: {
+        mnemonic: null,
+        transporter: {
+          seeds,
+          timeout: 15000,
+          retries: 10,
+          type: 'dapi',
+        },
+      },
       network: process.env.NETWORK,
     });
 
@@ -52,7 +61,14 @@ describe('Contacts', function contacts() {
 
     aliceDashClient = new Dash.Client({
       seeds,
-      wallet: { mnemonic: null },
+      wallet: {
+        mnemonic: null,
+        transporter: {
+          seeds,
+          timeout: 15000,
+          type: 'dapi',
+        },
+      },
       network: process.env.NETWORK,
     });
 
