@@ -120,6 +120,11 @@ describe('Contacts', function contacts() {
     };
   });
 
+  after(async () => {
+    await bobDashClient.disconnect();
+    await aliceDashClient.disconnect();
+  });
+
   describe('Bob', () => {
     it('should create user identity', async () => {
       bobIdentity = await bobDashClient.platform.identities.register();
@@ -183,7 +188,7 @@ describe('Contacts', function contacts() {
 
     it('should create profile in "Contacts" app', async () => {
       // 1. Create and broadcast profile
-      aliceProfile = aliceDashClient.platform.documents.create('contacts.profile', aliceIdentity, {
+      aliceProfile = await aliceDashClient.platform.documents.create('contacts.profile', aliceIdentity, {
         avatarUrl: 'http://test.com/alice.jpg',
         about: 'I am Alice',
       });
@@ -226,12 +231,14 @@ describe('Contacts', function contacts() {
   describe('Bob', () => {
     it('should be able to send contact request', async () => {
       // 1. Create and broadcast contact document
-      bobContactRequest = bobDashClient.platform.documents.create('contacts.contact', bobIdentity, {
+      bobContactRequest = await bobDashClient.platform.documents.create('contacts.contact', bobIdentity, {
         toUserId: aliceIdentity.getId(),
         publicKey: bobIdentity.getPublicKeyById(0).getData(),
       });
 
-      await bobDashClient.platform.documents.broadcast(bobContactRequest, bobIdentity);
+      await bobDashClient.platform.documents.broadcast({
+        create: [bobContactRequest],
+      }, bobIdentity);
 
       // 2. Fetch and compare contacts
       const [fetchedContactRequest] = await bobDashClient.platform.documents.get(
@@ -246,14 +253,16 @@ describe('Contacts', function contacts() {
   describe('Alice', () => {
     it('should be able to approve contact request', async () => {
       // 1. Create and broadcast contact approval document
-      aliceContactAcceptance = aliceDashClient.platform.documents.create(
+      aliceContactAcceptance = await aliceDashClient.platform.documents.create(
         'contacts.contact', aliceIdentity, {
           toUserId: bobIdentity.getId(),
           publicKey: aliceIdentity.getPublicKeyById(0).getData(),
         },
       );
 
-      await aliceDashClient.platform.documents.broadcast(aliceContactAcceptance, aliceIdentity);
+      await aliceDashClient.platform.documents.broadcast({
+        create: [aliceContactAcceptance],
+      }, aliceIdentity);
 
       // 2. Fetch and compare contacts
       const [fetchedAliceContactAcceptance] = await aliceDashClient.platform.documents.get(
