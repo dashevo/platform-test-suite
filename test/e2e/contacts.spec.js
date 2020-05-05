@@ -29,7 +29,7 @@ describe('e2e', () => {
     before(async () => {
       const seeds = process.env.DAPI_SEED
         .split(',')
-        .map(seed => ({ service: `${seed}` }));
+        .map((seed) => ({ service: `${seed}` }));
 
       // Prepare to fund Bob and Alice wallets
       const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
