@@ -99,6 +99,13 @@ then
       ;;
     esac
   done
+else
+  scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
+fi
+
+cd "${DIR}/.."
+
+DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
 
   cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
 else
