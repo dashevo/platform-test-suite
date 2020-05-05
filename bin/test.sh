@@ -60,8 +60,6 @@ then
   cd "$DIR"/.. && npm install "$npm_package_to_install"
 fi
 
-
-
 if [ -n "$scope" ]
 then
   scope_dirs=""
