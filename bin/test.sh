@@ -24,11 +24,11 @@ Usage: test <seed> [options]
   functional:core
   functional:platform"
 
-DASHJS_SEED="$1"
+DAPI_SEED="$1"
 
 DIR="$( cd -P "$( dirname "$BASH_SOURCE[0]" )" >/dev/null 2>&1 && pwd )"
 
-if [ -z "$DASHJS_SEED" ] || [[ $DASHJS_SEED == -* ]]
+if [ -z "$DAPI_SEED" ] || [[ $DAPI_SEED == -* ]]
 then
   echo "Seed is not specified"
   exit 0
@@ -100,7 +100,7 @@ then
     esac
   done
 
-  cd "$DIR"/.. && DASHJS_SEED=${DASHJS_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
+  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
 else
-  cd "$DIR"/.. && DASHJS_SEED=${DASHJS_SEED} FAUCET_PRIVATE_KEY=${faucet_key} npm run test
+  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} npm run test
 fi
