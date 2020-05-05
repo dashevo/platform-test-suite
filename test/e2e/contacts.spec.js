@@ -96,7 +96,6 @@ describe('e2e', () => {
         bobDashClient = new Dash.Client({
           seeds,
           wallet: {
-            mnemonic: null,
             transporter: {
               seeds,
               timeout: 15000,
@@ -136,11 +135,6 @@ describe('e2e', () => {
           contract: dataContract,
         };
 
-        aliceDashClient.apps.contacts = {
-          contractId: dataContract.getId(),
-          contract: dataContract,
-        };
-
         // 2. Fetch and check data contract
         const fetchedDataContract = await bobDashClient.platform.contracts.get(
           dataContract.getId(),
@@ -176,7 +170,6 @@ describe('e2e', () => {
         aliceDashClient = new Dash.Client({
           seeds,
           wallet: {
-            mnemonic: null,
             transporter: {
               seeds,
               timeout: 15000,
@@ -187,6 +180,12 @@ describe('e2e', () => {
         });
 
         await aliceDashClient.isReady();
+
+        // Update contacts app
+        aliceDashClient.apps.contacts = {
+          contractId: dataContract.getId(),
+          contract: dataContract,
+        };
 
         // Send some Dash to Alice
         await fundAddress(
