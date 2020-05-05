@@ -15,6 +15,11 @@ describe('e2e', () => {
 
     let dataContract;
 
+    let seeds;
+    let dapiClient;
+    let faucetPrivateKey;
+    let faucetAddress;
+
     let bobDashClient;
     let aliceDashClient;
 
@@ -26,63 +31,22 @@ describe('e2e', () => {
 
     let dataContractDocumentSchemas;
 
-    before(async () => {
-      const seeds = process.env.DAPI_SEED
+    before(() => {
+      seeds = process.env.DAPI_SEED
         .split(',')
         .map((seed) => ({ service: `${seed}` }));
 
       // Prepare to fund Bob and Alice wallets
-      const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
-      const faucetAddress = faucetPrivateKey
+      faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
+      faucetAddress = faucetPrivateKey
         .toAddress(process.env.NETWORK)
         .toString();
 
-      const dapiClient = new DAPIClient({
+      dapiClient = new DAPIClient({
         seeds,
         timeout: 15000,
         retries: 10,
       });
-
-      // Create Bob and Alice wallets
-      bobDashClient = new Dash.Client({
-        seeds,
-        wallet: {
-          mnemonic: null,
-          transporter: {
-            seeds,
-            timeout: 15000,
-            retries: 10,
-            type: 'dapi',
-          },
-        },
-        network: process.env.NETWORK,
-      });
-
-      await bobDashClient.isReady();
-
-      aliceDashClient = new Dash.Client({
-        seeds,
-        wallet: {
-          mnemonic: null,
-          transporter: {
-            seeds,
-            timeout: 15000,
-            type: 'dapi',
-          },
-        },
-        network: process.env.NETWORK,
-      });
-
-      await aliceDashClient.isReady();
-
-      // Send some Dash to Bob and Alice
-      await fundAddress(
-        dapiClient, faucetAddress, faucetPrivateKey, bobDashClient.account.getAddress().address,
-      );
-
-      await fundAddress(
-        dapiClient, faucetAddress, faucetPrivateKey, aliceDashClient.account.getAddress().address,
-      );
 
       dataContractDocumentSchemas = {
         profile: {
@@ -127,6 +91,32 @@ describe('e2e', () => {
     });
 
     describe('Bob', () => {
+      before(async () => {
+        // Create Bob wallet
+        bobDashClient = new Dash.Client({
+          seeds,
+          wallet: {
+            mnemonic: null,
+            transporter: {
+              seeds,
+              timeout: 15000,
+              retries: 10,
+              type: 'dapi',
+            },
+          },
+          network: process.env.NETWORK,
+        });
+
+        await bobDashClient.isReady();
+
+        // Send some Dash to Bob
+        await fundAddress(
+          dapiClient, faucetAddress, faucetPrivateKey,
+          bobDashClient.account.getAddress().address,
+          20000,
+        );
+      });
+
       it('should create user identity', async () => {
         bobIdentity = await bobDashClient.platform.identities.register();
 
@@ -181,6 +171,31 @@ describe('e2e', () => {
     });
 
     describe('Alice', () => {
+      before(async () => {
+        // Create Alice wallet
+        aliceDashClient = new Dash.Client({
+          seeds,
+          wallet: {
+            mnemonic: null,
+            transporter: {
+              seeds,
+              timeout: 15000,
+              type: 'dapi',
+            },
+          },
+          network: process.env.NETWORK,
+        });
+
+        await aliceDashClient.isReady();
+
+        // Send some Dash to Alice
+        await fundAddress(
+          dapiClient, faucetAddress, faucetPrivateKey,
+          aliceDashClient.account.getAddress().address,
+          20000,
+        );
+      });
+
       it('should create user identity', async () => {
         aliceIdentity = await aliceDashClient.platform.identities.register();
 
