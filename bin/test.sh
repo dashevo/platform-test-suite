@@ -28,6 +28,8 @@ DAPI_SEED="$1"
 
 DIR="$( cd -P "$( dirname "$BASH_SOURCE[0]" )" >/dev/null 2>&1 && pwd )"
 
+cd "${DIR}/.."
+
 for i in "$@"
 do
 case ${i} in
@@ -52,12 +54,12 @@ then
   echo "Seed is not specified"
   echo ""
   echo "$cmd_usage"
-  exit 0
+  exit 1
 fi
 
 if [ -n "$npm_package_to_install" ]
 then
-  cd "$DIR"/.. && npm install "$npm_package_to_install"
+  npm install "$npm_package_to_install"
 fi
 
 if [ -n "$scope" ]
@@ -95,7 +97,7 @@ then
         ;;
       *)
       echo "Unknown scope $scope"
-      exit 0
+      exit 1
       ;;
     esac
   done
@@ -103,11 +105,4 @@ else
   scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
 fi
 
-cd "${DIR}/.."
-
 DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
-
-  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
-else
-  cd "$DIR"/.. && DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} npm run test
-fi
