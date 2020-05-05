@@ -28,12 +28,6 @@ DAPI_SEED="$1"
 
 DIR="$( cd -P "$( dirname "$BASH_SOURCE[0]" )" >/dev/null 2>&1 && pwd )"
 
-if [ -z "$DAPI_SEED" ] || [[ $DAPI_SEED == -* ]]
-then
-  echo "Seed is not specified"
-  exit 0
-fi
-
 for i in "$@"
 do
 case ${i} in
@@ -52,6 +46,14 @@ case ${i} in
     ;;
 esac
 done
+
+if [ -z "$DAPI_SEED" ] || [[ $DAPI_SEED == -* ]]
+then
+  echo "Seed is not specified"
+  echo ""
+  echo "$cmd_usage"
+  exit 0
+fi
 
 if [ -n "$npm_package_to_install" ]
 then
