@@ -116,7 +116,7 @@ describe('e2e', () => {
         );
       });
 
-      it('should create user identity', async () => {
+      it('should create user wallet and identity', async () => {
         bobIdentity = await bobDashClient.platform.identities.register();
 
         expect(bobIdentity).to.be.instanceOf(Identity);
@@ -195,7 +195,7 @@ describe('e2e', () => {
         );
       });
 
-      it('should create user identity', async () => {
+      it('should create user wallet and identity', async () => {
         aliceIdentity = await aliceDashClient.platform.identities.register();
 
         expect(aliceIdentity).to.be.instanceOf(Identity);
