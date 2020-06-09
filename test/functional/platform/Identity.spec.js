@@ -5,11 +5,9 @@ const {
 } = require('@dashevo/dashcore-lib');
 
 const DashPlatformProtocol = require('@dashevo/dpp');
+const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture')
 
 const DAPIClient = require('@dashevo/dapi-client');
-const DAPIAddress = require('@dashevo/dapi-client/lib/dapiAddressProvider/DAPIAddress');
-
-const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
 const fundAddress = require('../../../lib/test/fundAddress');
 
@@ -22,6 +20,9 @@ describe('Platform', function platform() {
   let identityPrivateKey;
   let identityPublicKey;
   let identityAddress;
+
+  let identityCreateTransition;
+  let identity;
 
   before(async () => {
     dpp = new DashPlatformProtocol();
@@ -44,6 +45,7 @@ describe('Platform', function platform() {
           grpcPort: 3010,
         }
       )),
+      timeout: 10000,
     });
 
     await dapiClient.core.generateToAddress(10, faucetAddress);
@@ -57,31 +59,19 @@ describe('Platform', function platform() {
       .toAddress(process.env.NETWORK)
       .toString();
 
+    await dapiClient.core.generateToAddress(150, identityAddress);
+
     await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 3);
   });
 
   describe('Identity', () => {
-    let outPointTx;
-
-    before(async () => {
-      const { items: inputs } = await dapiClient.core.getUTXO(identityAddress);
-
-      outPointTx = new Transaction();
-
-      outPointTx.from(inputs.slice(-1)[0])
-        .addBurnOutput(1, identityPublicKey.hash)
-        .change(identityAddress)
-        .fee(668)
-        .sign(identityPrivateKey);
-    });
-
     it('should fail to create an identity if outpoint was not found', async () => {
-      const identity = dpp.identity.create(
+      identity = dpp.identity.create(
         Buffer.alloc(36),
         [identityPublicKey],
       );
 
-      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
+      identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
       identityCreateTransition.signByPrivateKey(identityPrivateKey);
 
       try {
@@ -94,45 +84,277 @@ describe('Platform', function platform() {
     });
 
     it('should create an identity', async () => {
+      const { blocks } = await dapiClient.core.getStatus();
+      const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
+
+      const sortedUtxos = utxos
+        .filter((utxo) => utxo.height < blocks - 100)
+        .sort((a, b) => a.satoshis > b.satoshis);
+
+      const inputs = [];
+
+      let sum = 0;
+      let i = 0;
+      do {
+        const input = sortedUtxos[i];
+        inputs.push(input);
+        sum += input.satoshis;
+        ++i;
+      } while (sum < 1 && i < sortedUtxos.length);
+
+      const outPointTx = new Transaction();
+
+      outPointTx.from(inputs)
+        .addBurnOutput(1, identityPublicKey.hash)
+        .change(identityAddress)
+        .fee(668)
+        .sign(identityPrivateKey);
+
       await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
       await dapiClient.core.generateToAddress(1, identityAddress);
 
       const outPoint = outPointTx.getOutPointBuffer(0);
 
-      const identity = dpp.identity.create(
+      identity = dpp.identity.create(
         outPoint,
         [identityPublicKey],
       );
 
-      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
+      identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
       identityCreateTransition.signByPrivateKey(identityPrivateKey);
 
       await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
     });
 
     it('should fail to create an identity with the same first public key', async () => {
+      const { blocks } = await dapiClient.core.getStatus();
+      const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
+
+      const sortedUtxos = utxos
+        .filter((utxo) => utxo.height < blocks - 100)
+        .sort((a, b) => a.satoshis > b.satoshis);
+
+      const inputs = [];
+
+      let sum = 0;
+      let i = 0;
+      do {
+        const input = sortedUtxos[i];
+        inputs.push(input);
+        sum += input.satoshis;
+        ++i;
+      } while (sum < 1 && i < sortedUtxos.length);
+
+      const outPointTx = new Transaction();
+
+      outPointTx.from(inputs)
+        .addBurnOutput(1, identityPublicKey.hash)
+        .change(identityAddress)
+        .fee(668)
+        .sign(identityPrivateKey);
+
       const outPoint = outPointTx.getOutPointBuffer(0);
 
-      const identity = dpp.identity.create(
+      await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
+      await dapiClient.core.generateToAddress(1, identityAddress);
+
+      const otherIdentity = dpp.identity.create(
         outPoint,
         [identityPublicKey],
       );
 
-      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
-      identityCreateTransition.signByPrivateKey(identityPrivateKey);
+      const otherIdentityCreateTransition = dpp.identity.createIdentityCreateTransition(otherIdentity);
+      otherIdentityCreateTransition.signByPrivateKey(identityPrivateKey);
 
-      await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
+      try {
+        await dapiClient.platform.broadcastStateTransition(otherIdentityCreateTransition.serialize());
+      } catch (e) {
+        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(error.name).to.equal('IdentityFirstPublicKeyAlreadyExistsError');
+        expect(error.publicKeyHash).to.equal(identityPublicKey.hash.toString('hex'));
+      }
     });
 
-    it('should be able to get newly created identity');
-    it('should be able to get newly created identity by it\'s first public key');
-    it('should be able to get newly created identity id by it\'s first public key');
+    it('should be able to get newly created identity', async () => {
+      const serializedIdentity = await dapiClient.platform.getIdentity(
+        identityCreateTransition.getIdentityId(),
+      );
+
+      expect(serializedIdentity).to.be.not.null();
+
+      const receivedIdentity = dpp.identity.createFromSerialized(
+        serializedIdentity,
+        { skipValidation: true },
+      )
+
+      expect(receivedIdentity.toJSON()).to.deep.equal({
+        ...identity.toJSON(),
+        balance: 826,
+      });
+
+      // updating balance
+      identity.setBalance(receivedIdentity.getBalance());
+    });
+
+    it('should be able to get newly created identity by it\'s first public key', async () => {
+      const serializedIdentity = await dapiClient.platform.getIdentityByFirstPublicKey(
+        identityPublicKey.hash,
+      );
+
+      expect(serializedIdentity).to.be.not.null();
+
+      const receivedIdentity = dpp.identity.createFromSerialized(
+        serializedIdentity,
+        { skipValidation: true },
+      );
+
+      expect(receivedIdentity.toJSON()).to.deep.equal({
+        ...identity.toJSON(),
+        balance: 826,
+      });
+    });
+
+    it('should be able to get newly created identity id by it\'s first public key', async () => {
+      const identityId = await dapiClient.platform.getIdentityIdByFirstPublicKey(
+        identityPublicKey.hash,
+      );
+
+      expect(identityId).to.be.not.null();
+      expect(identityId).to.equal(identity.getId());
+    });
 
     describe('Credits', () => {
-      it('should fail to create more documents if there are no more credits');
-      it('should fail top-up if transaction has not been sent');
-      it('should be able to top-up credit balance');
-      it('should be able to create more documents after the top-up');
+      let dataContract;
+
+      before(async () => {
+        dataContract = getDataContractFixture(identity.getId());
+        const dataContractStateTransition = dpp.dataContract.createStateTransition(
+          dataContract,
+        );
+        dataContractStateTransition.sign(identity.getPublicKeyById(0), identityPrivateKey);
+
+        // locally figure out current balance
+        // of the identity
+        identity.setBalance(
+          identity.getBalance() - dataContractStateTransition.calculateFee(),
+        );
+
+        await dapiClient.platform.broadcastStateTransition(dataContractStateTransition.serialize());
+      });
+
+      it('should fail to create more documents if there are no more credits', async () => {
+        const document = dpp.document.create(dataContract, identity.getId(), 'niceDocument', {
+          name: 'Some Very Long Long Long Name',
+        });
+
+        const documentsStateTransition = dpp.document.createStateTransition({
+          create: [document],
+        });
+        documentsStateTransition.sign(identity.getPublicKeyById(0), identityPrivateKey);
+
+        try {
+          await dapiClient.platform.broadcastStateTransition(documentsStateTransition.serialize());
+        } catch (e) {
+          expect(e.details).to.equal('Failed precondition: Not enough credits');
+        }
+      });
+
+      it('should fail top-up if transaction has not been sent', async () => {
+        const { blocks } = await dapiClient.core.getStatus();
+        const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
+
+        const sortedUtxos = utxos
+          .filter((utxo) => utxo.height < blocks - 100)
+          .sort((a, b) => a.satoshis > b.satoshis);
+
+        const inputs = [];
+
+        let sum = 0;
+        let i = 0;
+        do {
+          const input = sortedUtxos[i];
+          inputs.push(input);
+          sum += input.satoshis;
+          ++i;
+        } while (sum < 1 && i < sortedUtxos.length);
+
+        const outPointTx = new Transaction();
+
+        outPointTx.from(inputs)
+          .addBurnOutput(1, identityPublicKey.hash)
+          .change(identityAddress)
+          .fee(668)
+          .sign(identityPrivateKey);
+
+        const outPoint = outPointTx.getOutPointBuffer(0);
+
+        const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
+          identity.getId(),
+          outPoint,
+        );
+        identityTopUpTransition.signByPrivateKey(identityPrivateKey);
+
+        try {
+          await dapiClient.platform.broadcastStateTransition(identityTopUpTransition.serialize());
+        } catch (e) {
+          const [error] = JSON.parse(e.metadata.get('errors'));
+          expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
+        }
+      });
+
+      it('should be able to top-up credit balance', async () => {
+        const { blocks } = await dapiClient.core.getStatus();
+        const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
+
+        const sortedUtxos = utxos
+          .filter((utxo) => utxo.height < blocks - 100)
+          .sort((a, b) => a.satoshis > b.satoshis);
+
+        const inputs = [];
+
+        let sum = 0;
+        let i = 0;
+        do {
+          const input = sortedUtxos[i];
+          inputs.push(input);
+          sum += input.satoshis;
+          ++i;
+        } while (sum < 1 && i < sortedUtxos.length);
+
+        const outPointTx = new Transaction();
+
+        outPointTx.from(inputs)
+          .addBurnOutput(1, identityPublicKey.hash)
+          .change(identityAddress)
+          .fee(668)
+          .sign(identityPrivateKey);
+
+        const outPoint = outPointTx.getOutPointBuffer(0);
+
+        const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
+          identity.getId(),
+          outPoint,
+        );
+        identityTopUpTransition.signByPrivateKey(identityPrivateKey);
+
+        await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
+        await dapiClient.core.generateToAddress(1, identityAddress);
+
+        await dapiClient.platform.broadcastStateTransition(identityTopUpTransition.serialize());
+      });
+
+      it('should be able to create more documents after the top-up', async () => {
+        const document = dpp.document.create(dataContract, identity.getId(), 'niceDocument', {
+          name: 'Some Very Long Long Long Name',
+        });
+
+        const documentsStateTransition = dpp.document.createStateTransition({
+          create: [document],
+        });
+        documentsStateTransition.sign(identity.getPublicKeyById(0), identityPrivateKey);
+
+        await dapiClient.platform.broadcastStateTransition(documentsStateTransition.serialize());
+      });
     });
   });
 });
