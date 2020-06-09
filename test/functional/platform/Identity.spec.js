@@ -1,9 +1,13 @@
 const {
   PrivateKey,
+  PublicKey,
+  Transaction,
 } = require('@dashevo/dashcore-lib');
 
-const Dash = require('dash');
+const DashPlatformProtocol = require('@dashevo/dpp');
+
 const DAPIClient = require('@dashevo/dapi-client');
+const DAPIAddress = require('@dashevo/dapi-client/lib/dapiAddressProvider/DAPIAddress');
 
 const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
@@ -12,12 +16,16 @@ const fundAddress = require('../../../lib/test/fundAddress');
 describe('Platform', function platform() {
   this.timeout(950000);
 
+  let dpp;
   let dapiClient;
 
   let identityPrivateKey;
+  let identityPublicKey;
   let identityAddress;
 
   before(async () => {
+    dpp = new DashPlatformProtocol();
+
     const seeds = process.env.DAPI_SEED
       .split(',')
       .map((seed) => ({ service: `${seed}` }));
@@ -38,16 +46,84 @@ describe('Platform', function platform() {
       )),
     });
 
-    identityPrivateKey = new PrivateKey();
-    identityAddress = identityPrivateKey.toAddress();
+    await dapiClient.core.generateToAddress(10, faucetAddress);
 
-    await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 10);
+    identityPrivateKey = new PrivateKey();
+    identityPublicKey = new PublicKey({
+      ...identityPrivateKey.toPublicKey().toObject(),
+      compressed: true,
+    });
+    identityAddress = identityPrivateKey
+      .toAddress(process.env.NETWORK)
+      .toString();
+
+    await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 3);
   });
 
   describe('Identity', () => {
-    it('should fail to create an identity if outpoint was not found');
-    it('should create an identity');
-    it('should fail to create an identity with the same first public key');
+    let outPointTx;
+
+    before(async () => {
+      const { items: inputs } = await dapiClient.core.getUTXO(identityAddress);
+
+      outPointTx = new Transaction();
+
+      outPointTx.from(inputs.slice(-1)[0])
+        .addBurnOutput(1, identityPublicKey.hash)
+        .change(identityAddress)
+        .fee(668)
+        .sign(identityPrivateKey);
+    });
+
+    it('should fail to create an identity if outpoint was not found', async () => {
+      const identity = dpp.identity.create(
+        Buffer.alloc(36),
+        [identityPublicKey],
+      );
+
+      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
+      identityCreateTransition.signByPrivateKey(identityPrivateKey);
+
+      try {
+        await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
+        expect.fail('Error was not thrown');
+      } catch (e) {
+        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
+      }
+    });
+
+    it('should create an identity', async () => {
+      await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
+      await dapiClient.core.generateToAddress(1, identityAddress);
+
+      const outPoint = outPointTx.getOutPointBuffer(0);
+
+      const identity = dpp.identity.create(
+        outPoint,
+        [identityPublicKey],
+      );
+
+      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
+      identityCreateTransition.signByPrivateKey(identityPrivateKey);
+
+      await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
+    });
+
+    it('should fail to create an identity with the same first public key', async () => {
+      const outPoint = outPointTx.getOutPointBuffer(0);
+
+      const identity = dpp.identity.create(
+        outPoint,
+        [identityPublicKey],
+      );
+
+      const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
+      identityCreateTransition.signByPrivateKey(identityPrivateKey);
+
+      await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
+    });
+
     it('should be able to get newly created identity');
     it('should be able to get newly created identity by it\'s first public key');
     it('should be able to get newly created identity id by it\'s first public key');
