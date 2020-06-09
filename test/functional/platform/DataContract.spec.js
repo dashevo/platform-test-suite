@@ -4,12 +4,10 @@ const {
   Transaction,
 } = require('@dashevo/dashcore-lib');
 
-const Dash = require('dash');
 const DAPIClient = require('@dashevo/dapi-client');
 const DashPlatformProtocol = require('@dashevo/dpp');
 
-
-const Identity = require('@dashevo/dpp/lib/identity/Identity');
+const GrpcErrorCodes = require('@dashevo/grpc-common/lib/server/error/GrpcErrorCodes');
 
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
@@ -17,7 +15,7 @@ const getDataContractFixture = require(
 
 const fundAddress = require('../../../lib/test/fundAddress');
 
-const wait = require('../../../lib/wait');
+// const wait = require('../../../lib/wait');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -25,9 +23,9 @@ describe('Platform', function platform() {
   let dapiClient;
   let dpp;
   let identityPrivateKey;
-  let identityAddress;
   let dataContract;
   let publicKeyId;
+  let identity;
 
   before(async () => {
     const seeds = process.env.DAPI_SEED
@@ -41,16 +39,14 @@ describe('Platform', function platform() {
       .toString();
 
     dapiClient = new DAPIClient({
-      addresses: ['127.0.0.1'],
-      // timeout: 10000,
-      // addresses: seeds.map(({ service }) => (
-      //   {
-      //     host: service.split(':')[0],
-      //     httpPort: service.split(':')[1],
-      //     grpcPort: 3010,
-      //   }
-      // )),
-      // network: 'local',
+      timeout: 10000,
+      addresses: seeds.map(({ service }) => (
+        {
+          host: service.split(':')[0],
+          httpPort: service.split(':')[1],
+          grpcPort: 3010,
+        }
+      )),
     });
 
     await dapiClient.core.generateToAddress(10, faucetAddress);
@@ -60,7 +56,7 @@ describe('Platform', function platform() {
       ...identityPrivateKey.toPublicKey().toObject(),
       compressed: true,
     });
-    identityAddress = identityPrivateKey
+    const identityAddress = identityPrivateKey
       .toAddress(process.env.NETWORK);
 
     await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 10);
@@ -109,7 +105,7 @@ describe('Platform', function platform() {
 
     const outPoint = transaction.getOutPointBuffer(0);
 
-    const identity = dpp.identity.create(
+    identity = dpp.identity.create(
       outPoint,
       [identityPublicKey],
     );
@@ -124,14 +120,63 @@ describe('Platform', function platform() {
 
     // Create Identity
     await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
-    // Create Data Contract
-    await dapiClient.platform.broadcastStateTransition(dataContractCreateTransition.serialize());
   });
 
   describe('Data contract', () => {
-    it('should fail to create new data contract with invalid data');
-    it('should fail to create new data contract with unknown owner');
-    it('should create new data contract with previously created identity as an owner');
+    it('should fail to create new data contract with invalid data', async () => {
+      try {
+        // Create Data Contract
+        await dapiClient.platform.broadcastStateTransition(
+          Buffer.alloc(36),
+        );
+
+        expect.fail(' should throw invalid argument error');
+      } catch (e) {
+        expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
+        expect(e.details).to.equal('State Transition is invalid');
+      }
+    });
+
+    it('should fail to create new data contract with unknown owner', async () => {
+      const privateKey = new PrivateKey();
+      const publicKey = new PublicKey({
+        ...privateKey.toPublicKey().toObject(),
+        compressed: true,
+      });
+
+      const newIdentity = dpp.identity.create(
+        Buffer.alloc(36),
+        [publicKey],
+      );
+
+      dataContract = getDataContractFixture(newIdentity.getId());
+
+      const dataContractCreateTransition = dpp.dataContract.createStateTransition(dataContract);
+      dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
+
+      try {
+        // Create Data Contract
+        await dapiClient.platform.broadcastStateTransition(
+          dataContractCreateTransition.serialize(),
+        );
+
+        expect.fail(' should throw invalid argument error');
+      } catch (e) {
+        expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
+        expect(e.details).to.equal('State Transition is invalid');
+      }
+    });
+
+    it('should create new data contract with previously created identity as an owner', async () => {
+      dataContract = getDataContractFixture(identity.getId());
+
+      const dataContractCreateTransition = dpp.dataContract.createStateTransition(dataContract);
+      dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
+
+      // Create Data Contract
+      await dapiClient.platform.broadcastStateTransition(dataContractCreateTransition.serialize());
+    });
+
     it('should be able to get newly created data contract', async () => {
       const serializedDataContract = await dapiClient.platform.getDataContract(
         dataContract.getId(),

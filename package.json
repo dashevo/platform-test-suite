@@ -31,5 +31,8 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2"
+  },
+  "peerDependencies": {
+    "@dashevo/grpc-common": "^0.3.0"
   }
 }
