@@ -12,6 +12,7 @@ Usage: test <seed> [options]
   -ni=pkg   --npm-install=pkg   - install npm package before running the suite
   -s=a,b,c  --scope=a,b,c       - test scope to run
   -k=key    --faucet-key=key    - faucet private key string
+  -r        --regtest           - Use regtest mode
   -h        --help              - show help
 
   Possible scopes:
@@ -25,6 +26,7 @@ Usage: test <seed> [options]
   functional:platform"
 
 DAPI_SEED="$1"
+regtest="false"
 
 DIR="$( cd -P "$( dirname "$BASH_SOURCE[0]" )" >/dev/null 2>&1 && pwd )"
 
@@ -45,6 +47,9 @@ case ${i} in
     ;;
     -k=*|--faucet-key=*)
     faucet_key="${i#*=}"
+    ;;
+    -r|--regtest)
+    regtest="true"
     ;;
 esac
 done
@@ -105,4 +110,4 @@ else
   scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
 fi
 
-DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}
+DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} REGTEST=${regtest} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}

@@ -12,6 +12,8 @@ const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
 
+const waitForBlocks = require('../../../lib/waitForBlocks');
+
 const fundAddress = require('../../../lib/test/fundAddress');
 const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
 
@@ -50,8 +52,6 @@ describe('Platform', function platform() {
 
     const createOutPointTx = createOutPointTxFactory(dapiClient);
 
-    await dapiClient.core.generateToAddress(10, faucetAddress);
-
     identityPrivateKey = new PrivateKey();
     const identityPublicKey = new PublicKey({
       ...identityPrivateKey.toPublicKey().toObject(),
@@ -75,7 +75,7 @@ describe('Platform', function platform() {
     const outPointTx = await createOutPointTx(amount, faucetAddress, identityPublicKey, privateKey);
 
     await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
-    await dapiClient.core.generateToAddress(1, faucetAddress);
+    await waitForBlocks(dapiClient, 1);
 
     const outPoint = outPointTx.getOutPointBuffer(0);
 

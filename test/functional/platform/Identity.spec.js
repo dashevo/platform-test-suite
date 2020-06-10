@@ -1,12 +1,13 @@
 const {
   PrivateKey,
-  PublicKey,
 } = require('@dashevo/dashcore-lib');
 
 const DashPlatformProtocol = require('@dashevo/dpp');
-const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture')
+const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const DAPIClient = require('@dashevo/dapi-client');
+
+const waitForBlocks = require('../../../lib/waitForBlocks');
 
 const fundAddress = require('../../../lib/test/fundAddress');
 const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
@@ -52,18 +53,11 @@ describe('Platform', function platform() {
 
     createOutPointTx = createOutPointTxFactory(dapiClient);
 
-    await dapiClient.core.generateToAddress(10, faucetAddress);
-
     identityPrivateKey = new PrivateKey();
-    identityPublicKey = new PublicKey({
-      ...identityPrivateKey.toPublicKey().toObject(),
-      compressed: true,
-    });
+
     identityAddress = identityPrivateKey
       .toAddress(process.env.NETWORK)
       .toString();
-
-    await dapiClient.core.generateToAddress(150, identityAddress);
 
     await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 3);
   });
@@ -88,10 +82,15 @@ describe('Platform', function platform() {
     });
 
     it('should create an identity', async () => {
-      const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
+      const outPointTx = await createOutPointTx(
+        1,
+        identityAddress,
+        identityPublicKey,
+        identityPrivateKey,
+      );
 
       await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
-      await dapiClient.core.generateToAddress(1, identityAddress);
+      await waitForBlocks(dapiClient, 1);
 
       const outPoint = outPointTx.getOutPointBuffer(0);
 
@@ -107,23 +106,32 @@ describe('Platform', function platform() {
     });
 
     it('should fail to create an identity with the same first public key', async () => {
-      const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
+      const outPointTx = await createOutPointTx(
+        1,
+        identityAddress,
+        identityPublicKey,
+        identityPrivateKey,
+      );
 
       const outPoint = outPointTx.getOutPointBuffer(0);
 
       await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
-      await dapiClient.core.generateToAddress(1, identityAddress);
+      await waitForBlocks(dapiClient, 1);
 
       const otherIdentity = dpp.identity.create(
         outPoint,
         [identityPublicKey],
       );
 
-      const otherIdentityCreateTransition = dpp.identity.createIdentityCreateTransition(otherIdentity);
+      const otherIdentityCreateTransition = dpp.identity.createIdentityCreateTransition(
+        otherIdentity,
+      );
       otherIdentityCreateTransition.signByPrivateKey(identityPrivateKey);
 
       try {
-        await dapiClient.platform.broadcastStateTransition(otherIdentityCreateTransition.serialize());
+        await dapiClient.platform.broadcastStateTransition(
+          otherIdentityCreateTransition.serialize(),
+        );
       } catch (e) {
         const [error] = JSON.parse(e.metadata.get('errors'));
         expect(error.name).to.equal('IdentityFirstPublicKeyAlreadyExistsError');
@@ -141,7 +149,7 @@ describe('Platform', function platform() {
       const receivedIdentity = dpp.identity.createFromSerialized(
         serializedIdentity,
         { skipValidation: true },
-      )
+      );
 
       expect(receivedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
@@ -216,7 +224,12 @@ describe('Platform', function platform() {
       });
 
       it('should fail top-up if transaction has not been sent', async () => {
-        const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
+        const outPointTx = await createOutPointTx(
+          1,
+          identityAddress,
+          identityPublicKey,
+          identityPrivateKey,
+        );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
 
@@ -235,7 +248,12 @@ describe('Platform', function platform() {
       });
 
       it('should be able to top-up credit balance', async () => {
-        const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
+        const outPointTx = await createOutPointTx(
+          1,
+          identityAddress,
+          identityPublicKey,
+          identityPrivateKey,
+        );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
 
@@ -246,7 +264,7 @@ describe('Platform', function platform() {
         identityTopUpTransition.signByPrivateKey(identityPrivateKey);
 
         await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
-        await dapiClient.core.generateToAddress(1, identityAddress);
+        await waitForBlocks(dapiClient, 1);
 
         await dapiClient.platform.broadcastStateTransition(identityTopUpTransition.serialize());
       });
