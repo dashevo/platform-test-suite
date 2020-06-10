@@ -1,7 +1,6 @@
 const {
   PrivateKey,
   PublicKey,
-  Transaction,
 } = require('@dashevo/dashcore-lib');
 
 const DAPIClient = require('@dashevo/dapi-client');
@@ -14,6 +13,7 @@ const getDataContractFixture = require(
 );
 
 const fundAddress = require('../../../lib/test/fundAddress');
+const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -48,6 +48,8 @@ describe('Platform', function platform() {
       )),
     });
 
+    const createOutPointTx = createOutPointTxFactory(dapiClient);
+
     await dapiClient.core.generateToAddress(10, faucetAddress);
 
     identityPrivateKey = new PrivateKey();
@@ -70,39 +72,12 @@ describe('Platform', function platform() {
 
     const amount = 10000;
 
-    const { blocks } = await dapiClient.core.getStatus();
-    const { items: utxos } = await dapiClient.core.getUTXO(faucetAddress);
+    const outPointTx = await createOutPointTx(amount, faucetAddress, identityPublicKey, privateKey);
 
-    const sortedUtxos = utxos
-      .filter((utxo) => utxo.height < blocks - 100)
-      .sort((a, b) => a.satoshis > b.satoshis);
-
-    const inputs = [];
-    let sum = 0;
-    let i = 0;
-
-    do {
-      const input = sortedUtxos[i];
-      inputs.push(input);
-      sum += input.satoshis;
-
-      ++i;
-    } while (sum < amount && i < sortedUtxos.length);
-
-    const transaction = new Transaction();
-
-    transaction.from(inputs.slice(-1)[0])
-      .addBurnOutput(amount, identityPublicKey.hash)
-      .change(faucetAddress)
-      .fee(668)
-      .sign(privateKey);
-
-    await dapiClient.core.broadcastTransaction(transaction.toBuffer());
-
+    await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
     await dapiClient.core.generateToAddress(1, faucetAddress);
-    // await wait(2000); // wait a couple of seconds for tx to be confirmed
 
-    const outPoint = transaction.getOutPointBuffer(0);
+    const outPoint = outPointTx.getOutPointBuffer(0);
 
     identity = dpp.identity.create(
       outPoint,

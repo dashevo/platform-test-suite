@@ -1,7 +1,6 @@
 const {
   PrivateKey,
   PublicKey,
-  Transaction,
 } = require('@dashevo/dashcore-lib');
 
 const DashPlatformProtocol = require('@dashevo/dpp');
@@ -10,6 +9,7 @@ const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataCo
 const DAPIClient = require('@dashevo/dapi-client');
 
 const fundAddress = require('../../../lib/test/fundAddress');
+const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -23,6 +23,8 @@ describe('Platform', function platform() {
 
   let identityCreateTransition;
   let identity;
+
+  let createOutPointTx;
 
   before(async () => {
     dpp = new DashPlatformProtocol();
@@ -47,6 +49,8 @@ describe('Platform', function platform() {
       )),
       timeout: 10000,
     });
+
+    createOutPointTx = createOutPointTxFactory(dapiClient);
 
     await dapiClient.core.generateToAddress(10, faucetAddress);
 
@@ -84,31 +88,7 @@ describe('Platform', function platform() {
     });
 
     it('should create an identity', async () => {
-      const { blocks } = await dapiClient.core.getStatus();
-      const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
-
-      const sortedUtxos = utxos
-        .filter((utxo) => utxo.height < blocks - 100)
-        .sort((a, b) => a.satoshis > b.satoshis);
-
-      const inputs = [];
-
-      let sum = 0;
-      let i = 0;
-      do {
-        const input = sortedUtxos[i];
-        inputs.push(input);
-        sum += input.satoshis;
-        ++i;
-      } while (sum < 1 && i < sortedUtxos.length);
-
-      const outPointTx = new Transaction();
-
-      outPointTx.from(inputs)
-        .addBurnOutput(1, identityPublicKey.hash)
-        .change(identityAddress)
-        .fee(668)
-        .sign(identityPrivateKey);
+      const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
 
       await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
       await dapiClient.core.generateToAddress(1, identityAddress);
@@ -127,31 +107,7 @@ describe('Platform', function platform() {
     });
 
     it('should fail to create an identity with the same first public key', async () => {
-      const { blocks } = await dapiClient.core.getStatus();
-      const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
-
-      const sortedUtxos = utxos
-        .filter((utxo) => utxo.height < blocks - 100)
-        .sort((a, b) => a.satoshis > b.satoshis);
-
-      const inputs = [];
-
-      let sum = 0;
-      let i = 0;
-      do {
-        const input = sortedUtxos[i];
-        inputs.push(input);
-        sum += input.satoshis;
-        ++i;
-      } while (sum < 1 && i < sortedUtxos.length);
-
-      const outPointTx = new Transaction();
-
-      outPointTx.from(inputs)
-        .addBurnOutput(1, identityPublicKey.hash)
-        .change(identityAddress)
-        .fee(668)
-        .sign(identityPrivateKey);
+      const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
 
       const outPoint = outPointTx.getOutPointBuffer(0);
 
@@ -260,31 +216,7 @@ describe('Platform', function platform() {
       });
 
       it('should fail top-up if transaction has not been sent', async () => {
-        const { blocks } = await dapiClient.core.getStatus();
-        const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
-
-        const sortedUtxos = utxos
-          .filter((utxo) => utxo.height < blocks - 100)
-          .sort((a, b) => a.satoshis > b.satoshis);
-
-        const inputs = [];
-
-        let sum = 0;
-        let i = 0;
-        do {
-          const input = sortedUtxos[i];
-          inputs.push(input);
-          sum += input.satoshis;
-          ++i;
-        } while (sum < 1 && i < sortedUtxos.length);
-
-        const outPointTx = new Transaction();
-
-        outPointTx.from(inputs)
-          .addBurnOutput(1, identityPublicKey.hash)
-          .change(identityAddress)
-          .fee(668)
-          .sign(identityPrivateKey);
+        const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
 
         const outPoint = outPointTx.getOutPointBuffer(0);
 
@@ -303,31 +235,7 @@ describe('Platform', function platform() {
       });
 
       it('should be able to top-up credit balance', async () => {
-        const { blocks } = await dapiClient.core.getStatus();
-        const { items: utxos } = await dapiClient.core.getUTXO(identityAddress);
-
-        const sortedUtxos = utxos
-          .filter((utxo) => utxo.height < blocks - 100)
-          .sort((a, b) => a.satoshis > b.satoshis);
-
-        const inputs = [];
-
-        let sum = 0;
-        let i = 0;
-        do {
-          const input = sortedUtxos[i];
-          inputs.push(input);
-          sum += input.satoshis;
-          ++i;
-        } while (sum < 1 && i < sortedUtxos.length);
-
-        const outPointTx = new Transaction();
-
-        outPointTx.from(inputs)
-          .addBurnOutput(1, identityPublicKey.hash)
-          .change(identityAddress)
-          .fee(668)
-          .sign(identityPrivateKey);
+        const outPointTx = await createOutPointTx(1, identityAddress, identityPublicKey, identityPrivateKey);
 
         const outPoint = outPointTx.getOutPointBuffer(0);
 
