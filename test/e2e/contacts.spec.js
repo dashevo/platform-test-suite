@@ -43,7 +43,13 @@ describe('e2e', () => {
         .toString();
 
       dapiClient = new DAPIClient({
-        seeds,
+        addresses: seeds.map(({ service }) => (
+          {
+            host: service.split(':')[0],
+            httpPort: service.split(':')[1],
+            grpcPort: 3010,
+          }
+        )),
         timeout: 15000,
         retries: 10,
       });
