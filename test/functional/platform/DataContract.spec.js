@@ -1,135 +1,45 @@
-const {
-  PrivateKey,
-  PublicKey,
-} = require('@dashevo/dashcore-lib');
-
-const DAPIClient = require('@dashevo/dapi-client');
-const DashPlatformProtocol = require('@dashevo/dpp');
-
 const GrpcErrorCodes = require('@dashevo/grpc-common/lib/server/error/GrpcErrorCodes');
 
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
 
-const waitForBlocks = require('../../../lib/waitForBlocks');
-
-const fundAddress = require('../../../lib/test/fundAddress');
-const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
+const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
 
 describe('Platform', function platform() {
   this.timeout(950000);
 
-  let dapiClient;
+  let client;
   let dpp;
   let identityPrivateKey;
-  let dataContract;
+  let dataContractFixture;
   let publicKeyId;
   let identity;
 
   before(async () => {
-    const seeds = process.env.DAPI_SEED
-      .split(',')
-      .map((seed) => ({ service: `${seed}` }));
+    client = await getClientWithFundedWallet();
 
-    // Prepare to fund Bob and Alice wallets
-    const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
-    const faucetAddress = faucetPrivateKey
-      .toAddress(process.env.NETWORK)
-      .toString();
+    identity = await client.platform.identities.register();
+  });
 
-    dapiClient = new DAPIClient({
-      timeout: 10000,
-      addresses: seeds.map(({ service }) => (
-        {
-          host: service.split(':')[0],
-          httpPort: service.split(':')[1],
-          grpcPort: 3010,
-        }
-      )),
-    });
-
-    const createOutPointTx = createOutPointTxFactory(dapiClient);
-
-    identityPrivateKey = new PrivateKey();
-    const identityPublicKey = new PublicKey({
-      ...identityPrivateKey.toPublicKey().toObject(),
-      compressed: true,
-    });
-    const identityAddress = identityPrivateKey
-      .toAddress(process.env.NETWORK);
-
-    await fundAddress(dapiClient, faucetAddress, faucetPrivateKey, identityAddress, 10);
-
-    const privateKey = new PrivateKey(faucetPrivateKey);
-
-    publicKeyId = 0;
-
-    dpp = new DashPlatformProtocol({
-      dataProvider: {},
-    });
-
-    const amount = 10000;
-
-    const outPointTx = await createOutPointTx(amount, faucetAddress, identityPublicKey, privateKey);
-
-    await dapiClient.core.broadcastTransaction(outPointTx.toBuffer());
-    await waitForBlocks(dapiClient, 1);
-
-    const outPoint = outPointTx.getOutPointBuffer(0);
-
-    identity = dpp.identity.create(
-      outPoint,
-      [identityPublicKey],
-    );
-
-    const identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
-    identityCreateTransition.signByPrivateKey(identityPrivateKey);
-
-    dataContract = getDataContractFixture(identityCreateTransition.getIdentityId());
-
-    const dataContractCreateTransition = dpp.dataContract.createStateTransition(dataContract);
-    dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
-
-    // Create Identity
-    await dapiClient.platform.broadcastStateTransition(identityCreateTransition.serialize());
+  after(async () => {
+    if (client) {
+      await client.disconnect();
+    }
   });
 
   describe('Data contract', () => {
-    it('should fail to create new data contract with invalid data', async () => {
-      try {
-        // Create Data Contract
-        await dapiClient.platform.broadcastStateTransition(
-          Buffer.alloc(36),
-        );
-
-        expect.fail(' should throw invalid argument error');
-      } catch (e) {
-        expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
-        expect(e.details).to.equal('State Transition is invalid');
-      }
-    });
-
     it('should fail to create new data contract with unknown owner', async () => {
-      const privateKey = new PrivateKey();
-      const publicKey = new PublicKey({
-        ...privateKey.toPublicKey().toObject(),
-        compressed: true,
-      });
+      dataContractFixture = getDataContractFixture();
 
-      const newIdentity = dpp.identity.create(
-        Buffer.alloc(36),
-        [publicKey],
+      const dataContractCreateTransition = dpp.dataContract.createStateTransition(
+        dataContractFixture,
       );
-
-      dataContract = getDataContractFixture(newIdentity.getId());
-
-      const dataContractCreateTransition = dpp.dataContract.createStateTransition(dataContract);
       dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
 
       try {
         // Create Data Contract
-        await dapiClient.platform.broadcastStateTransition(
+        await client.clients.dapi.platform.broadcastStateTransition(
           dataContractCreateTransition.serialize(),
         );
 
@@ -141,18 +51,19 @@ describe('Platform', function platform() {
     });
 
     it('should create new data contract with previously created identity as an owner', async () => {
-      dataContract = getDataContractFixture(identity.getId());
-
-      const dataContractCreateTransition = dpp.dataContract.createStateTransition(dataContract);
-      dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
+      dataContractFixture = getDataContractFixture(identity.getId());
 
       // Create Data Contract
-      await dapiClient.platform.broadcastStateTransition(dataContractCreateTransition.serialize());
+      const dataContract = await client.platform.contracts.create(
+        dataContractFixture.getDefinitions(), identity,
+      );
+
+      await client.platform.contracts.broadcast(dataContract, identity);
     });
 
     it('should be able to get newly created data contract', async () => {
-      const serializedDataContract = await dapiClient.platform.getDataContract(
-        dataContract.getId(),
+      const serializedDataContract = await client.platform.contracts.get(
+        dataContractFixture.getId(),
       );
 
       expect(serializedDataContract).to.be.not.null();
@@ -162,7 +73,7 @@ describe('Platform', function platform() {
         { skipValidation: true },
       );
 
-      expect(dataContract.toJSON()).to.deep.equal(receivedDataContract.toJSON());
+      expect(dataContractFixture.toJSON()).to.deep.equal(receivedDataContract.toJSON());
     });
   });
 });
