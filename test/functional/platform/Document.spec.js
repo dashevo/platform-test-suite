@@ -15,22 +15,17 @@ describe('Platform', function platform() {
   let document;
 
   before(async () => {
-    dataContractFixture = getDataContractFixture(identity.getId());
-
     client = await getClientWithFundedWallet();
 
     identity = await client.platform.identities.register();
 
-    // Create Data Contract
-    const dataContract = await client.platform.contracts.create(
-      dataContractFixture.getDefinitions(), identity,
-    );
+    dataContractFixture = getDataContractFixture(identity.getId());
 
-    await client.platform.contracts.broadcast(dataContract, identity);
+    await client.platform.contracts.broadcast(dataContractFixture, identity);
 
     client.apps.customContracts = {
-      contractId: dataContract.getId(),
-      contract: dataContract,
+      contractId: dataContractFixture.getId(),
+      contract: dataContractFixture,
     };
   });
 
@@ -81,7 +76,7 @@ describe('Platform', function platform() {
     it('should fetch created documents array', async () => {
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.niceDocument',
-        { where: [['$id', '==', dataContractFixture.getId()]] },
+        { where: [['$id', '==', document.getId()]] },
       );
 
       expect(document.toJSON()).to.deep.equal(fetchedDocument.toJSON());
