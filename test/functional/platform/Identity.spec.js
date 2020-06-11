@@ -1,6 +1,10 @@
 const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
+const {
+  PublicKey,
+} = require('@dashevo/dashcore-lib');
+
 const waitForBlocks = require('../../../lib/waitForBlocks');
 
 const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
@@ -11,16 +15,24 @@ describe('Platform', function platform() {
 
   let dpp;
   let client;
+  let walletAccount;
   let identityCreateTransition;
   let identity;
+  let identityPublicKey;
+  let identityPrivateKey;
   let createOutPointTx;
 
   before(async () => {
-    client = await getClientWithFundedWallet();
-
     dpp = new DashPlatformProtocol();
 
-    createOutPointTx = createOutPointTxFactory(client.clients.dapi);
+    client = await getClientWithFundedWallet();
+    walletAccount = await client.getWalletAccount();
+    ({
+      publicKey: identityPublicKey,
+      privateKey: identityPrivateKey,
+    } = walletAccount.getIdentityHDKey(0));
+
+    createOutPointTx = createOutPointTxFactory(client.getDAPIClient());
   });
 
   after(async () => {
@@ -33,14 +45,16 @@ describe('Platform', function platform() {
     it('should fail to create an identity if outpoint was not found', async () => {
       identity = dpp.identity.create(
         Buffer.alloc(36),
-        [identity.getPublicKeyById(0).getData()],
+        [identityPublicKey],
       );
 
       identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
-      identityCreateTransition.signByPrivateKey(client.account.getIdentityHDKey(0));
+      identityCreateTransition.signByPrivateKey(
+        identityPrivateKey,
+      );
 
       try {
-        await client.clients.dapi.platform.broadcastStateTransition(
+        await client.getDAPIClient().applyStateTransition(
           identityCreateTransition.serialize(),
         );
         expect.fail('Error was not thrown');
@@ -57,28 +71,30 @@ describe('Platform', function platform() {
     it('should fail to create an identity with the same first public key', async () => {
       const outPointTx = await createOutPointTx(
         1,
-        client.account.getNewAddress().address,
-        identity.getPublicKeyById(0).getData(),
-        client.account.getIdentityHDKey(0),
+        walletAccount.getAddress().address,
+        identityPublicKey,
+        identityPublicKey,
       );
 
       const outPoint = outPointTx.getOutPointBuffer(0);
 
-      await client.clients.dapi.core.broadcastTransaction(outPointTx.toBuffer());
-      await waitForBlocks(client, 1);
+      await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
+      await waitForBlocks(client.getDAPIClient(), 1);
 
       const otherIdentity = dpp.identity.create(
         outPoint,
-        [identity.getPublicKeyById(0).getData()],
+        [identityPublicKey],
       );
 
       const otherIdentityCreateTransition = dpp.identity.createIdentityCreateTransition(
         otherIdentity,
       );
-      otherIdentityCreateTransition.signByPrivateKey(client.account.getIdentityHDKey(0));
+      otherIdentityCreateTransition.signByPrivateKey(
+        identityPrivateKey,
+      );
 
       try {
-        await client.clients.dapi.platform.broadcastStateTransition(
+        await client.getDAPIClient().applyStateTransition(
           otherIdentityCreateTransition.serialize(),
         );
 
@@ -96,7 +112,6 @@ describe('Platform', function platform() {
       );
 
       expect(fetchedIdentity).to.be.not.null();
-
       expect(fetchedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
         balance: 826,
@@ -107,7 +122,7 @@ describe('Platform', function platform() {
     });
 
     it('should be able to get newly created identity by it\'s first public key', async () => {
-      const serializedIdentity = await client.clients.dapi.platform.getIdentityByFirstPublicKey(
+      const serializedIdentity = await client.getDAPIClient().getIdentityByFirstPublicKey(
         identity.getPublicKeyById(0).hash(),
       );
 
@@ -125,7 +140,7 @@ describe('Platform', function platform() {
     });
 
     it('should be able to get newly created identity id by it\'s first public key', async () => {
-      const identityId = await client.clients.dapi.platform.getIdentityIdByFirstPublicKey(
+      const identityId = await client.getDAPIClient().getIdentityIdByFirstPublicKey(
         identity.getPublicKeyById(0).hash(),
       );
 
@@ -173,9 +188,9 @@ describe('Platform', function platform() {
       it('should fail top-up if transaction has not been sent', async () => {
         const outPointTx = await createOutPointTx(
           1,
-          client.account.getNewAddress().address,
-          identity.getPublicKeyById(0).getData(),
-          client.account.getIdentityHDKey(0),
+          walletAccount.getAddress().address,
+          new PublicKey(identity.getPublicKeyById(0).getData()),
+          identityPrivateKey,
         );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
@@ -184,10 +199,12 @@ describe('Platform', function platform() {
           identity.getId(),
           outPoint,
         );
-        identityTopUpTransition.signByPrivateKey(client.account.getIdentityHDKey(0));
+        identityTopUpTransition.signByPrivateKey(
+          identityPrivateKey,
+        );
 
         try {
-          await client.clients.dapi.platform.broadcastStateTransition(
+          await client.getDAPIClient().applyStateTransition(
             identityTopUpTransition.serialize(),
           );
 
@@ -201,9 +218,9 @@ describe('Platform', function platform() {
       it('should be able to top-up credit balance', async () => {
         const outPointTx = await createOutPointTx(
           1,
-          client.account.getNewAddress().address,
-          identity.getPublicKeyById(0).getData(),
-          client.account.getIdentityHDKey(0),
+          walletAccount.getAddress().address,
+          new PublicKey(identity.getPublicKeyById(0).getData()),
+          identityPrivateKey,
         );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
@@ -212,12 +229,14 @@ describe('Platform', function platform() {
           identity.getId(),
           outPoint,
         );
-        identityTopUpTransition.signByPrivateKey(client.account.getIdentityHDKey(0));
+        identityTopUpTransition.signByPrivateKey(
+          identityPrivateKey,
+        );
 
-        await client.clients.dapi.core.broadcastTransaction(outPointTx.toBuffer());
-        await waitForBlocks(client, 1);
+        await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
+        await waitForBlocks(client.getDAPIClient(), 1);
 
-        await client.platform.broadcastStateTransition(identityTopUpTransition.serialize());
+        await client.getDAPIClient().applyStateTransition(identityTopUpTransition.serialize());
       });
 
       it('should be able to create more documents after the top-up', async () => {
