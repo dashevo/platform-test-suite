@@ -19,6 +19,7 @@ describe('Platform', function platform() {
   let identity;
 
   before(async () => {
+    publicKeyId = 0;
     dpp = new DashPlatformProtocol();
 
     client = await getClientWithFundedWallet();
@@ -40,18 +41,19 @@ describe('Platform', function platform() {
       const dataContractCreateTransition = dpp.dataContract.createStateTransition(
         dataContractFixture,
       );
+
       dataContractCreateTransition.sign(
         identity.getPublicKeyById(publicKeyId),
-        walletAccount.getIdentityHDKey(0),
+        walletAccount.getIdentityHDKey(0).privateKey,
       );
 
       try {
         // Create Data Contract
         await client.getDAPIClient().applyStateTransition(
-          dataContractCreateTransition.serialize(),
+          dataContractCreateTransition,
         );
 
-        expect.fail(' should throw invalid argument error');
+        expect.fail('should throw invalid argument error');
       } catch (e) {
         expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
         expect(e.details).to.equal('State Transition is invalid');
@@ -61,12 +63,7 @@ describe('Platform', function platform() {
     it('should create new data contract with previously created identity as an owner', async () => {
       dataContractFixture = getDataContractFixture(identity.getId());
 
-      // Create Data Contract
-      const dataContract = await client.platform.contracts.create(
-        dataContractFixture.getDefinitions(), identity,
-      );
-
-      await client.platform.contracts.broadcast(dataContract, identity);
+      await client.platform.contracts.broadcast(dataContractFixture, identity);
     });
 
     it('should be able to get newly created data contract', async () => {
