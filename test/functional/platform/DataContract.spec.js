@@ -10,14 +10,15 @@ describe('Platform', function platform() {
   this.timeout(950000);
 
   let client;
+  let walletAccount;
   let dpp;
-  let identityPrivateKey;
   let dataContractFixture;
   let publicKeyId;
   let identity;
 
   before(async () => {
     client = await getClientWithFundedWallet();
+    walletAccount = await client.getWalletAccount();
 
     identity = await client.platform.identities.register();
   });
@@ -35,11 +36,14 @@ describe('Platform', function platform() {
       const dataContractCreateTransition = dpp.dataContract.createStateTransition(
         dataContractFixture,
       );
-      dataContractCreateTransition.sign(identity.getPublicKeyById(publicKeyId), identityPrivateKey);
+      dataContractCreateTransition.sign(
+        identity.getPublicKeyById(publicKeyId),
+        walletAccount.getIdentityHDKey(0),
+      );
 
       try {
         // Create Data Contract
-        await client.clients.dapi.platform.broadcastStateTransition(
+        await client.getDAPIClient().applyStateTransition(
           dataContractCreateTransition.serialize(),
         );
 
@@ -62,18 +66,12 @@ describe('Platform', function platform() {
     });
 
     it('should be able to get newly created data contract', async () => {
-      const serializedDataContract = await client.platform.contracts.get(
+      const fetchedDataContract = await client.platform.contracts.get(
         dataContractFixture.getId(),
       );
 
-      expect(serializedDataContract).to.be.not.null();
-
-      const receivedDataContract = await dpp.dataContract.createFromSerialized(
-        serializedDataContract,
-        { skipValidation: true },
-      );
-
-      expect(dataContractFixture.toJSON()).to.deep.equal(receivedDataContract.toJSON());
+      expect(fetchedDataContract).to.be.not.null();
+      expect(dataContractFixture.toJSON()).to.deep.equal(fetchedDataContract.toJSON());
     });
   });
 });
