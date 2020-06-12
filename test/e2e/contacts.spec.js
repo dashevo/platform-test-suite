@@ -27,7 +27,7 @@ describe('e2e', () => {
     let aliceProfile;
     let aliceContactAcceptance;
 
-    let dataContractDocumentDefintions;
+    let dataContractDocumentSchemas;
 
     before(() => {
       seeds = process.env.DAPI_SEED
@@ -40,7 +40,7 @@ describe('e2e', () => {
         .toAddress(process.env.NETWORK)
         .toString();
 
-      dataContractDocumentDefintions = {
+      dataContractDocumentSchemas = {
         profile: {
           indices: [
             { properties: [{ $ownerId: 'asc' }], unique: true },
@@ -117,7 +117,7 @@ describe('e2e', () => {
       it('should publish "Contacts" data contract', async () => {
         // 1. Create and broadcast data contract
         dataContract = await bobClient.platform.contracts.create(
-          dataContractDocumentDefintions, bobIdentity,
+          dataContractDocumentSchemas, bobIdentity,
         );
 
         await bobClient.platform.contracts.broadcast(dataContract, bobIdentity);
