@@ -25,7 +25,7 @@ describe('Platform', function platform() {
     client = await getClientWithFundedWallet();
     walletAccount = await client.getWalletAccount();
 
-    identity = await client.platform.identities.register();
+    identity = await client.platform.identities.register(1);
   });
 
   after(async () => {
@@ -44,7 +44,7 @@ describe('Platform', function platform() {
 
       dataContractCreateTransition.sign(
         identity.getPublicKeyById(publicKeyId),
-        walletAccount.getIdentityHDKey(0).privateKey,
+        walletAccount.getIdentityHDKeyByIndex(0, 0).privateKey,
       );
 
       try {
