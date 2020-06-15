@@ -9,6 +9,7 @@ const waitForBlocks = require('../../../lib/waitForBlocks');
 
 const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
 const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
+const wait = require('../../../lib/wait');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -70,19 +71,27 @@ describe('Platform', function platform() {
       identityRawPublicKey = new PublicKey(
         Buffer.from(identity.getPublicKeys()[0].getData(), 'base64'),
       );
+
+      // wait for change to come back
+      while (walletAccount.getTotalBalance() === 0) {
+        await wait(500);
+      }
     });
 
     it('should fail to create an identity with the same first public key', async () => {
-      const outPointTx = await createOutPointTx(
+      const {
+        transaction,
+        privateKey,
+      } = await createOutPointTx(
         1,
-        walletAccount.getAddress().address,
+        walletAccount,
         walletPublicKey,
         walletPrivateKey,
       );
 
-      const outPoint = outPointTx.getOutPointBuffer(0);
+      const outPoint = transaction.getOutPointBuffer(0);
 
-      await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
+      await client.getDAPIClient().sendTransaction(transaction.toBuffer());
       await waitForBlocks(client.getDAPIClient(), 1);
 
       const otherIdentity = dpp.identity.create(
@@ -94,7 +103,7 @@ describe('Platform', function platform() {
         otherIdentity,
       );
       otherIdentityCreateTransition.signByPrivateKey(
-        walletPrivateKey,
+        privateKey,
       );
 
       try {
@@ -187,21 +196,24 @@ describe('Platform', function platform() {
       });
 
       it('should fail top-up if transaction has not been sent', async () => {
-        const outPointTx = await createOutPointTx(
+        const {
+          transaction,
+          privateKey,
+        } = await createOutPointTx(
           1,
-          walletAccount.getAddress().address,
+          walletAccount,
           identityRawPublicKey,
           walletPrivateKey,
         );
 
-        const outPoint = outPointTx.getOutPointBuffer(0);
+        const outPoint = transaction.getOutPointBuffer(0);
 
         const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
           identity.getId(),
           outPoint,
         );
         identityTopUpTransition.signByPrivateKey(
-          walletPrivateKey,
+          privateKey,
         );
 
         try {
@@ -217,24 +229,27 @@ describe('Platform', function platform() {
       });
 
       it('should be able to top-up credit balance', async () => {
-        const outPointTx = await createOutPointTx(
+        const {
+          transaction,
+          privateKey,
+        } = await createOutPointTx(
           1,
-          walletAccount.getAddress().address,
+          walletAccount,
           identityRawPublicKey,
           walletPrivateKey,
         );
 
-        const outPoint = outPointTx.getOutPointBuffer(0);
+        const outPoint = transaction.getOutPointBuffer(0);
 
         const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
           identity.getId(),
           outPoint,
         );
         identityTopUpTransition.signByPrivateKey(
-          walletPrivateKey,
+          privateKey,
         );
 
-        await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
+        await client.getDAPIClient().sendTransaction(transaction.toBuffer());
         await waitForBlocks(client.getDAPIClient(), 1);
 
         await client.getDAPIClient().applyStateTransition(identityTopUpTransition);
