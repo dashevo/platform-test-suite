@@ -99,7 +99,7 @@ describe('Platform', function platform() {
 
       try {
         await client.getDAPIClient().applyStateTransition(
-          otherIdentityCreateTransition.serialize(),
+          otherIdentityCreateTransition,
         );
 
         expect.fail('Error was not thrown');
@@ -206,7 +206,7 @@ describe('Platform', function platform() {
 
         try {
           await client.getDAPIClient().applyStateTransition(
-            identityTopUpTransition.serialize(),
+            identityTopUpTransition,
           );
 
           expect.fail('Error was not thrown');
@@ -237,7 +237,7 @@ describe('Platform', function platform() {
         await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
         await waitForBlocks(client.getDAPIClient(), 1);
 
-        await client.getDAPIClient().applyStateTransition(identityTopUpTransition.serialize());
+        await client.getDAPIClient().applyStateTransition(identityTopUpTransition);
       });
 
       it('should be able to create more documents after the top-up', async () => {
