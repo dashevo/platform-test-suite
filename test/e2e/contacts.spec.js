@@ -109,7 +109,7 @@ describe('e2e', () => {
           20000,
         );
 
-        bobIdentity = await bobClient.platform.identities.register();
+        bobIdentity = await bobClient.platform.identities.register(10);
 
         expect(bobIdentity).to.be.instanceOf(Identity);
       });
@@ -184,7 +184,7 @@ describe('e2e', () => {
           20000,
         );
 
-        aliceIdentity = await aliceClient.platform.identities.register();
+        aliceIdentity = await aliceClient.platform.identities.register(10);
 
         expect(aliceIdentity).to.be.instanceOf(Identity);
       });
