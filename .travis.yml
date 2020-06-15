@@ -1,4 +1,6 @@
+sudo: false
 dist: bionic
+language: node_js
 
 branches:
   only:
@@ -13,6 +15,8 @@ addons:
   apt:
     packages:
       - docker-ce
+
+script: npm run check-package && npm run lint && npm run test
 
 deploy:
   provider: script
