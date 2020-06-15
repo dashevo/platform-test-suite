@@ -30,7 +30,7 @@ describe('Platform', function platform() {
     ({
       publicKey: identityPublicKey,
       privateKey: identityPrivateKey,
-    } = walletAccount.getIdentityHDKey(0));
+    } = walletAccount.getIdentityHDKeyByIndex(0, 0));
 
     createOutPointTx = createOutPointTxFactory(client.getDAPIClient());
   });
@@ -55,7 +55,7 @@ describe('Platform', function platform() {
 
       try {
         await client.getDAPIClient().applyStateTransition(
-          identityCreateTransition.serialize(),
+          identityCreateTransition,
         );
         expect.fail('Error was not thrown');
       } catch (e) {
@@ -65,7 +65,7 @@ describe('Platform', function platform() {
     });
 
     it('should create an identity', async () => {
-      identity = await client.platform.identities.register();
+      identity = await client.platform.identities.register(1);
     });
 
     it('should fail to create an identity with the same first public key', async () => {

@@ -1,5 +1,3 @@
-const GrpcErrorCodes = require('@dashevo/grpc-common/lib/server/error/GrpcErrorCodes');
-
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
@@ -17,7 +15,7 @@ describe('Platform', function platform() {
   before(async () => {
     client = await getClientWithFundedWallet();
 
-    identity = await client.platform.identities.register();
+    identity = await client.platform.identities.register(2);
 
     dataContractFixture = getDataContractFixture(identity.getId());
 
@@ -54,8 +52,10 @@ describe('Platform', function platform() {
 
         expect.fail('should throw invalid argument error');
       } catch (e) {
-        expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
-        expect(e.details).to.equal('State Transition is invalid');
+        console.log(e.message);
+        expect(e.message).to.satisfy(
+          (msg) => msg.startsWith('StateTransition is invalid'),
+        );
       }
     });
 
