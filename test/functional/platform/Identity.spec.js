@@ -18,7 +18,7 @@ describe('Platform', function platform() {
   let walletAccount;
   let identityCreateTransition;
   let identity;
-  let identityPublicKey;
+  let identityRawPublicKey;
   let identityPrivateKey;
   let createOutPointTx;
 
@@ -66,6 +66,9 @@ describe('Platform', function platform() {
 
     it('should create an identity', async () => {
       identity = await client.platform.identities.register(1);
+      identityRawPublicKey = new PublicKey(
+        Buffer.from(identity.getPublicKeys()[0].getData(), 'base64'),
+      );
     });
 
     it('should fail to create an identity with the same first public key', async () => {
@@ -153,15 +156,12 @@ describe('Platform', function platform() {
 
       before(async () => {
         dataContractFixture = getDataContractFixture(identity.getId());
-        const dataContract = await client.platform.contracts.create(
-          dataContractFixture.getDefinitions(), identity,
-        );
 
-        await client.platform.contracts.broadcast(dataContract, identity);
+        await client.platform.contracts.broadcast(dataContractFixture, identity);
 
         client.apps.customContracts = {
-          contractId: dataContract.getId(),
-          contract: dataContract,
+          contractId: dataContractFixture.getId(),
+          contract: dataContractFixture,
         };
       });
 
@@ -189,7 +189,7 @@ describe('Platform', function platform() {
         const outPointTx = await createOutPointTx(
           1,
           walletAccount.getAddress().address,
-          new PublicKey(identity.getPublicKeyById(0).getData()),
+          identityRawPublicKey,
           identityPrivateKey,
         );
 
@@ -219,7 +219,7 @@ describe('Platform', function platform() {
         const outPointTx = await createOutPointTx(
           1,
           walletAccount.getAddress().address,
-          new PublicKey(identity.getPublicKeyById(0).getData()),
+          identityRawPublicKey,
           identityPrivateKey,
         );
 
