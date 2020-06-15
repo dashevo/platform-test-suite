@@ -19,7 +19,8 @@ describe('Platform', function platform() {
   let identityCreateTransition;
   let identity;
   let identityRawPublicKey;
-  let identityPrivateKey;
+  let walletPublicKey;
+  let walletPrivateKey;
   let createOutPointTx;
 
   before(async () => {
@@ -28,8 +29,8 @@ describe('Platform', function platform() {
     client = await getClientWithFundedWallet();
     walletAccount = await client.getWalletAccount();
     ({
-      publicKey: identityPublicKey,
-      privateKey: identityPrivateKey,
+      publicKey: walletPublicKey,
+      privateKey: walletPrivateKey,
     } = walletAccount.getIdentityHDKeyByIndex(0, 0));
 
     createOutPointTx = createOutPointTxFactory(client.getDAPIClient());
@@ -45,12 +46,12 @@ describe('Platform', function platform() {
     it('should fail to create an identity if outpoint was not found', async () => {
       identity = dpp.identity.create(
         Buffer.alloc(36),
-        [identityPublicKey],
+        [walletPublicKey],
       );
 
       identityCreateTransition = dpp.identity.createIdentityCreateTransition(identity);
       identityCreateTransition.signByPrivateKey(
-        identityPrivateKey,
+        walletPrivateKey,
       );
 
       try {
@@ -75,8 +76,8 @@ describe('Platform', function platform() {
       const outPointTx = await createOutPointTx(
         1,
         walletAccount.getAddress().address,
-        identityPublicKey,
-        identityPublicKey,
+        walletPublicKey,
+        walletPrivateKey,
       );
 
       const outPoint = outPointTx.getOutPointBuffer(0);
@@ -86,14 +87,14 @@ describe('Platform', function platform() {
 
       const otherIdentity = dpp.identity.create(
         outPoint,
-        [identityPublicKey],
+        [walletPublicKey],
       );
 
       const otherIdentityCreateTransition = dpp.identity.createIdentityCreateTransition(
         otherIdentity,
       );
       otherIdentityCreateTransition.signByPrivateKey(
-        identityPrivateKey,
+        walletPrivateKey,
       );
 
       try {
@@ -190,7 +191,7 @@ describe('Platform', function platform() {
           1,
           walletAccount.getAddress().address,
           identityRawPublicKey,
-          identityPrivateKey,
+          walletPrivateKey,
         );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
@@ -200,7 +201,7 @@ describe('Platform', function platform() {
           outPoint,
         );
         identityTopUpTransition.signByPrivateKey(
-          identityPrivateKey,
+          walletPrivateKey,
         );
 
         try {
@@ -220,7 +221,7 @@ describe('Platform', function platform() {
           1,
           walletAccount.getAddress().address,
           identityRawPublicKey,
-          identityPrivateKey,
+          walletPrivateKey,
         );
 
         const outPoint = outPointTx.getOutPointBuffer(0);
@@ -230,7 +231,7 @@ describe('Platform', function platform() {
           outPoint,
         );
         identityTopUpTransition.signByPrivateKey(
-          identityPrivateKey,
+          walletPrivateKey,
         );
 
         await client.getDAPIClient().sendTransaction(outPointTx.toBuffer());
