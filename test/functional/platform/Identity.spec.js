@@ -108,7 +108,7 @@ describe('Platform', function platform() {
 
     it('should be able to get newly created identity', async () => {
       const fetchedIdentity = await client.platform.identities.get(
-        identity.getIdentityId(),
+        identity.getId(),
       );
 
       expect(fetchedIdentity).to.be.not.null();
