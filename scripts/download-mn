@@ -1,9 +1,0 @@
-#!/usr/bin/env node
-
-const GitHub = require('github-api');
-
-// 1. Read current version from local package.json
-// 2. List mn bootstrap releases
-// 3. Get last release for minor version 0.13.[latest]
-// 4. node-fetch download release
-// 5. unpack to arg[0] dir

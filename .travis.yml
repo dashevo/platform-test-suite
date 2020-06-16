@@ -32,9 +32,8 @@ install:
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
-  - ./scripts/get-release-link
-  - ## download
-  - ## unapck
+  - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
+  - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
   - cd ~/mn-bootstrap && npm install && npm link
 
 before_script: >
