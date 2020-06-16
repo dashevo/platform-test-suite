@@ -15,6 +15,12 @@ describe('Core', () => {
       client = createClientWithoutWallet();
     });
 
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should respond with a transaction by it\'s ID', async () => {
       const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
       const faucetAddress = faucetPrivateKey

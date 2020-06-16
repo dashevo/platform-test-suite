@@ -10,6 +10,12 @@ describe('Core', () => {
       client = createClientWithoutWallet();
     });
 
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should return status', async () => {
       const result = await client.getDAPIClient().getStatus();
 

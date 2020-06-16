@@ -11,6 +11,12 @@ describe('Core', () => {
       ({ blocks: lastBlockHeight } = await client.getDAPIClient().getStatus());
     });
 
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should get block hash by height', async () => {
       const height = lastBlockHeight - 10;
       const hash = await client.getDAPIClient().getBlockHash(height);
