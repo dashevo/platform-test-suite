@@ -8,7 +8,7 @@ const getIdentityFixture = require(
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', function platform() {
-  this.timeout(950000);
+  this.timeout(90000);
 
   let client;
   let dataContractFixture;

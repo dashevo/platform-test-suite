@@ -29,14 +29,11 @@ describe('Core', () => {
         .toAddress(process.env.NETWORK)
         .toString();
 
-      const { blocks } = await client.getDAPIClient().getStatus();
-
       const { items: utxos } = await client.getDAPIClient().getUTXO(faucetAddress);
 
       const amount = 10000;
 
       const sortedUtxos = utxos
-        .filter((utxo) => utxo.height < blocks - 100)
         .sort((a, b) => a.satoshis > b.satoshis);
 
       const inputs = [];
