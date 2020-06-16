@@ -32,9 +32,10 @@ install:
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
-  - git clone git@github.com:dashevo/mn-bootstrap.git ~/mn-bootstap && cd ~/mn-bootstap
-  - npm install
-  - npm link
+  - ./scripts/get-release-link
+  - ## download
+  - ## unapck
+  - cd ~/mn-bootstrap && npm install && npm link
 
 before_script: >
   - PRIVATE_KEY=$(mn wallet:generate-to-address local 5000 | grep -m 1 "Private key:" | awk '{printf $3}')
