@@ -12,7 +12,7 @@ const createOutPointTx = require('../../../lib/test/createOutPointTx');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', function platform() {
-  this.timeout(950000);
+  this.timeout(90000);
 
   let dpp;
   let client;
@@ -186,6 +186,10 @@ describe('Platform', function platform() {
           expect.fail('Error was not thrown');
         } catch (e) {
           expect(e.details).to.equal('Failed precondition: Not enough credits');
+        }
+
+        while (walletAccount.getTotalBalance() === 0) {
+          await wait(500);
         }
       });
 
