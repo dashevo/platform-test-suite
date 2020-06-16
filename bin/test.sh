@@ -9,10 +9,10 @@ Usage: test <seed> [options]
   <seed> can be IP or IP:port
 
   Options:
-  -ni=pkg   --npm-install=pkg   - install npm package before running the suite
+            --npm-install=pkg   - install npm package before running the suite
   -s=a,b,c  --scope=a,b,c       - test scope to run
   -k=key    --faucet-key=key    - faucet private key string
-  -r        --regtest           - Use regtest mode
+  -n        --network           - Use regtest or testnet
   -h        --help              - show help
 
   Possible scopes:
@@ -26,7 +26,7 @@ Usage: test <seed> [options]
   functional:platform"
 
 DAPI_SEED="$1"
-regtest="false"
+regtest="testnet"
 
 DIR="$( cd -P "$( dirname "$BASH_SOURCE[0]" )" >/dev/null 2>&1 && pwd )"
 
@@ -39,7 +39,7 @@ case ${i} in
         echo "$cmd_usage"
         exit 0
     ;;
-    -ni=*|--npm-install=*)
+    --npm-install=*)
     npm_package_to_install="${i#*=}"
     ;;
     -s=*|--scope=*)
@@ -48,7 +48,7 @@ case ${i} in
     -k=*|--faucet-key=*)
     faucet_key="${i#*=}"
     ;;
-    -r|--regtest)
+    -n|--network)
     network="${i#*=}"
     ;;
 esac
