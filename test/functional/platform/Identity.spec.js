@@ -229,30 +229,14 @@ describe('Platform', function platform() {
       });
 
       it('should be able to top-up credit balance', async () => {
-        const {
-          transaction,
-          privateKey,
-        } = await createOutPointTx(
-          1,
-          walletAccount,
-          identityRawPublicKey,
-          walletPrivateKey,
-        );
+        // wait for change to come back
+        while (walletAccount.getTotalBalance() === 0) {
+          await wait(500);
+        }
 
-        const outPoint = transaction.getOutPointBuffer(0);
+        await wait(10000);
 
-        const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
-          identity.getId(),
-          outPoint,
-        );
-        identityTopUpTransition.signByPrivateKey(
-          privateKey,
-        );
-
-        await client.getDAPIClient().sendTransaction(transaction.toBuffer());
-        await waitForBlocks(client.getDAPIClient(), 1);
-
-        await client.getDAPIClient().applyStateTransition(identityTopUpTransition);
+        await client.platform.identities.topUp(identity.getId(), 10);
       });
 
       it('should be able to create more documents after the top-up', async () => {
