@@ -3,13 +3,19 @@ const {
   PrivateKey,
 } = require('@dashevo/dashcore-lib');
 
+const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
+
 const fundAddress = require('../../../lib/test/fundAddress');
 
 describe('Core', () => {
   describe('getTransaction', () => {
-    let transactionId;
+    let client;
 
-    before(async () => {
+    before(() => {
+      client = createClientWithoutWallet();
+    });
+
+    it('should respond with a transaction by it\'s ID', async () => {
       const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
       const faucetAddress = faucetPrivateKey
         .toAddress(process.env.NETWORK)
@@ -19,17 +25,15 @@ describe('Core', () => {
         .toAddress(process.env.NETWORK)
         .toString();
 
-      transactionId = await fundAddress(
-        dashClient.clients.dapi,
+      const transactionId = await fundAddress(
+        client.getDAPIClient(),
         faucetAddress,
         faucetPrivateKey,
         address,
         20000,
       );
-    });
 
-    it('should respond with a transaction by it\'s ID', async () => {
-      const result = await dashClient.clients.dapi.getTransaction(transactionId);
+      const result = await client.getDAPIClient().getTransaction(transactionId);
       const receivedTx = new Transaction(Buffer.from(result));
 
       expect(receivedTx.hash).to.deep.equal(transactionId);
@@ -38,7 +42,7 @@ describe('Core', () => {
     it('should respond with null if transaction was not found', async () => {
       const nonExistentId = Buffer.alloc(32).toString('hex');
 
-      const result = await dashClient.clients.dapi.getTransaction(nonExistentId);
+      const result = await client.getDAPIClient().getTransaction(nonExistentId);
 
       expect(result).to.equal(null);
     });
