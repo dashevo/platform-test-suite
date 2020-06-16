@@ -36,27 +36,17 @@ describe('Platform', function platform() {
 
   describe('Data contract', () => {
     it('should fail to create new data contract with unknown owner', async () => {
+      // if no identity is specified
+      // random is generated within the function
       dataContractFixture = getDataContractFixture();
 
-      const dataContractCreateTransition = dpp.dataContract.createStateTransition(
-        dataContractFixture,
-      );
-
-      dataContractCreateTransition.sign(
-        identity.getPublicKeyById(publicKeyId),
-        walletAccount.getIdentityHDKeyByIndex(0, 0).privateKey,
-      );
-
       try {
-        // Create Data Contract
-        await client.getDAPIClient().applyStateTransition(
-          dataContractCreateTransition,
-        );
+        await client.platform.contracts.broadcast(dataContractFixture, identity);
 
         expect.fail('should throw invalid argument error');
       } catch (e) {
-        expect(e.code).to.equal(GrpcErrorCodes.INVALID_ARGUMENT);
-        expect(e.details).to.equal('State Transition is invalid');
+        const [error] = JSON.parse(e.message.replace('StateTransition is invalid - ', ''));
+        expect(error.name).to.equal('IdentityNotFoundError');
       }
     });
 
