@@ -38,9 +38,9 @@ install:
   - cd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
-  - PRIVATE_KEY=$(mn wallet:generate-to-address local 5000 | grep -m 1 "Private key:" | awk '{printf $3}')
-  - OPERATOR_BLS_KEY=$(mn register local $PRIVATE_KEY 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}')
-  - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
+  PRIVATE_KEY=$(mn wallet:generate-to-address local 5000 | grep -m 1 "Private key:" | awk '{printf $3}')
+  OPERATOR_BLS_KEY=$(mn register local $PRIVATE_KEY 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}')
+  mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
   npm run check-package &&
