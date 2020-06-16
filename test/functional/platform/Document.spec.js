@@ -83,6 +83,51 @@ describe('Platform', function platform() {
       }
     });
 
+    it('should fail to create a document that violates unique index constraint', async () => {
+      const sharedDocumentData = {
+        firstName: 'Some First Name',
+      };
+
+      const firstDocument = await client.platform.documents.create(
+        'customContracts.indexedDocument',
+        identity,
+        {
+          ...sharedDocumentData,
+          lastName: 'Some Last Name',
+        },
+      );
+
+      await client.platform.documents.broadcast({
+        create: [firstDocument],
+      }, identity);
+
+      const secondDocument = await client.platform.documents.create(
+        'customContracts.indexedDocument',
+        identity,
+        {
+          ...sharedDocumentData,
+          lastName: 'Other Last Name',
+        },
+      );
+
+      try {
+        await client.platform.documents.broadcast({
+          create: [secondDocument],
+        }, identity);
+        expect.fail('Error was not thrown');
+      } catch (e) {
+        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(error.name).to.equal('DuplicateDocumentError');
+        expect(error.indexDefinition).to.deep.equal({
+          unique: true,
+          properties: [
+            { $ownerId: 'asc' },
+            { firstName: 'desc' },
+          ],
+        });
+      }
+    });
+
     it('should be able to create new document', async () => {
       document = await client.platform.documents.create(
         'customContracts.niceDocument',
