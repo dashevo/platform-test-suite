@@ -8,7 +8,7 @@ const {
 const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
-const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
+const createOutPointTx = require('../../../lib/test/createOutPointTx');
 const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
 
 describe('Platform', function platform() {
@@ -22,7 +22,6 @@ describe('Platform', function platform() {
   let identityRawPublicKey;
   let walletPublicKey;
   let walletPrivateKey;
-  let createOutPointTx;
 
   before(async () => {
     dpp = new DashPlatformProtocol();
@@ -33,8 +32,6 @@ describe('Platform', function platform() {
       publicKey: walletPublicKey,
       privateKey: walletPrivateKey,
     } = walletAccount.getIdentityHDKeyByIndex(0, 0));
-
-    createOutPointTx = createOutPointTxFactory(client.getDAPIClient());
   });
 
   after(async () => {
@@ -79,7 +76,7 @@ describe('Platform', function platform() {
       const {
         transaction,
         privateKey,
-      } = await createOutPointTx(
+      } = createOutPointTx(
         1,
         walletAccount,
         walletPublicKey,
@@ -198,7 +195,7 @@ describe('Platform', function platform() {
         const {
           transaction,
           privateKey,
-        } = await createOutPointTx(
+        } = createOutPointTx(
           1,
           walletAccount,
           identityRawPublicKey,
