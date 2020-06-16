@@ -1,7 +1,3 @@
-const DashPlatformProtocol = require('@dashevo/dpp');
-
-const GrpcErrorCodes = require('@dashevo/grpc-common/lib/server/error/GrpcErrorCodes');
-
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
@@ -12,18 +8,11 @@ describe('Platform', function platform() {
   this.timeout(950000);
 
   let client;
-  let walletAccount;
-  let dpp;
   let dataContractFixture;
-  let publicKeyId;
   let identity;
 
   before(async () => {
-    publicKeyId = 0;
-    dpp = new DashPlatformProtocol();
-
     client = await createClientWithFundedWallet();
-    walletAccount = await client.getWalletAccount();
 
     identity = await client.platform.identities.register(1);
   });
