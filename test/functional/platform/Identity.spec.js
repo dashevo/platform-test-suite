@@ -185,10 +185,6 @@ describe('Platform', () => {
         } catch (e) {
           expect(e.details).to.equal('Failed precondition: Not enough credits');
         }
-
-        while (walletAccount.getTotalBalance() === 0) {
-          await wait(500);
-        }
       });
 
       it('should fail top-up if transaction has not been sent', async () => {
