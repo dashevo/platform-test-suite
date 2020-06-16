@@ -7,36 +7,34 @@ const getIdentityFixture = require(
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
-describe('Platform', function platform() {
-  this.timeout(90000);
-
-  let client;
-  let dataContractFixture;
-  let identity;
-  let document;
-
-  before(async () => {
-    client = await createClientWithFundedWallet();
-
-    identity = await client.platform.identities.register(2);
-
-    dataContractFixture = getDataContractFixture(identity.getId());
-
-    await client.platform.contracts.broadcast(dataContractFixture, identity);
-
-    client.apps.customContracts = {
-      contractId: dataContractFixture.getId(),
-      contract: dataContractFixture,
-    };
-  });
-
-  after(async () => {
-    if (client) {
-      await client.disconnect();
-    }
-  });
-
+describe('Platform', () => {
   describe('Document', () => {
+    let client;
+    let dataContractFixture;
+    let identity;
+    let document;
+
+    before(async () => {
+      client = await createClientWithFundedWallet();
+
+      identity = await client.platform.identities.register(2);
+
+      dataContractFixture = getDataContractFixture(identity.getId());
+
+      await client.platform.contracts.broadcast(dataContractFixture, identity);
+
+      client.apps.customContracts = {
+        contractId: dataContractFixture.getId(),
+        contract: dataContractFixture,
+      };
+    });
+
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should fail to create new document with an unknown type', async () => {
       const newDocument = await client.platform.documents.create(
         'customContracts.niceDocument',

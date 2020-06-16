@@ -11,36 +11,34 @@ const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange
 const createOutPointTx = require('../../../lib/test/createOutPointTx');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
-describe('Platform', function platform() {
-  this.timeout(90000);
-
-  let dpp;
-  let client;
-  let walletAccount;
-  let identityCreateTransition;
-  let identity;
-  let identityRawPublicKey;
-  let walletPublicKey;
-  let walletPrivateKey;
-
-  before(async () => {
-    dpp = new DashPlatformProtocol();
-
-    client = await createClientWithFundedWallet();
-    walletAccount = await client.getWalletAccount();
-    ({
-      publicKey: walletPublicKey,
-      privateKey: walletPrivateKey,
-    } = walletAccount.getIdentityHDKeyByIndex(0, 0));
-  });
-
-  after(async () => {
-    if (client) {
-      await client.disconnect();
-    }
-  });
-
+describe('Platform', () => {
   describe('Identity', () => {
+    let dpp;
+    let client;
+    let walletAccount;
+    let identityCreateTransition;
+    let identity;
+    let identityRawPublicKey;
+    let walletPublicKey;
+    let walletPrivateKey;
+
+    before(async () => {
+      dpp = new DashPlatformProtocol();
+
+      client = await createClientWithFundedWallet();
+      walletAccount = await client.getWalletAccount();
+      ({
+        publicKey: walletPublicKey,
+        privateKey: walletPrivateKey,
+      } = walletAccount.getIdentityHDKeyByIndex(0, 0));
+    });
+
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should fail to create an identity if outpoint was not found', async () => {
       identity = dpp.identity.create(
         Buffer.alloc(36),

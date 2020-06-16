@@ -4,26 +4,24 @@ const getDataContractFixture = require(
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
-describe('Platform', function platform() {
-  this.timeout(90000);
+describe('Platform', () => {
+  describe('Data Contract', () => {
+    let client;
+    let dataContractFixture;
+    let identity;
 
-  let client;
-  let dataContractFixture;
-  let identity;
+    before(async () => {
+      client = await createClientWithFundedWallet();
 
-  before(async () => {
-    client = await createClientWithFundedWallet();
+      identity = await client.platform.identities.register(1);
+    });
 
-    identity = await client.platform.identities.register(1);
-  });
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
 
-  after(async () => {
-    if (client) {
-      await client.disconnect();
-    }
-  });
-
-  describe('Data contract', () => {
     it('should fail to create new data contract with unknown owner', async () => {
       // if no identity is specified
       // random is generated within the function
