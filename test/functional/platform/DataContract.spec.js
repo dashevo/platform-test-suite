@@ -6,7 +6,7 @@ const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
 
-const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
+const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -22,7 +22,7 @@ describe('Platform', function platform() {
     publicKeyId = 0;
     dpp = new DashPlatformProtocol();
 
-    client = await getClientWithFundedWallet();
+    client = await createClientWithFundedWallet();
     walletAccount = await client.getWalletAccount();
 
     identity = await client.platform.identities.register(1);

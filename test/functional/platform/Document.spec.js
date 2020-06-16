@@ -5,7 +5,7 @@ const getIdentityFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getIdentityFixture',
 );
 
-const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
+const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -16,7 +16,7 @@ describe('Platform', function platform() {
   let document;
 
   before(async () => {
-    client = await getClientWithFundedWallet();
+    client = await createClientWithFundedWallet();
 
     identity = await client.platform.identities.register(2);
 
