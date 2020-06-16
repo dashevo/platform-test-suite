@@ -124,6 +124,11 @@ describe('e2e', () => {
         // Create Alice wallet
         aliceClient = await createClientWithFundedWallet();
 
+        aliceClient.apps.contacts = {
+          contractId: dataContract.getId(),
+          contract: dataContract,
+        };
+
         aliceIdentity = await aliceClient.platform.identities.register(10);
 
         expect(aliceIdentity).to.be.instanceOf(Identity);
