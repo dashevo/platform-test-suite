@@ -6,10 +6,10 @@ const {
 } = require('@dashevo/dashcore-lib');
 
 const waitForBlocks = require('../../../lib/waitForBlocks');
+const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
 const createOutPointTxFactory = require('../../../lib/test/createOutPointTxFactory');
 const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
-const wait = require('../../../lib/wait');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -72,10 +72,7 @@ describe('Platform', function platform() {
         Buffer.from(identity.getPublicKeys()[0].getData(), 'base64'),
       );
 
-      // wait for change to come back
-      while (walletAccount.getTotalBalance() === 0) {
-        await wait(500);
-      }
+      await waitForBalanceToChange(walletAccount);
     });
 
     it('should fail to create an identity with the same first public key', async () => {
@@ -196,6 +193,8 @@ describe('Platform', function platform() {
       });
 
       it('should fail top-up if transaction has not been sent', async () => {
+        await waitForBalanceToChange(walletAccount);
+
         const {
           transaction,
           privateKey,
@@ -229,30 +228,9 @@ describe('Platform', function platform() {
       });
 
       it('should be able to top-up credit balance', async () => {
-        const {
-          transaction,
-          privateKey,
-        } = await createOutPointTx(
-          1,
-          walletAccount,
-          identityRawPublicKey,
-          walletPrivateKey,
-        );
+        await waitForBalanceToChange(walletAccount);
 
-        const outPoint = transaction.getOutPointBuffer(0);
-
-        const identityTopUpTransition = dpp.identity.createIdentityTopUpTransition(
-          identity.getId(),
-          outPoint,
-        );
-        identityTopUpTransition.signByPrivateKey(
-          privateKey,
-        );
-
-        await client.getDAPIClient().sendTransaction(transaction.toBuffer());
-        await waitForBlocks(client.getDAPIClient(), 1);
-
-        await client.getDAPIClient().applyStateTransition(identityTopUpTransition);
+        await client.platform.identities.topUp(identity.getId(), 10);
       });
 
       it('should be able to create more documents after the top-up', async () => {
