@@ -1,6 +1,9 @@
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
+const getIdentityFixture = require(
+  '@dashevo/dpp/lib/test/fixtures/getIdentityFixture',
+);
 
 const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
 
@@ -52,9 +55,30 @@ describe('Platform', function platform() {
 
         expect.fail('should throw invalid argument error');
       } catch (e) {
-        console.log(e.message);
         expect(e.message).to.satisfy(
           (msg) => msg.startsWith('StateTransition is invalid'),
+        );
+      }
+    });
+
+    it('should fail to create a new document with an unknown owner', async () => {
+      const unknownIdentity = getIdentityFixture();
+
+      document = await client.platform.documents.create(
+        'customContracts.niceDocument',
+        unknownIdentity,
+        {
+          name: 'myName',
+        },
+      );
+
+      try {
+        await client.platform.documents.broadcast({
+          create: [document],
+        }, unknownIdentity);
+      } catch (e) {
+        expect(e.message).to.equal(
+          `Identity with ID ${unknownIdentity.getId()} is not associated with wallet, or it's not synced`,
         );
       }
     });
