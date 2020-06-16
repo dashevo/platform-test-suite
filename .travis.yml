@@ -28,6 +28,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 install:
+  - echo $(pwd)
   - npm i
   # Build docker image
   - docker build -t platform-test-suite:local .
@@ -35,7 +36,7 @@ install:
   - chmod +x ./scripts/get-gh-release-link
   - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
-  - cd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
+  - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
   mn wallet:generate-to-address local 1500 | grep -m 1 "Private key:" | awk '{printf $3}' |
@@ -44,7 +45,7 @@ before_script: >
   xargs -I {} mn start -p {} local 127.0.0.1 20001
 
 script: >
-  cd ~/ &&
+  popd &&
   npm run check-package &&
   npm run lint &&
   docker run platform-test-suite:local 127.0.0.1 -k $(cat ~/faucet_pk.txt) -n regtest
