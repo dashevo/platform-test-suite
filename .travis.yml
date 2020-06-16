@@ -35,7 +35,7 @@ install:
   - chmod +x ./scripts/get-gh-release-link
   - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
-  - cd ~/mn-bootstrap && npm install && npm link
+  - cd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
   - PRIVATE_KEY=$(mn wallet:generate-to-address local 5000 | grep -m 1 "Private key:" | awk '{printf $3}')
