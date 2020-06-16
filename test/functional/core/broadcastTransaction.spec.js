@@ -4,6 +4,7 @@ const {
 } = require('@dashevo/dashcore-lib');
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
+const getInputsByAddress = require('../../../lib/test/getInputsByAddress');
 
 describe('Core', () => {
   describe('broadcastTransaction', () => {
@@ -29,31 +30,15 @@ describe('Core', () => {
         .toAddress(process.env.NETWORK)
         .toString();
 
-      const { items: utxos } = await client.getDAPIClient().getUTXO(faucetAddress);
-
       const amount = 10000;
 
-      const sortedUtxos = utxos
-        .sort((a, b) => a.satoshis > b.satoshis);
-
-      const inputs = [];
-      let sum = 0;
-      let i = 0;
-
-      do {
-        const input = sortedUtxos[i];
-        inputs.push(input);
-        sum += input.satoshis;
-
-        ++i;
-      } while (sum < amount && i < sortedUtxos.length);
+      const inputs = await getInputsByAddress(client.getDAPIClient(), faucetAddress);
 
       const transaction = new Transaction();
 
       transaction.from(inputs.slice(-1)[0])
         .to(address, amount)
         .change(faucetAddress)
-        .fee(668)
         .sign(faucetPrivateKey);
 
       const serializedTransaction = Buffer.from(transaction.serialize(), 'hex');
