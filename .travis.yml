@@ -32,7 +32,7 @@ install:
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
-  - git clone https://github.com/dashevo/mn-bootstap ~/mn-bootstap && cd ~/mn-bootstap
+  - git clone git@github.com:dashevo/mn-bootstrap.git ~/mn-bootstap && cd ~/mn-bootstap
   - npm install
   - npm link
 
