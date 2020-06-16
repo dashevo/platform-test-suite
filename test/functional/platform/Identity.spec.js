@@ -9,7 +9,7 @@ const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
 const createOutPointTx = require('../../../lib/test/createOutPointTx');
-const getClientWithFundedWallet = require('../../../lib/test/getClientWithFundedWallet');
+const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', function platform() {
   this.timeout(950000);
@@ -26,7 +26,7 @@ describe('Platform', function platform() {
   before(async () => {
     dpp = new DashPlatformProtocol();
 
-    client = await getClientWithFundedWallet();
+    client = await createClientWithFundedWallet();
     walletAccount = await client.getWalletAccount();
     ({
       publicKey: walletPublicKey,

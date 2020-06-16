@@ -13,6 +13,12 @@ describe('Core', () => {
       client = createClientWithoutWallet();
     });
 
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should sent transaction and return transaction ID', async () => {
       const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
       const faucetAddress = faucetPrivateKey

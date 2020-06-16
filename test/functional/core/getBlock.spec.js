@@ -10,6 +10,12 @@ describe('Core', () => {
       client = createClientWithoutWallet();
     });
 
+    after(async () => {
+      if (client) {
+        await client.disconnect();
+      }
+    });
+
     it('should get block by hash', async () => {
       const blockHash = await client.getDAPIClient().getBestBlockHash();
 

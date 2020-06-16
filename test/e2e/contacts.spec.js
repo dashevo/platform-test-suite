@@ -1,6 +1,6 @@
 const Identity = require('@dashevo/dpp/lib/identity/Identity');
 
-const getClientWithFundedWallet = require('../../lib/test/getClientWithFundedWallet');
+const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
 
 describe('e2e', () => {
   describe('Contacts', function contacts() {
@@ -70,7 +70,7 @@ describe('e2e', () => {
     describe('Bob', () => {
       it('should create user wallet and identity', async () => {
         // Create Bob wallet
-        bobClient = await getClientWithFundedWallet();
+        bobClient = await createClientWithFundedWallet();
 
         bobIdentity = await bobClient.platform.identities.register(10);
 
@@ -122,7 +122,7 @@ describe('e2e', () => {
     describe('Alice', () => {
       it('should create user wallet and identity', async () => {
         // Create Alice wallet
-        aliceClient = await getClientWithFundedWallet();
+        aliceClient = await createClientWithFundedWallet();
 
         aliceIdentity = await aliceClient.platform.identities.register(10);
 
