@@ -38,15 +38,16 @@ install:
   - cd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
-  PRIVATE_KEY=$(mn wallet:generate-to-address local 1500 | grep -m 1 "Private key:" | awk '{printf $3}');
-  BLS_PRIVATE_KEY=$(mn register local $PRIVATE_KEY 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}');
-  mn start -p $BLS_PRIVATE_KEY local 127.0.0.1 20001
+  mn wallet:generate-to-address local 1500 | grep -m 1 "Private key:" | awk '{printf $3}' |
+  xargs -I {} echo > ~/faucet_pk.txt && cat ~/faucet_pk.txt |
+  xargs -I {} mn register local {} 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}' |
+  xargs -I {} mn start -p {} local 127.0.0.1 20001
 
 script: >
   cd ~/ &&
   npm run check-package &&
   npm run lint &&
-  docker run platform-test-suite:local 127.0.0.1 -k $PRIVATE_KEY -n regtest
+  docker run platform-test-suite:local 127.0.0.1 -k $(cat ~/faucet_pk.txt) -n regtest
 
 after_script:
   - mn stop local
