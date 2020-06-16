@@ -1,14 +1,19 @@
+const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
+
 describe('Core', () => {
   describe('getBlockHash', () => {
+    let client;
     let lastBlockHeight;
 
     before(async () => {
-      ({ blocks: lastBlockHeight } = await dashClient.clients.dapi.getStatus());
+      client = createClientWithoutWallet();
+
+      ({ blocks: lastBlockHeight } = await client.getDAPIClient().getStatus());
     });
 
     it('should get block hash by height', async () => {
       const height = lastBlockHeight - 10;
-      const hash = await dashClient.clients.dapi.getBlockHash(height);
+      const hash = await client.getDAPIClient().getBlockHash(height);
 
       expect(hash).to.be.a('string');
     });
@@ -17,7 +22,7 @@ describe('Core', () => {
       const height = lastBlockHeight * 2;
 
       try {
-        await dashClient.clients.dapi.getBlockHash(height);
+        await client.getDAPIClient().getBlockHash(height);
 
         expect.fail('Should throw error');
       } catch (e) {
