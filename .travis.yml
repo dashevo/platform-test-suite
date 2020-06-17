@@ -50,7 +50,7 @@ script: >
   popd &&
   npm run check-package &&
   npm run lint &&
-  docker run platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest
+  docker run --network="host" platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest
 
 after_script:
   - mn stop local
