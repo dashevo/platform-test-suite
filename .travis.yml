@@ -42,17 +42,15 @@ install:
   - npm install && npm link
 
 before_script:
-  - popd
-  - source ./scripts/register-mn.sh
-  - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
-  - echo $OPERATOR_BLS_KEY
+  - export PRIVATE_KEY=$(mn wallet:generate-to-address local 2000 | grep -m 1 "Private key:" | awk '{printf $3}')
+  - export OPERATOR_BLS_KEY=$(mn register local $PRIVATE_KEY 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}')
   - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
   popd &&
   npm run check-package &&
   npm run lint &&
-  docker run platform-test-suite:local 127.0.0.1 -k=$PRIVATE_KEY -n=regtest
+  docker run platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest
 
 after_script:
   - mn stop local
