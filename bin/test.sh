@@ -9,11 +9,11 @@ Usage: test <seed> [options]
   <seed> can be IP or IP:port
 
   Options:
-            --npm-install=pkg   - install npm package before running the suite
-  -s=a,b,c  --scope=a,b,c       - test scope to run
-  -k=key    --faucet-key=key    - faucet private key string
-  -n        --network           - Use regtest or testnet
-  -h        --help              - show help
+              --npm-install=pkg   - install npm package before running the suite
+  -s=a,b,c    --scope=a,b,c       - test scope to run
+  -k=key      --faucet-key=key    - faucet private key string
+  -n=network  --network=network   - Use regtest or testnet
+  -h          --help              - show help
 
   Possible scopes:
   e2e
@@ -48,7 +48,7 @@ case ${i} in
     -k=*|--faucet-key=*)
     faucet_key="${i#*=}"
     ;;
-    -n|--network)
+    -n=*|--network=*)
     network="${i#*=}"
     ;;
 esac

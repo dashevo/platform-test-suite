@@ -48,7 +48,7 @@ script: >
   popd &&
   npm run check-package &&
   npm run lint &&
-  docker run platform-test-suite:local 127.0.0.1 -k $(cat ~/faucet_pk.txt) -n regtest
+  docker run platform-test-suite:local 127.0.0.1 -k=$(cat ~/faucet_pk.txt) -n=regtest
 
 after_script:
   - mn stop local
