@@ -43,6 +43,7 @@ before_script:
   - popd
   - source ./scripts/register-mn.sh
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
+  - echo $OPERATOR_BLS_KEY
   - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
