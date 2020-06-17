@@ -3,7 +3,8 @@ FROM node:12-alpine
 RUN apk update && \
     apk --no-cache upgrade && \
     apk add --no-cache git \
-                       alpine-sdk
+                       alpine-sdk \
+                       bash
 
 # Install dependencies first, in a different location
 # for easier app bind mounting for local development
