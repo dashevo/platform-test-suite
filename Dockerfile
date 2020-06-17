@@ -1,10 +1,16 @@
-FROM node:12-alpine
+FROM ubuntu:18.04
 
-RUN apk update && \
-    apk --no-cache upgrade && \
-    apk add --no-cache git \
-                       alpine-sdk \
-                       bash
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git
+
+# Install Node.JS
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    nodejs
 
 # Install dependencies first, in a different location
 # for easier app bind mounting for local development
@@ -13,7 +19,18 @@ WORKDIR /
 COPY package.json package-lock.json ./
 RUN npm ci --production
 
-FROM node:12-alpine
+FROM ubuntu:18.04
+
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl
+
+# Install Node.JS
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    nodejs
 
 LABEL maintainer="Dash Developers <dev@dash.org>"
 LABEL description="Test suite for Dash Platform"
@@ -31,4 +48,4 @@ COPY . ./
 ARG NODE_ENV=production
 ENV NODE_ENV ${NODE_ENV}
 
-ENTRYPOINT ["./bin/test.sh"]
+ENTRYPOINT ["/usr/src/app/bin/test.sh"]
