@@ -38,13 +38,13 @@ install:
   - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
+  - popd
 
 before_script:
   - source ./scripts/register-mn.sh
   - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
-  popd &&
   npm run check-package &&
   npm run lint &&
   docker run platform-test-suite:local 127.0.0.1 -k=$PRIVATE_KEY -n=regtest
