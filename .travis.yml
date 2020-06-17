@@ -40,8 +40,8 @@ install:
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
-  - source scripts/register-mn.sh
-  - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
+  source scripts/register-mn.sh &&
+  mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
   popd &&
