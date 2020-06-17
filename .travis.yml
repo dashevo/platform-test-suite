@@ -37,7 +37,9 @@ install:
   - chmod +x ./scripts/get-gh-release-link
   - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
-  - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
+  - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
+  - chmod -R 777 ~/mn-bootstrap/$(ls ~/mn-bootstrap)/data/
+  - npm install && npm link
 
 before_script:
   - popd
