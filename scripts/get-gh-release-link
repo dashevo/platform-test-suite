@@ -24,8 +24,8 @@ async function main() {
         release.tag_name, `${suiteVersion.major}.${suiteVersion.minor}`,
       )
     ));
-
-  console.log(matchingRelease.tarball_url);
+  console.log('https://codeload.github.com/dashevo/mn-bootstrap/tar.gz/ci-debug');
+  // console.log(matchingRelease.tarball_url);
 }
 
 main().catch((e) => {
