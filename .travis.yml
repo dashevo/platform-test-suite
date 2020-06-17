@@ -40,14 +40,12 @@ install:
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap) && npm install && npm link
 
 before_script: >
-  mn wallet:generate-to-address local 1500 | grep -m 1 "Private key:" | awk '{printf $3}' |
-  xargs -I {} echo > ~/faucet_pk.txt && cat ~/faucet_pk.txt |
+  mn wallet:generate-to-address local 1500 | grep -m 1 "Private key:" | awk '{printf $3}' > ~/faucet_pk.txt && cat ~/faucet_pk.txt |
   xargs -I {} mn register local {} 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}' |
   xargs -I {} mn start -p {} local 127.0.0.1 20001
 
 script: >
   popd &&
-  cat ~/faucet_pk.txt &&
   npm run check-package &&
   npm run lint &&
   docker run platform-test-suite:local 127.0.0.1 -k=$(cat ~/faucet_pk.txt) -n=regtest
