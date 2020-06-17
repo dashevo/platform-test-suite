@@ -30,6 +30,7 @@ before_install:
 install:
   - echo $(pwd)
   - npm i
+  - cp .env.example .env
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
