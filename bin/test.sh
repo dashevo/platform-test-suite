@@ -110,6 +110,4 @@ else
   scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
 fi
 
-scope_dirs="test/functional/platform/**/*.spec.js"
-
 DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NETWORK=${network} NODE_ENV=test mocha ${scope_dirs}

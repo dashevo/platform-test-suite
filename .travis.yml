@@ -29,13 +29,12 @@ before_install:
 
 install:
   - echo $(pwd)
-  - npm i
+  - npm ci
   - cp .env.example .env
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
   - chmod +x ./scripts/get-gh-release-link
-  - echo $(./scripts/get-gh-release-link dashevo/mn-bootstrap)
   - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
