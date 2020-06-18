@@ -1,16 +1,9 @@
-FROM ubuntu:18.04
+FROM node:12-alpine
 
-RUN apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git
-
-# Install Node.JS
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    nodejs
+RUN apk update && \
+    apk --no-cache upgrade && \
+    apk add --no-cache git \
+                       alpine-sdk
 
 # Install dependencies first, in a different location
 # for easier app bind mounting for local development
@@ -19,18 +12,11 @@ WORKDIR /
 COPY package.json package-lock.json ./
 RUN npm ci --production
 
-FROM ubuntu:18.04
+FROM node:12-alpine
 
-RUN apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl
-
-# Install Node.JS
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    nodejs
+RUN apk update && \
+    apk --no-cache upgrade && \
+    apk add --no-cache bash
 
 LABEL maintainer="Dash Developers <dev@dash.org>"
 LABEL description="Test suite for Dash Platform"

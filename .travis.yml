@@ -39,7 +39,7 @@ install:
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
   - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
   - chmod -R 777 ~/mn-bootstrap/$(ls ~/mn-bootstrap)/data/
-  - npm install && npm link
+  - npm ci && npm link
 
 before_script:
   - export PRIVATE_KEY=$(mn wallet:generate-to-address local 5000 | grep -m 1 "Private key:" | awk '{printf $3}')
