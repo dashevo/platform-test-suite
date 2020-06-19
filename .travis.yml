@@ -28,18 +28,20 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 install:
-  - echo $(pwd)
   - npm ci
   - cp .env.example .env
   # Build docker image
   - docker build -t platform-test-suite:local .
   # Install MN Bootstrap
-  - chmod +x ./scripts/get-gh-release-link
-  - curl -L $(./scripts/get-gh-release-link dashevo/mn-bootstrap) > mn-bootstrap.tar.gz
+  - export MN_RELEASE_LINK=$(./scripts/get-gh-release-link dashevo/mn-bootstrap)
+  - curl -L $MN_RELEASE_LINK > mn-bootstrap.tar.gz
   - mkdir ~/mn-bootstrap && tar -C ~/mn-bootstrap -xvf mn-bootstrap.tar.gz
-  - pushd ~/mn-bootstrap/$(ls ~/mn-bootstrap)
-  - chmod -R 777 ~/mn-bootstrap/$(ls ~/mn-bootstrap)/data/
+  - export MN_RELEASE_DIR="$(ls ~/mn-bootstrap)"
+  - cd ~/mn-bootstrap/$MN_RELEASE_DIR
+  - chmod -R 777 data
   - npm ci && npm link
+  # Go back to workdir
+  - cd -
 
 before_script:
   - export PRIVATE_KEY=$(mn wallet:generate-to-address local 10000 | grep -m 1 "Private key:" | awk '{printf $3}')
@@ -47,7 +49,6 @@ before_script:
   - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
-  popd &&
   npm run check-package &&
   npm run lint &&
   docker run --network="host" platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest
