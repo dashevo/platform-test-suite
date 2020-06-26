@@ -22,14 +22,16 @@
   },
   "homepage": "https://github.com/dashevo/plaform-test-suite#readme",
   "dependencies": {
-    "@dashevo/dashcore-lib": "~0.18.4",
+    "@dashevo/dashcore-lib": "~0.18.7",
+    "@dashevo/dpns-contract": "~0.2.0-dev.4",
     "@dashevo/dpp": "~0.13.1",
     "@dashevo/grpc-common": "~0.3.0",
+    "bs58": "^4.0.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "~3.13.3",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
+    "dash": "dashevo/DashJS#feat/dpns-methods",
     "github-api": "^3.3.0",
     "mocha": "^7.2.0",
     "semver": "^7.3.2"
