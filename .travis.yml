@@ -46,12 +46,16 @@ install:
 before_script:
   - export PRIVATE_KEY=$(mn wallet:generate-to-address local 10000 | grep -m 1 "Private key:" | awk '{printf $3}')
   - export OPERATOR_BLS_KEY=$(mn register local $PRIVATE_KEY 127.0.0.1 20001 | grep -m 1 "Private key:" | awk '{printf $3}')
+  - export INIT_OUTPUT=$(mn platform:init local $PRIVATE_KEY $OPERATOR_BLS_KEY 127.0.0.1 20001)
+  - export DPNS_CONTRACT_ID=$(echo "$INIT_OUTPUT" | grep -m 1 "DPNS contract ID:" | awk '{printf $3}')
+  - export DPNS_TOP_LEVEL_IDENTITY=$(echo "$INIT_OUTPUT" | grep -m 1 "DPNS identity:" | awk '{printf $3}')
+  - export IDENTITY_MNEMONIC=$(echo "$INIT_OUTPUT" | grep -m 1 "Mnemonic:" | awk '{$1=""; printf $0}')
   - mn start local -p $OPERATOR_BLS_KEY 127.0.0.1 20001
 
 script: >
   npm run check-package &&
   npm run lint &&
-  docker run --network="host" platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest
+  docker run --network="host" platform-test-suite:local 127.0.0.1:3000 -k=$PRIVATE_KEY -n=regtest -m=$IDENTITY_MNEMONIC -i=$DPNS_TOP_LEVEL_IDENTITY -c=$DPNS_CONTRACT_ID
 
 after_script:
   - mn stop local

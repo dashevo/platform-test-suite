@@ -12,7 +12,10 @@ Usage: test <seed> [options]
               --npm-install=pkg   - install npm package before running the suite
   -s=a,b,c    --scope=a,b,c       - test scope to run
   -k=key      --faucet-key=key    - faucet private key string
-  -n=network  --network=network   - Use regtest or testnet
+  -n=network  --network=network   - use regtest or testnet
+  -m=mnemonic --mnemonic=mnemonic - top level identity mnemonic
+  -i=identity --identity=identity - top level identity id
+  -c=contract --contract=contract - dpns contract id
   -h          --help              - show help
 
   Possible scopes:
@@ -50,6 +53,15 @@ case ${i} in
     ;;
     -n=*|--network=*)
     network="${i#*=}"
+    ;;
+    -m=*|--mnemonic=*)
+    mnemonic="${i#*=}"
+    ;;
+    -i=*|--identity=*)
+    identity="${i#*=}"
+    ;;
+    -c=*|--contract=*)
+    contract="${i#*=}"
     ;;
 esac
 done
@@ -110,4 +122,4 @@ else
   scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
 fi
 
-DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NETWORK=${network} NODE_ENV=test mocha ${scope_dirs}
+DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NETWORK=${network} DPNS_CONTRACT_ID=${contract} DPNS_TOP_LEVEL_IDENTITY=${identity} IDENTITY_MNEMONIC=${mnemonic} NODE_ENV=test mocha ${scope_dirs}
