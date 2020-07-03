@@ -38,35 +38,40 @@ describe('DPNS', () => {
     await client.disconnect();
   });
 
-  it('should exists', async () => {
-    const createdDataContract = await client.platform.contracts.get(process.env.DPNS_CONTRACT_ID);
+  describe('Data contract', () => {
+    it('should exists', async () => {
+      const createdDataContract = await client.platform.contracts.get(process.env.DPNS_CONTRACT_ID);
 
-    expect(createdDataContract.getId()).to.equal(process.env.DPNS_CONTRACT_ID);
+      expect(createdDataContract.getId()).to.equal(process.env.DPNS_CONTRACT_ID);
+    });
   });
 
   describe('DPNS owner', () => {
     let createdTLD;
     let newTopLevelDomain;
     let replaceTopLevelDomain;
+    let ownerClient;
 
     before(async () => {
-      client = await createClientWithFundedWallet(process.env.IDENTITY_MNEMONIC);
+      ownerClient = await createClientWithFundedWallet(
+        process.env.DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY,
+      );
 
       newTopLevelDomain = getRandomDomain();
       replaceTopLevelDomain = getRandomDomain();
-      identity = await client.platform.identities.get(process.env.DPNS_TOP_LEVEL_IDENTITY);
+      identity = await ownerClient.platform.identities.get(process.env.DPNS_TOP_LEVEL_IDENTITY_ID);
 
-      await client.platform.identities.topUp(process.env.DPNS_TOP_LEVEL_IDENTITY, 5);
+      await ownerClient.platform.identities.topUp(process.env.DPNS_TOP_LEVEL_IDENTITY_ID, 5);
     });
 
     after(async () => {
-      await client.disconnect();
+      await ownerClient.disconnect();
     });
 
     // generate a random one which will be used in tests above
     // skip if DPNS owner private key is not passed and use `dash` in tests above
     it('should be able to register a TLD', async () => {
-      createdTLD = await client.platform.names.register(newTopLevelDomain, identity);
+      createdTLD = await ownerClient.platform.names.register(newTopLevelDomain, identity);
     });
 
     it('should not be able to update domain', async () => {
@@ -80,7 +85,7 @@ describe('DPNS', () => {
         Buffer.from(fullDomainName),
       ).toString('hex');
 
-      const records = { dashIdentity: process.env.DPNS_TOP_LEVEL_IDENTITY };
+      const records = { dashIdentity: process.env.DPNS_TOP_LEVEL_IDENTITY_ID };
 
       const preorderSalt = entropy.generate();
 
@@ -93,7 +98,7 @@ describe('DPNS', () => {
         slatedDomainHashBuffer,
       ).toString('hex');
 
-      const preorderDocument = await client.platform.documents.create(
+      const preorderDocument = await ownerClient.platform.documents.create(
         'preorder',
         identity,
         {
@@ -101,11 +106,11 @@ describe('DPNS', () => {
         },
       );
 
-      await client.platform.documents.broadcast({
+      await ownerClient.platform.documents.broadcast({
         create: [preorderDocument],
       }, identity);
 
-      const newDocument = await client.platform.documents.create(
+      const newDocument = await ownerClient.platform.documents.create(
         'domain',
         identity,
         {
@@ -120,7 +125,7 @@ describe('DPNS', () => {
       );
 
       try {
-        await client.platform.documents.broadcast({
+        await ownerClient.platform.documents.broadcast({
           replace: [newDocument],
         }, identity);
 
@@ -135,7 +140,7 @@ describe('DPNS', () => {
 
     it('should not be able to delete domain', async () => {
       try {
-        await client.platform.documents.broadcast({
+        await ownerClient.platform.documents.broadcast({
           delete: [createdTLD],
         }, identity);
 
@@ -151,7 +156,6 @@ describe('DPNS', () => {
 
   describe('Any Identity', () => {
     before(async () => {
-      client = await createClientWithFundedWallet();
       identity = await client.platform.identities.register(5);
     });
 

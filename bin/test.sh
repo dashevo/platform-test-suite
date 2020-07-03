@@ -122,4 +122,4 @@ else
   scope_dirs="test/functional/**/*.spec.js test/e2e/**/*.spec.js"
 fi
 
-DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NETWORK=${network} DPNS_CONTRACT_ID=${contract} DPNS_TOP_LEVEL_IDENTITY=${identity} IDENTITY_MNEMONIC=${mnemonic} NODE_ENV=test mocha ${scope_dirs}
+DAPI_SEED=${DAPI_SEED} FAUCET_PRIVATE_KEY=${faucet_key} NETWORK=${network} DPNS_CONTRACT_ID=${contract} DPNS_TOP_LEVEL_IDENTITY_ID=${identity} DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY=${mnemonic} NODE_ENV=test mocha ${scope_dirs}
