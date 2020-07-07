@@ -1,15 +1,10 @@
 const crypto = require('crypto');
-const bs58 = require('bs58');
-
-const entropy = require('@dashevo/dpp/lib/util/entropy');
-const { hash } = require('@dashevo/dpp/lib/util/multihashDoubleSHA256');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
 
 const getRandomDomain = () => crypto.randomBytes(10).toString('hex');
 
 describe('DPNS', () => {
-  // Use https://github.com/mochajs/mocha/issues/2894#issuecomment-492979837
   let failed = false;
   let client;
   let identity;
@@ -42,6 +37,7 @@ describe('DPNS', () => {
     it('should exists', async () => {
       const createdDataContract = await client.platform.contracts.get(process.env.DPNS_CONTRACT_ID);
 
+      expect(createdDataContract).to.exist();
       expect(createdDataContract.getId()).to.equal(process.env.DPNS_CONTRACT_ID);
     });
   });
@@ -49,7 +45,6 @@ describe('DPNS', () => {
   describe('DPNS owner', () => {
     let createdTLD;
     let newTopLevelDomain;
-    let replaceTopLevelDomain;
     let ownerClient;
 
     before(async () => {
@@ -58,9 +53,9 @@ describe('DPNS', () => {
       );
 
       newTopLevelDomain = getRandomDomain();
-      replaceTopLevelDomain = getRandomDomain();
       identity = await ownerClient.platform.identities.get(process.env.DPNS_TOP_LEVEL_IDENTITY_ID);
 
+      expect(identity).to.exist();
       await ownerClient.platform.identities.topUp(process.env.DPNS_TOP_LEVEL_IDENTITY_ID, 5);
     });
 
@@ -72,61 +67,19 @@ describe('DPNS', () => {
     // skip if DPNS owner private key is not passed and use `dash` in tests above
     it('should be able to register a TLD', async () => {
       createdTLD = await ownerClient.platform.names.register(newTopLevelDomain, identity);
+
+      expect(createdTLD).to.exist();
+      expect(createdTLD.getType()).to.equal('domain');
+      expect(createdTLD.getData().label).to.equal(newTopLevelDomain);
+      expect(createdTLD.getData().normalizedParentDomainName).to.equal('');
     });
 
     it('should not be able to update domain', async () => {
-      const fullDomainName = replaceTopLevelDomain;
-
-      const label = fullDomainName;
-      const normalizedLabel = fullDomainName;
-      const normalizedParentDomainName = '';
-
-      const nameHash = hash(
-        Buffer.from(fullDomainName),
-      ).toString('hex');
-
-      const records = { dashIdentity: process.env.DPNS_TOP_LEVEL_IDENTITY_ID };
-
-      const preorderSalt = entropy.generate();
-
-      const slatedDomainHashBuffer = Buffer.concat([
-        bs58.decode(preorderSalt),
-        Buffer.from(nameHash, 'hex'),
-      ]);
-
-      const saltedDomainHash = hash(
-        slatedDomainHashBuffer,
-      ).toString('hex');
-
-      const preorderDocument = await ownerClient.platform.documents.create(
-        'preorder',
-        identity,
-        {
-          saltedDomainHash,
-        },
-      );
-
-      await ownerClient.platform.documents.broadcast({
-        create: [preorderDocument],
-      }, identity);
-
-      const newDocument = await ownerClient.platform.documents.create(
-        'domain',
-        identity,
-        {
-          $id: createdTLD.getId(),
-          nameHash,
-          label,
-          normalizedLabel,
-          normalizedParentDomainName,
-          preorderSalt,
-          records,
-        },
-      );
+      createdTLD.set('label', 'anotherlabel');
 
       try {
         await ownerClient.platform.documents.broadcast({
-          replace: [newDocument],
+          replace: [createdTLD],
         }, identity);
 
         expect.fail('should throw an error');
@@ -194,7 +147,7 @@ describe('DPNS', () => {
         expect(e.code).to.equal(3);
         const [error] = JSON.parse(e.metadata.get('errors'));
         expect(error.name).to.equal('DataTriggerConditionError');
-        // expect(error.message).to.equal('Can\'t create top level domain for this identity');
+        expect(error.message).to.equal('Can\'t find parent domain matching parent hash');
       }
     });
 
@@ -224,58 +177,11 @@ describe('DPNS', () => {
     });
 
     it('should not be able to update domain', async () => {
-      const fullDomainName = `${secondLevelDomain}.${topLevelDomain}`;
-
-      const label = secondLevelDomain;
-      const normalizedLabel = secondLevelDomain;
-      const normalizedParentDomainName = topLevelDomain;
-
-      const nameHash = hash(
-        Buffer.from(fullDomainName),
-      ).toString('hex');
-
-      const records = { dashIdentity: identity.getId() };
-
-      const preorderSalt = entropy.generate();
-
-      const slatedDomainHashBuffer = Buffer.concat([
-        bs58.decode(preorderSalt),
-        Buffer.from(nameHash, 'hex'),
-      ]);
-
-      const saltedDomainHash = hash(
-        slatedDomainHashBuffer,
-      ).toString('hex');
-
-      const preorderDocument = await client.platform.documents.create(
-        'preorder',
-        identity,
-        {
-          saltedDomainHash,
-        },
-      );
-
-      await client.platform.documents.broadcast({
-        create: [preorderDocument],
-      }, identity);
-
-      const newDocument = await client.platform.documents.create(
-        'domain',
-        identity,
-        {
-          $id: registeredDomain.getId(),
-          nameHash,
-          label,
-          normalizedLabel,
-          normalizedParentDomainName,
-          preorderSalt,
-          records,
-        },
-      );
+      registeredDomain.set('label', 'newlabel');
 
       try {
         await client.platform.documents.broadcast({
-          replace: [newDocument],
+          replace: [registeredDomain],
         }, identity);
 
         expect.fail('should throw an error');
