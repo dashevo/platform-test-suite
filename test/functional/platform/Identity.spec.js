@@ -62,7 +62,7 @@ describe('Platform', () => {
     });
 
     it('should create an identity', async () => {
-      identity = await client.platform.identities.register(1);
+      identity = await client.platform.identities.register(2);
       identityRawPublicKey = new PublicKey(
         Buffer.from(identity.getPublicKeys()[0].getData(), 'base64'),
       );
@@ -119,7 +119,7 @@ describe('Platform', () => {
       expect(fetchedIdentity).to.be.not.null();
       expect(fetchedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
-        balance: 826,
+        balance: 1826,
       });
 
       // updating balance
@@ -140,7 +140,7 @@ describe('Platform', () => {
 
       expect(receivedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
-        balance: 826,
+        balance: 1826,
       });
     });
 
@@ -172,7 +172,7 @@ describe('Platform', () => {
           'customContracts.niceDocument',
           identity,
           {
-            name: 'Some Very Long Long Long Name',
+            name: 'Some Very Long Long Long Name'.repeat(100),
           },
         );
 
