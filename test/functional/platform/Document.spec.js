@@ -141,7 +141,7 @@ describe('Platform', () => {
       }, identity);
     });
 
-    it('should fetch created documents array', async () => {
+    it('should fetch created document', async () => {
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
         { where: [['$id', '==', document.getId()]] },
