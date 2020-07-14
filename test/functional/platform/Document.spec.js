@@ -152,7 +152,7 @@ describe('Platform', () => {
         .to.be.equal(fetchedDocument.getCreatedAt().getTime());
     });
 
-    it('should fetch created document by time range', async () => {
+    it('should be able to fetch created document by created timestamp', async () => {
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
         { where: [['$createdAt', '==', document.getCreatedAt().getTime()]] },
