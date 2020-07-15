@@ -19,9 +19,7 @@ addons:
       - docker-ce
 
 env:
-  - DOCKER_COMPOSE_VERSION=1.25.5
-  - DRIVE_VERSION=0.14.0-dev
-  - DAPI_VERSION=0.14.0-dev
+  - DOCKER_COMPOSE_VERSION=1.25.5 DRIVE_VERSION=0.14.0-dev DAPI_VERSION=0.14.0-dev
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
