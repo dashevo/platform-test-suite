@@ -1,4 +1,4 @@
-# [0.14.0](https://github.com/dashevo/plaform-test-suite/compare/v0.15.0-dev.1...v0.14.0) (2020-07-23)
+# 0.14.0 (2020-07-23)
 
 
 ### Features
@@ -11,5 +11,3 @@
 * dockerize test suite ([#28](https://github.com/dashevo/plaform-test-suite/issues/28))
 * functional core tests ([#33](https://github.com/dashevo/plaform-test-suite/issues/33))
 * implement functional tests ([#38](https://github.com/dashevo/plaform-test-suite/issues/38))
-
-
