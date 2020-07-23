@@ -10,14 +10,13 @@
 
 ## Pre-requisites
 
-A testnet or devnet should be running. If not you can deploy your own network with [dash-network-deploy](https://github.com/dashpay/dash-network-deploy).
-Or use [mn-bootstrap](https://github.com/dashevo/mn-bootstrap) to run your local dev environment. To run locally make sure you have [Node.js](https://nodejs.org/) installed. To run using [Docker](https://www.docker.com/), make sure you have it installed.
+You may run test-suite against any platform compatible network, or even [local node](https://github.com/dashevo/mn-bootstrap).
+To run locally make sure you have [Node.js](https://nodejs.org/) installed.
+To run using [Docker](https://www.docker.com/), make sure you have it installed.
 
 ## Usage
 
 ### Running locally
-
-Configure all the necessary variables in `.env` file. Use [.env.example](https://github.com/dashevo/platform-test-suite/blob/master/.env.example) as an example.
 
 Install all the necessary dependencies:
 
@@ -59,16 +58,10 @@ Usage: test <seed> [options]
 
 ### Running using Docker
 
-First of all build an image:
+Just run pre-built image using the same arguments as [running locally](#running-locally):
 
 ```sh
-$ docker build . -t test-suite
-```
-
-The just run freshly built image using the same arguments as [running locally](#running-locally):
-
-```sh
-$ docker run test-suite
+$ docker run --network=host dashpay/platform-test-suite
 
 Run test suite
 
@@ -99,7 +92,7 @@ Usage: test <seed> [options]
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/dashevo/dash-network-e2e-tests/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/dashevo/platform-test-suite/issues/new) or submit PRs.
 
 ## License
 
