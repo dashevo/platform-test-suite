@@ -4,8 +4,8 @@
 ### Features
 
 * use external Travis scripts ([#47](https://github.com/dashevo/plaform-test-suite/issues/47))
-* update SDK to 3.14.0-dev.4 ([#45](https://github.com/dashevo/plaform-test-suite/issues/45))
-* update DPP to 0.14.0-dev.4 ([#42](https://github.com/dashevo/plaform-test-suite/issues/42))
+* update SDK to 3.14.0 ([#45](https://github.com/dashevo/plaform-test-suite/issues/45))
+* update DPP to 0.14.0 ([#42](https://github.com/dashevo/plaform-test-suite/issues/42))
 * add document timestamp tests ([#40](https://github.com/dashevo/plaform-test-suite/issues/40))
 * define npm test scopes ([#31](https://github.com/dashevo/plaform-test-suite/issues/31))
 * dockerize test suite ([#28](https://github.com/dashevo/plaform-test-suite/issues/28))
