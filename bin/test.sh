@@ -28,6 +28,12 @@ Usage: test <seed> [options]
   functional:core
   functional:platform"
 
+if [[ $SKIP_TEST_SUITE != '' ]]
+then
+  echo "Skipping tests"
+  exit 0
+fi
+
 DAPI_SEED="$1"
 network="testnet"
 
