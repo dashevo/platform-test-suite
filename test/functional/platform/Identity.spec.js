@@ -222,7 +222,7 @@ describe('Platform', () => {
         }
       });
 
-      it('should top up identity', async () => {
+      it('should be able to top-up credit balance', async () => {
         await waitForBalanceToChange(walletAccount);
 
         const identityBeforeTopUp = await client.platform.identities.get(
