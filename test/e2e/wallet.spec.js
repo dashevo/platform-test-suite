@@ -1,9 +1,12 @@
+const {
+  Mnemonic,
+} = require('@dashevo/dashcore-lib');
+
 const Dash = require('dash');
 
 const getDAPISeeds = require('../../lib/test/getDAPISeeds');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
-const createClientWithoutWallet = require('../../lib/test/createClientWithoutWallet');
 
 describe('e2e', () => {
   describe('Wallet', function main() {
@@ -12,10 +15,16 @@ describe('e2e', () => {
     let fundedWallet;
     let emptyWallet;
     let duplicateWallet;
+    let mnemonic;
 
     before(async () => {
+      mnemonic = new Mnemonic();
       fundedWallet = await createClientWithFundedWallet();
-      emptyWallet = await createClientWithoutWallet();
+      emptyWallet = new Dash.Client({
+        wallet: {
+          mnemonic,
+        },
+      });
     });
 
     after(async () => {
@@ -60,8 +69,6 @@ describe('e2e', () => {
 
     describe('duplicate wallet', () => {
       it('should have all transaction from before at first', async () => {
-        const mnemonic = 'TODO: get mnemonic';
-
         duplicateWallet = new Dash.Client({
           wallet: {
             mnemonic,
