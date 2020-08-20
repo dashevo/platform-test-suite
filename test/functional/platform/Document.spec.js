@@ -23,10 +23,15 @@ describe('Platform', () => {
 
       await client.platform.contracts.broadcast(dataContractFixture, identity);
 
+      // noinspection JSAccessibilityCheck
       client.apps.customContracts = {
         contractId: dataContractFixture.getId(),
         contract: dataContractFixture,
       };
+    });
+
+    beforeEach(() => {
+      dataContractFixture = getDataContractFixture(identity.getId());
     });
 
     after(async () => {
@@ -36,15 +41,23 @@ describe('Platform', () => {
     });
 
     it('should fail to create new document with an unknown type', async () => {
+      // Add undefined document type for
+      dataContractFixture.documents.undefinedType = {
+        properties: {
+          name: {
+            type: 'string',
+          },
+        },
+        additionalProperties: false,
+      };
+
       const newDocument = await client.platform.documents.create(
-        'customContracts.niceDocument',
+        'customContracts.undefinedType',
         identity,
         {
           name: 'anotherName',
         },
       );
-
-      newDocument.type = 'unknownDocument';
 
       try {
         await client.platform.documents.broadcast({

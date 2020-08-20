@@ -118,7 +118,9 @@ describe('DPNS', () => {
 
     it('should not be able to register TLD', async () => {
       try {
-        await client.platform.names.register(getRandomDomain(), identity);
+        await client.platform.names.register(getRandomDomain(), {
+          dashUniqueIdentityId: identity.getId(),
+        }, identity);
 
         expect.fail('Should throw error');
       } catch (e) {
@@ -129,7 +131,9 @@ describe('DPNS', () => {
     });
 
     it('should be able to register a second level domain', async () => {
-      registeredDomain = await client.platform.names.register(`${secondLevelDomain}.${topLevelDomain}`, identity);
+      registeredDomain = await client.platform.names.register(`${secondLevelDomain}.${topLevelDomain}`, {
+        dashUniqueIdentityId: identity.getId(),
+      }, identity);
 
       expect(registeredDomain.getType()).to.equal('domain');
       expect(registeredDomain.getData().label).to.equal(secondLevelDomain);
@@ -140,7 +144,9 @@ describe('DPNS', () => {
       try {
         const domain = `${getRandomDomain()}.${getRandomDomain()}.${topLevelDomain}`;
 
-        await client.platform.names.register(domain, identity);
+        await client.platform.names.register(domain, {
+          dashUniqueIdentityId: identity.getId(),
+        }, identity);
 
         expect.fail('Should throw error');
       } catch (e) {
@@ -207,5 +213,13 @@ describe('DPNS', () => {
         expect(error.message).to.equal('Delete action is not allowed');
       }
     });
+
+    it('should not be able to register two domains with same `dashUniqueIdentityId` record');
+
+    it('should be able to register many domains with same `dashAliasIdentityId` record');
+
+    it('should not be able to update preorder');
+
+    it('should not be able to domain preorder');
   });
 });
