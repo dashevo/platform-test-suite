@@ -24,7 +24,7 @@
   "dependencies": {
     "@dashevo/dashcore-lib": "~0.18.12",
     "@dashevo/dpns-contract": "~0.3.0-dev.3",
-    "@dashevo/dpp": "~0.15.0-dev.12",
+    "@dashevo/dpp": "~0.15.0-dev.13",
     "@dashevo/grpc-common": "~0.3.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
