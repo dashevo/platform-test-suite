@@ -1,3 +1,5 @@
+const Dash = require('dash');
+
 const {
   Transaction,
   PrivateKey,
@@ -6,6 +8,7 @@ const {
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 
 const fundAddress = require('../../../lib/test/fundAddress');
+const fundAccount = require('../../../lib/test/fundAccount');
 
 describe('Core', () => {
   describe('getTransaction', () => {
@@ -22,22 +25,31 @@ describe('Core', () => {
     });
 
     it('should respond with a transaction by it\'s ID', async () => {
-      const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
-      const faucetAddress = faucetPrivateKey
-        .toAddress(process.env.NETWORK)
-        .toString();
+      const faucetPrivateKey = process.env.FAUCET_PRIVATE_KEY;
 
-      const address = new PrivateKey()
-        .toAddress(process.env.NETWORK)
-        .toString();
+      const amount = 20000;
 
-      const transactionId = await fundAddress(
-        client.getDAPIClient(),
-        faucetAddress,
-        faucetPrivateKey,
-        address,
-        20000,
-      );
+      const clientOpts = {
+        network: process.env.NETWORK,
+      }
+
+      const faucetWallet = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: faucetPrivateKey
+        },
+      });
+      const faucetAccount = await faucetWallet.getWalletAccount();
+
+      const walletToFund = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: null,
+        },
+      });
+      const accountToFund = await walletToFund.getWalletAccount();
+
+      const { transaction, transactionId } = await fundAccount(faucetAccount, accountToFund, amount);
 
       const result = await client.getDAPIClient().core.getTransaction(transactionId);
       const receivedTx = new Transaction(Buffer.from(result));
