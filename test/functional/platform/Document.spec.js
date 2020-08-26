@@ -6,6 +6,7 @@ const getIdentityFixture = require(
 );
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
+const { expect } = require('chai');
 
 describe('Platform', () => {
   describe('Document', () => {
@@ -42,7 +43,7 @@ describe('Platform', () => {
 
     it('should fail to create new document with an unknown type', async () => {
       // Add undefined document type for
-      dataContractFixture.documents.undefinedType = {
+      client.apps.customContracts.contract.documents.undefinedType = {
         properties: {
           name: {
             type: 'string',
@@ -66,8 +67,10 @@ describe('Platform', () => {
 
         expect.fail('should throw invalid argument error');
       } catch (e) {
+        const [error] = JSON.parse(e.metadata.get('errors')[0]);
+        expect(error.name).to.equal('InvalidDocumentTypeError');
         expect(e.message).to.satisfy(
-          (msg) => msg.startsWith('StateTransition is invalid'),
+          (msg) => msg.startsWith('3 INVALID_ARGUMENT: State Transition is invalid'),
         );
       }
     });
