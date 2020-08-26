@@ -1,10 +1,8 @@
-const {
-  PrivateKey,
-} = require('@dashevo/dashcore-lib');
+const Dash = require('dash');
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 
-const fundAddress = require('../../../lib/test/fundAddress');
+const fundAccount = require('../../../lib/test/fundAccount');
 
 describe('Core', () => {
   describe('getAddressSummary', () => {
@@ -22,22 +20,33 @@ describe('Core', () => {
     });
 
     before(async () => {
-      const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
-      const faucetAddress = faucetPrivateKey
-        .toAddress(process.env.NETWORK)
-        .toString();
+      const faucetPrivateKey = process.env.FAUCET_PRIVATE_KEY;
 
-      address = new PrivateKey()
-        .toAddress(process.env.NETWORK)
-        .toString();
+      const clientOpts = {
+        network: process.env.NETWORK,
+      }
 
-      await fundAddress(
-        client.getDAPIClient(),
-        faucetAddress,
-        faucetPrivateKey,
-        address,
-        20000,
-      );
+      const faucetWallet = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: faucetPrivateKey
+        },
+      });
+      const faucetAccount = await faucetWallet.getWalletAccount();
+
+      const walletToFund = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: null,
+        },
+      });
+
+      const accountToFund = await walletToFund.getWalletAccount();
+
+      const amount = 20000;
+
+      await fundAccount(faucetAccount, accountToFund, amount);
+
     });
 
     it('should return address summary', async () => {
