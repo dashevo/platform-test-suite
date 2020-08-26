@@ -2,12 +2,10 @@ const Dash = require('dash');
 
 const {
   Transaction,
-  PrivateKey,
 } = require('@dashevo/dashcore-lib');
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 
-const fundAddress = require('../../../lib/test/fundAddress');
 const fundAccount = require('../../../lib/test/fundAccount');
 
 describe('Core', () => {
@@ -49,7 +47,7 @@ describe('Core', () => {
       });
       const accountToFund = await walletToFund.getWalletAccount();
 
-      const { transaction, transactionId } = await fundAccount(faucetAccount, accountToFund, amount);
+      const { transactionId } = await fundAccount(faucetAccount, accountToFund, amount);
 
       const result = await client.getDAPIClient().core.getTransaction(transactionId);
       const receivedTx = new Transaction(Buffer.from(result));

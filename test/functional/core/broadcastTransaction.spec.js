@@ -1,10 +1,7 @@
-const {
-  Transaction,
-  PrivateKey,
-} = require('@dashevo/dashcore-lib');
+const Dash = require('dash');
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
-const getInputsByAddress = require('../../../lib/test/getInputsByAddress');
+const fundAccount = require('../../../lib/test/fundAccount');
 
 describe('Core', () => {
   describe('broadcastTransaction', () => {
@@ -21,29 +18,32 @@ describe('Core', () => {
     });
 
     it('should sent transaction and return transaction ID', async () => {
-      const faucetPrivateKey = PrivateKey.fromString(process.env.FAUCET_PRIVATE_KEY);
-      const faucetAddress = faucetPrivateKey
-        .toAddress(process.env.NETWORK)
-        .toString();
-
-      const address = new PrivateKey()
-        .toAddress(process.env.NETWORK)
-        .toString();
+      const faucetPrivateKey = process.env.FAUCET_PRIVATE_KEY;
 
       const amount = 10000;
 
-      const inputs = await getInputsByAddress(client.getDAPIClient(), faucetAddress);
+      const clientOpts = {
+        network: process.env.NETWORK,
+      }
 
-      const transaction = new Transaction();
+      const faucetWallet = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: faucetPrivateKey
+        },
+      });
+      const faucetAccount = await faucetWallet.getWalletAccount();
 
-      transaction.from(inputs.slice(-1)[0])
-        .to(address, amount)
-        .change(faucetAddress)
-        .sign(faucetPrivateKey);
+      const walletToFund = new Dash.Client({
+        ...clientOpts,
+        wallet: {
+          privateKey: null,
+        },
+      });
 
-      const serializedTransaction = Buffer.from(transaction.serialize(), 'hex');
+      const accountToFund = await walletToFund.getWalletAccount();
 
-      const result = await client.getDAPIClient().core.broadcastTransaction(serializedTransaction);
+      const { transactionId: result} = await fundAccount(faucetAccount, accountToFund, amount);
 
       expect(result).to.be.a('string');
     });
