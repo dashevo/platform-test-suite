@@ -6,7 +6,7 @@ const {
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 
-const fundAccount = require('../../../lib/test/fundAccount');
+const fundWallet = require('@dashevo/wallet-lib/src/utils/fundWallet')
 
 describe('Core', () => {
   describe('getTransaction', () => {
@@ -31,23 +31,26 @@ describe('Core', () => {
         network: process.env.NETWORK,
       }
 
-      const faucetWallet = new Dash.Client({
+      const faucetClient = new Dash.Client({
         ...clientOpts,
         wallet: {
           privateKey: faucetPrivateKey
         },
       });
-      const faucetAccount = await faucetWallet.getWalletAccount();
 
-      const walletToFund = new Dash.Client({
+      const { wallet: faucetWallet } = faucetClient;
+
+      const clientToFund = new Dash.Client({
         ...clientOpts,
         wallet: {
           privateKey: null,
         },
       });
-      const accountToFund = await walletToFund.getWalletAccount();
 
-      const { transactionId } = await fundAccount(faucetAccount, accountToFund, amount);
+      const { wallet: walletToFund } = clientToFund.wallet;
+
+
+      const [ transactionId ] = await fundWallet(faucetWallet, walletToFund, amount)
 
       const result = await client.getDAPIClient().core.getTransaction(transactionId);
       const receivedTx = new Transaction(Buffer.from(result));

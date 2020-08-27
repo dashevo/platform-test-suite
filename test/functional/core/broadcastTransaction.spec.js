@@ -1,7 +1,7 @@
 const Dash = require('dash');
 
+const fundWallet = require('@dashevo/wallet-lib/src/utils/fundWallet')
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
-const fundAccount = require('../../../lib/test/fundAccount');
 
 describe('Core', () => {
   describe('broadcastTransaction', () => {
@@ -26,26 +26,27 @@ describe('Core', () => {
         network: process.env.NETWORK,
       }
 
-      const faucetWallet = new Dash.Client({
+      const faucetClient = new Dash.Client({
         ...clientOpts,
         wallet: {
           privateKey: faucetPrivateKey
         },
       });
-      const faucetAccount = await faucetWallet.getWalletAccount();
 
-      const walletToFund = new Dash.Client({
+      const { wallet: faucetWallet } = faucetClient;
+
+      const clientToFund = new Dash.Client({
         ...clientOpts,
         wallet: {
           privateKey: null,
         },
       });
 
-      const accountToFund = await walletToFund.getWalletAccount();
+      const { wallet: walletToFund } = clientToFund.wallet;
 
-      const { transactionId: result} = await fundAccount(faucetAccount, accountToFund, amount);
+      const [ transactionId ] = await fundWallet(faucetWallet, walletToFund, amount);
 
-      expect(result).to.be.a('string');
+      expect(transactionId).to.be.a('string');
     });
   });
 });
