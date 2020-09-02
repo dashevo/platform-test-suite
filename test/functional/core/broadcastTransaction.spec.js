@@ -1,50 +1,28 @@
-const Dash = require('dash');
+const {
+  PrivateKey,
+} = require('@dashevo/dashcore-lib');
 
-const fundWallet = require('@dashevo/wallet-lib/src/utils/fundWallet')
-const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
+const createFaucetClient = require('../../../lib/test/createFaucetClient');
 
 describe('Core', () => {
   describe('broadcastTransaction', () => {
-    let client;
+    let faucetClient;
 
     before(() => {
-      client = createClientWithoutWallet();
-    });
-
-    after(async () => {
-      if (client) {
-        await client.disconnect();
-      }
+      faucetClient = createFaucetClient();
     });
 
     it('should sent transaction and return transaction ID', async () => {
-      const faucetPrivateKey = process.env.FAUCET_PRIVATE_KEY;
+      const faucetWalletAccount = await faucetClient.getWalletAccount();
 
-      const amount = 10000;
-
-      const clientOpts = {
-        network: process.env.NETWORK,
-      }
-
-      const faucetClient = new Dash.Client({
-        ...clientOpts,
-        wallet: {
-          privateKey: faucetPrivateKey
-        },
+      const transaction = faucetWalletAccount.createTransaction({
+        recipient: new PrivateKey().toAddress(process.env.NETWORK),
+        satoshis: 10000,
       });
 
-      const { wallet: faucetWallet } = faucetClient;
+      const dapiClient = faucetClient.getDAPIClient();
 
-      const clientToFund = new Dash.Client({
-        ...clientOpts,
-        wallet: {
-          privateKey: null,
-        },
-      });
-
-      const { wallet: walletToFund } = clientToFund.wallet;
-
-      const [ transactionId ] = await fundWallet(faucetWallet, walletToFund, amount);
+      const transactionId = await dapiClient.core.broadcastTransaction(transaction.serialize());
 
       expect(transactionId).to.be.a('string');
     });
