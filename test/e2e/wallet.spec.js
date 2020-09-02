@@ -21,6 +21,8 @@ describe('e2e', () => {
       mnemonic = new Mnemonic();
       fundedWallet = await createClientWithFundedWallet();
       emptyWallet = new Dash.Client({
+        seeds: getDAPISeeds(),
+        network: process.env.NETWORK,
         wallet: {
           mnemonic,
         },
@@ -43,14 +45,14 @@ describe('e2e', () => {
 
     describe('empty wallet', () => {
       it('should have no transaction at first', async () => {
-        const emptyAccount = await emptyWallet.getAccount();
+        const emptyAccount = await emptyWallet.getWalletAccount();
 
         expect(emptyAccount.getTransactions()).to.be.empty();
       });
 
       it('should receive a transaction when as it has been sent', async () => {
-        const emptyAccount = await emptyWallet.getAccount();
-        const fundedAccount = await fundedWallet.getAccount();
+        const emptyAccount = await emptyWallet.getWalletAccount();
+        const fundedAccount = await fundedWallet.getWalletAccount();
 
         const tx = await fundedAccount.createTransaction({
           recipient: {
@@ -74,9 +76,10 @@ describe('e2e', () => {
             mnemonic,
           },
           seeds: getDAPISeeds(),
+          network: process.env.NETWORK,
         });
 
-        const duplicateAccount = await duplicateWallet.getAccount();
+        const duplicateAccount = await duplicateWallet.getWalletAccount();
 
         expect(duplicateAccount.getTransactions()).to.have.lengthOf(1);
 
@@ -84,8 +87,8 @@ describe('e2e', () => {
       });
 
       it('should receive a transaction when as it has been sent', async () => {
-        const duplicateAccount = await duplicateWallet.getAccount();
-        const fundedAccount = await fundedWallet.getAccount();
+        const duplicateAccount = await duplicateWallet.getWalletAccount();
+        const fundedAccount = await fundedWallet.getWalletAccount();
 
         const tx = await fundedAccount.createTransaction({
           recipient: {
@@ -104,7 +107,7 @@ describe('e2e', () => {
 
     describe('empty wallet', () => {
       it('should receive a transaction when as it has been sent to duplicate wallet', async () => {
-        const emptyAccount = await emptyWallet.getAccount();
+        const emptyAccount = await emptyWallet.getWalletAccount();
 
         expect(emptyAccount.getTransactions()).to.have.lengthOf(2);
 
