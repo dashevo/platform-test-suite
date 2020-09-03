@@ -15,8 +15,11 @@ describe('e2e', () => {
 
     let failed = false;
     let fundedWallet;
+    let fundedAccount;
     let emptyWallet;
+    let emptyAccount;
     let restoredWallet;
+    let restoredAccount;
     let mnemonic;
     let firstTransaction;
     let secondTransaction;
@@ -60,14 +63,13 @@ describe('e2e', () => {
 
     describe('empty wallet', () => {
       it('should have no transaction at first', async () => {
-        const emptyAccount = await emptyWallet.getWalletAccount();
+        emptyAccount = await emptyWallet.getWalletAccount();
 
         expect(emptyAccount.getTransactions()).to.be.empty();
       });
 
       it('should receive a transaction when as it has been sent', async () => {
-        const emptyAccount = await emptyWallet.getWalletAccount();
-        const fundedAccount = await fundedWallet.getWalletAccount();
+        fundedAccount = await fundedWallet.getWalletAccount();
 
         firstTransaction = await fundedAccount.createTransaction({
           recipient: emptyAccount.getUnusedAddress().address,
@@ -97,11 +99,11 @@ describe('e2e', () => {
           network: process.env.NETWORK,
         });
 
-        const duplicateAccount = await restoredWallet.getWalletAccount();
+        restoredAccount = await restoredWallet.getWalletAccount();
 
-        await waitForBalanceToChange(duplicateAccount);
+        await waitForBalanceToChange(restoredAccount);
 
-        const transactionIds = Object.keys(duplicateAccount.getTransactions());
+        const transactionIds = Object.keys(restoredAccount.getTransactions());
 
         expect(transactionIds).to.have.lengthOf(1);
 
@@ -109,9 +111,6 @@ describe('e2e', () => {
       });
 
       it('should receive a transaction when as it has been sent', async () => {
-        const restoredAccount = await restoredWallet.getWalletAccount();
-        const fundedAccount = await fundedWallet.getWalletAccount();
-
         secondTransaction = await fundedAccount.createTransaction({
           recipient: restoredAccount.getUnusedAddress().address,
           satoshis: 1100,
@@ -134,8 +133,6 @@ describe('e2e', () => {
 
     describe('empty wallet', () => {
       it('should receive a transaction when as it has been sent to restored wallet', async () => {
-        const emptyAccount = await emptyWallet.getWalletAccount();
-
         const transactionIds = Object.keys(emptyAccount.getTransactions());
 
         expect(transactionIds).to.have.lengthOf(2);
