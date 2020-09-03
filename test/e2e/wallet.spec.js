@@ -7,15 +7,19 @@ const Dash = require('dash');
 const getDAPISeeds = require('../../lib/test/getDAPISeeds');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
+const waitForBalanceToChange = require('../../lib/test/waitForBalanceToChange');
 
 describe('e2e', () => {
   describe('Wallet', function main() {
     this.timeout(950000);
 
+    let failed = false;
     let fundedWallet;
     let emptyWallet;
-    let duplicateWallet;
+    let restoredWallet;
     let mnemonic;
+    let firstTransaction;
+    let secondTransaction;
 
     before(async () => {
       mnemonic = new Mnemonic();
@@ -29,6 +33,17 @@ describe('e2e', () => {
       });
     });
 
+    // Skip test if any prior test in this describe failed
+    beforeEach(function beforeEach() {
+      if (failed) {
+        this.skip();
+      }
+    });
+
+    afterEach(function afterEach() {
+      failed = this.currentTest.state === 'failed';
+    });
+
     after(async () => {
       if (fundedWallet) {
         await fundedWallet.disconnect();
@@ -38,8 +53,8 @@ describe('e2e', () => {
         await emptyWallet.disconnect();
       }
 
-      if (duplicateWallet) {
-        await duplicateWallet.disconnect();
+      if (restoredWallet) {
+        await restoredWallet.disconnect();
       }
     });
 
@@ -54,24 +69,27 @@ describe('e2e', () => {
         const emptyAccount = await emptyWallet.getWalletAccount();
         const fundedAccount = await fundedWallet.getWalletAccount();
 
-        const tx = await fundedAccount.createTransaction({
-          recipient: {
-            amount: 10,
-            address: emptyAccount.getUnusedAddress(),
-          },
+        firstTransaction = await fundedAccount.createTransaction({
+          recipient: emptyAccount.getUnusedAddress().address,
+          satoshis: 1000,
         });
 
-        await fundedAccount.broadcastTransaction(tx);
+        await Promise.all([
+          fundedAccount.broadcastTransaction(firstTransaction),
+          waitForBalanceToChange(emptyAccount),
+        ]);
 
-        expect(emptyAccount.getTransactions()).to.have.lengthOf(1);
+        const transactionIds = Object.keys(emptyAccount.getTransactions());
 
-        // TODO: check tx is exactly the same as the sent one
+        expect(transactionIds).to.have.lengthOf(1);
+
+        expect(transactionIds[0]).to.equal(firstTransaction.id);
       });
     });
 
-    describe('duplicate wallet', () => {
+    describe('restored wallet', () => {
       it('should have all transaction from before at first', async () => {
-        duplicateWallet = new Dash.Client({
+        restoredWallet = new Dash.Client({
           wallet: {
             mnemonic,
           },
@@ -79,39 +97,53 @@ describe('e2e', () => {
           network: process.env.NETWORK,
         });
 
-        const duplicateAccount = await duplicateWallet.getWalletAccount();
+        const duplicateAccount = await restoredWallet.getWalletAccount();
 
-        expect(duplicateAccount.getTransactions()).to.have.lengthOf(1);
+        await waitForBalanceToChange(duplicateAccount);
 
-        // TODO: check tx is exactly the same as the sent one
+        const transactionIds = Object.keys(duplicateAccount.getTransactions());
+
+        expect(transactionIds).to.have.lengthOf(1);
+
+        expect(transactionIds[0]).to.equal(firstTransaction.id);
       });
 
       it('should receive a transaction when as it has been sent', async () => {
-        const duplicateAccount = await duplicateWallet.getWalletAccount();
+        const restoredAccount = await restoredWallet.getWalletAccount();
         const fundedAccount = await fundedWallet.getWalletAccount();
 
-        const tx = await fundedAccount.createTransaction({
-          recipient: {
-            amount: 10,
-            address: duplicateAccount.getUnusedAddress(),
-          },
+        secondTransaction = await fundedAccount.createTransaction({
+          recipient: restoredAccount.getUnusedAddress().address,
+          satoshis: 1100,
         });
 
-        await fundedAccount.broadcastTransaction(tx);
+        await fundedAccount.broadcastTransaction(secondTransaction);
 
-        expect(duplicateAccount.getTransactions()).to.have.lengthOf(1);
+        await Promise.all([
+          fundedAccount.broadcastTransaction(firstTransaction),
+          waitForBalanceToChange(restoredAccount),
+        ]);
 
-        // TODO: check tx is exactly the same as the sent one
+        const transactionIds = Object.keys(restoredAccount.getTransactions());
+
+        expect(transactionIds).to.have.lengthOf(1);
+
+        expect(transactionIds[0]).to.equal(secondTransaction.id);
       });
     });
 
     describe('empty wallet', () => {
-      it('should receive a transaction when as it has been sent to duplicate wallet', async () => {
+      it('should receive a transaction when as it has been sent to restored wallet', async () => {
         const emptyAccount = await emptyWallet.getWalletAccount();
 
-        expect(emptyAccount.getTransactions()).to.have.lengthOf(2);
+        const transactionIds = Object.keys(emptyAccount.getTransactions());
 
-        // TODO: check txs are exactly the same as the sent ones
+        expect(transactionIds).to.have.lengthOf(2);
+
+        expect(transactionIds).to.have.members([
+          firstTransaction.id,
+          secondTransaction.id,
+        ]);
       });
     });
   });
