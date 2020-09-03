@@ -132,7 +132,7 @@ describe('e2e', () => {
     });
 
     describe('empty wallet', () => {
-      it('should receive a transaction when as it has been sent to restored wallet', async () => {
+      it('should receive a transaction when as it has been sent to restored wallet', () => {
         const transactionIds = Object.keys(emptyAccount.getTransactions());
 
         expect(transactionIds).to.have.lengthOf(2);
