@@ -113,21 +113,22 @@ describe('e2e', () => {
       it('should receive a transaction when as it has been sent', async () => {
         secondTransaction = await fundedAccount.createTransaction({
           recipient: restoredAccount.getUnusedAddress().address,
-          satoshis: 1100,
+          satoshis: 1000,
         });
 
-        await fundedAccount.broadcastTransaction(secondTransaction);
-
         await Promise.all([
-          fundedAccount.broadcastTransaction(firstTransaction),
+          fundedAccount.broadcastTransaction(secondTransaction),
           waitForBalanceToChange(restoredAccount),
         ]);
 
         const transactionIds = Object.keys(restoredAccount.getTransactions());
 
-        expect(transactionIds).to.have.lengthOf(1);
+        expect(transactionIds).to.have.lengthOf(2);
 
-        expect(transactionIds[0]).to.equal(secondTransaction.id);
+        expect(transactionIds).to.have.members([
+          secondTransaction.id,
+          firstTransaction.id,
+        ]);
       });
     });
 
