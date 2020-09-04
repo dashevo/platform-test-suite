@@ -136,7 +136,6 @@ cmd="DAPI_SEED=${DAPI_SEED}"
 
 if [ -n "$faucet_key" ]
 then
-  echo 'fuck you'
   cmd="${cmd} FAUCET_PRIVATE_KEY=${faucet_key}"
 fi
 
