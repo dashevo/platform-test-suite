@@ -81,7 +81,7 @@ fi
 if [ -n "$timeout" ] && ! [[ $timeout =~ ^[0-9]+$ ]]
 then
   echo "Timeout must be an integer"
- exit 1
+  exit 1
 fi
 
 if [ -n "$npm_package_to_install" ]
