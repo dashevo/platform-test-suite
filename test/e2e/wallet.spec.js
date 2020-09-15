@@ -92,7 +92,7 @@ describe('e2e', () => {
     });
 
     describe('restored wallet', () => {
-      it('should have all transaction from before at first', async () => {
+      it.skip('should have all transaction from before at first', async () => {
         restoredWallet = new Dash.Client({
           wallet: {
             mnemonic,
@@ -116,7 +116,7 @@ describe('e2e', () => {
         expect(transactionIds[0]).to.equal(firstTransaction.id);
       });
 
-      it('should receive a transaction when as it has been sent', async () => {
+      it.skip('should receive a transaction when as it has been sent', async () => {
         secondTransaction = await fundedAccount.createTransaction({
           recipient: restoredAccount.getUnusedAddress().address,
           satoshis: 1000,
@@ -139,7 +139,7 @@ describe('e2e', () => {
     });
 
     describe('empty wallet', () => {
-      it('should receive a transaction when as it has been sent to restored wallet', () => {
+      it.skip('should receive a transaction when as it has been sent to restored wallet', () => {
         const transactionIds = Object.keys(emptyAccount.getTransactions());
 
         expect(transactionIds).to.have.lengthOf(2);
