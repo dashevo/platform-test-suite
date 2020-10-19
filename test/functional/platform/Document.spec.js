@@ -61,6 +61,12 @@ describe('Platform', () => {
         },
       );
 
+      this.sinon.stub(client.platform.dpp.stateTransition, 'validateStructure');
+
+      client.platform.dpp.stateTransition.validateStructure.returns({
+        isValid: () => true,
+      });
+
       try {
         await client.platform.documents.broadcast({
           create: [newDocument],
