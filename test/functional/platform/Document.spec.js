@@ -42,7 +42,7 @@ describe('Platform', () => {
       }
     });
 
-    it('should fail to create new document with an unknown type', async () => {
+    it('should fail to create new document with an unknown type', async function it() {
       // Add undefined document type for
       client.apps.customContracts.contract.documents.undefinedType = {
         properties: {

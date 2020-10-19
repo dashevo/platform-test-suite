@@ -48,7 +48,7 @@ describe('Platform', () => {
 
       try {
         await client.getDAPIClient().platform.broadcastStateTransition(
-          identityCreateTransition.serialize(),
+          identityCreateTransition.toBuffer(),
         );
         expect.fail('Error was not thrown');
       } catch (e) {
@@ -92,13 +92,13 @@ describe('Platform', () => {
 
       try {
         await client.getDAPIClient().platform.broadcastStateTransition(
-          otherIdentityCreateTransition.serialize(),
+          otherIdentityCreateTransition.toBuffer(),
         );
 
         expect.fail('Error was not thrown');
       } catch (e) {
         const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('IdentityFirstPublicKeyAlreadyExistsError');
+        expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
         expect(error.publicKeyHash).to.equal(identity.getPublicKeyById(0).hash());
       }
     });
@@ -119,8 +119,8 @@ describe('Platform', () => {
     });
 
     it('should be able to get newly created identity by it\'s first public key', async () => {
-      const serializedIdentity = await client.getDAPIClient().platform.getIdentityByFirstPublicKey(
-        identity.getPublicKeyById(0).hash(),
+      const [serializedIdentity] = await client.getDAPIClient().platform.getIdentitiesByPublicKeyHashes(
+        [identity.getPublicKeyById(0).hash()],
       );
 
       expect(serializedIdentity).to.be.not.null();
@@ -137,8 +137,8 @@ describe('Platform', () => {
     });
 
     it('should be able to get newly created identity id by it\'s first public key', async () => {
-      const identityId = await client.getDAPIClient().platform.getIdentityIdByFirstPublicKey(
-        identity.getPublicKeyById(0).hash(),
+      const [identityId] = await client.getDAPIClient().platform.getIdentityIdsByPublicKeyHashes(
+        [identity.getPublicKeyById(0).hash()],
       );
 
       expect(identityId).to.be.not.null();
@@ -201,7 +201,7 @@ describe('Platform', () => {
 
         try {
           await client.getDAPIClient().platform.broadcastStateTransition(
-            identityTopUpTransition.serialize(),
+            identityTopUpTransition.toBuffer(),
           );
 
           expect.fail('Error was not thrown');
