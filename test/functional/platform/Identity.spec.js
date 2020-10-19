@@ -1,4 +1,5 @@
 const DashPlatformProtocol = require('@dashevo/dpp');
+const Identifier = require('@dashevo/dpp/lib/Identifier');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
@@ -125,7 +126,7 @@ describe('Platform', () => {
 
       expect(serializedIdentity).to.be.not.null();
 
-      const receivedIdentity = dpp.identity.createFromSerialized(
+      const receivedIdentity = dpp.identity.createFromBuffer(
         serializedIdentity,
         { skipValidation: true },
       );
@@ -142,7 +143,7 @@ describe('Platform', () => {
       );
 
       expect(identityId).to.be.not.null();
-      expect(identityId).to.equal(identity.getId());
+      expect(Identifier.from(identityId)).to.equal(identity.getId());
     });
 
     describe('Credits', () => {
