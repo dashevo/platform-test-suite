@@ -61,6 +61,7 @@ describe('Platform', () => {
         },
       );
 
+      // mock validateStructure to skip validation in SDK
       this.sinon.stub(client.platform.dpp.stateTransition, 'validateStructure');
 
       client.platform.dpp.stateTransition.validateStructure.returns({
