@@ -1,5 +1,4 @@
 const DashPlatformProtocol = require('@dashevo/dpp');
-const Identifier = require('@dashevo/dpp/lib/Identifier');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
@@ -100,7 +99,7 @@ describe('Platform', () => {
       } catch (e) {
         const [error] = JSON.parse(e.metadata.get('errors'));
         expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
-        expect(error.publicKeyHash).to.equal(identity.getPublicKeyById(0).hash());
+        expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
       }
     });
 
@@ -112,7 +111,7 @@ describe('Platform', () => {
       expect(fetchedIdentity).to.be.not.null();
       expect(fetchedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
-        balance: 1826,
+        balance: 1860,
       });
 
       // updating balance
@@ -120,9 +119,10 @@ describe('Platform', () => {
     });
 
     it('should be able to get newly created identity by it\'s first public key', async () => {
-      const [serializedIdentity] = await client.getDAPIClient().platform.getIdentitiesByPublicKeyHashes(
-        [identity.getPublicKeyById(0).hash()],
-      );
+      const [serializedIdentity] = await client.getDAPIClient().platform
+        .getIdentitiesByPublicKeyHashes(
+          [identity.getPublicKeyById(0).hash()],
+        );
 
       expect(serializedIdentity).to.be.not.null();
 
@@ -133,7 +133,7 @@ describe('Platform', () => {
 
       expect(receivedIdentity.toJSON()).to.deep.equal({
         ...identity.toJSON(),
-        balance: 1826,
+        balance: 1860,
       });
     });
 
@@ -143,7 +143,7 @@ describe('Platform', () => {
       );
 
       expect(identityId).to.be.not.null();
-      expect(Identifier.from(identityId)).to.equal(identity.getId());
+      expect(identityId).to.deep.equal(identity.getId());
     });
 
     describe('Credits', () => {
