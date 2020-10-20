@@ -26,7 +26,7 @@
     "@dashevo/dpns-contract": "~0.3.0-dev.6",
     "@dashevo/dpp": "~0.16.0-dev.9",
     "@dashevo/grpc-common": "~0.3.1",
-    "@dashevo/wallet-lib": "git+ssh://git@github.com/dashevo/wallet-lib.git#bump-version",
+    "@dashevo/wallet-lib": "github:dashevo/wallet-lib#bump-version",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dash": "github:dashevo/js-dash-sdk#update-dpp",
