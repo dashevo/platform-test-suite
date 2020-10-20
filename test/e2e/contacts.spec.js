@@ -1,4 +1,5 @@
 const Identity = require('@dashevo/dpp/lib/identity/Identity');
+const Identifier = require('@dashevo/dpp/lib/Identifier');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
 
@@ -45,11 +46,16 @@ describe('e2e', () => {
           ],
           properties: {
             toUserId: {
-              type: 'string',
-              maxLength: 1024,
+              type: 'array',
+              byteArray: true,
+              contentMediaType: Identifier.MEDIA_TYPE,
+              minItems: 32,
+              maxItems: 32,
             },
             publicKey: {
-              type: 'string',
+              type: 'array',
+              byteArray: true,
+              maxItems: 33,
             },
           },
           required: ['toUserId', 'publicKey'],
