@@ -92,10 +92,10 @@ describe('e2e', () => {
 
         await bobClient.platform.contracts.broadcast(dataContract, bobIdentity);
 
-        bobClient.apps.contacts = {
+        bobClient.getApps().set('contacts', {
           contractId: dataContract.getId(),
           contract: dataContract,
-        };
+        });
 
         // 2. Fetch and check data contract
         const fetchedDataContract = await bobClient.platform.contracts.get(
@@ -131,10 +131,10 @@ describe('e2e', () => {
         // Create Alice wallet
         aliceClient = await createClientWithFundedWallet();
 
-        aliceClient.apps.contacts = {
+        aliceClient.getApps().set('contacts', {
           contractId: dataContract.getId(),
           contract: dataContract,
-        };
+        });
 
         aliceIdentity = await aliceClient.platform.identities.register(10);
 

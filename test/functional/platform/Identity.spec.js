@@ -154,10 +154,10 @@ describe('Platform', () => {
 
         await client.platform.contracts.broadcast(dataContractFixture, identity);
 
-        client.apps.customContracts = {
+        client.getApps().set('customContracts', {
           contractId: dataContractFixture.getId(),
           contract: dataContractFixture,
-        };
+        });
       });
 
       it('should fail to create more documents if there are no more credits', async () => {
