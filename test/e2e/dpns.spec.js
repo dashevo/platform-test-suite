@@ -67,7 +67,7 @@ describe('DPNS', () => {
     // skip if DPNS owner private key is not passed and use `dash` in tests above
     it('should be able to register a TLD', async () => {
       createdTLD = await ownerClient.platform.names.register(newTopLevelDomain, {
-        dashAliasIdentityId: identity.getId().toString(),
+        dashAliasIdentityId: identity.getId(),
       }, identity);
 
       expect(createdTLD).to.exist();
