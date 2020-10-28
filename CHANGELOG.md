@@ -12,7 +12,6 @@
 
 
 
-
 # [0.15.0](https://github.com/dashevo/plaform-test-suite/compare/v0.14.0...v0.15.0) (2020-09-04)
 
 
