@@ -133,7 +133,10 @@ describe('Platform', () => {
       const fetchedIdentityWithoutBalance = fetchedIdentity.toJSON();
       delete fetchedIdentityWithoutBalance.balance;
 
-      expect(fetchedIdentityWithoutBalance).to.deep.equal(identity.toJSON());
+      const localIdentityWithoutBalance = identity.toJSON();
+      delete localIdentityWithoutBalance.balance;
+
+      expect(fetchedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
 
       expect(fetchedIdentity.getBalance()).to.be.greaterThan(0);
     });
@@ -154,7 +157,10 @@ describe('Platform', () => {
       const receivedIdentityWithoutBalance = receivedIdentity.toJSON();
       delete receivedIdentityWithoutBalance.balance;
 
-      expect(receivedIdentityWithoutBalance).to.deep.equal(identity.toJSON());
+      const localIdentityWithoutBalance = identity.toJSON();
+      delete localIdentityWithoutBalance.balance;
+
+      expect(receivedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
       expect(receivedIdentity.getBalance()).to.be.greaterThan(0);
     });
 
