@@ -238,7 +238,6 @@ describe('Platform', () => {
 
           expect.fail('Error was not thrown');
         } catch (e) {
-          console.log(e);
           const [error] = JSON.parse(e.metadata.get('errors'));
           expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
         }
