@@ -2,6 +2,9 @@ const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
+const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
+const { default: createIdentityCreateTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdentityCreateTransition');
+const { default: createIdentityTopUpTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdnetityTopUpTransition');
 const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
 
 const waitForBlocks = require('../../../lib/waitForBlocks');
@@ -33,7 +36,7 @@ describe('Platform', () => {
       }
     });
 
-    it.skip('should fail to create an identity if instantLock is not valid', async () => {
+    it('should fail to create an identity if instantLock is not valid', async () => {
       const {
         transaction,
         privateKey,
@@ -73,14 +76,70 @@ describe('Platform', () => {
     });
 
     it('should create an identity', async () => {
-      identity = await client.platform.identities.register(3);
+      try {
+        identity = await client.platform.identities.register(4);
 
-      expect(identity).to.exist();
+        expect(identity).to.exist();
 
-      await waitForBalanceToChange(walletAccount);
+        await waitForBalanceToChange(walletAccount);
+      } catch (e) {
+        console.dir(e, { depth: 100 });
+        throw e;
+      }
     });
 
-    it('should fail to create an identity with already used asset lock output');
+    it('should fail to create an identity with already used asset lock output', async () => {
+      const platform = { client };
+      const {
+        transaction,
+        privateKey,
+        outputIndex,
+      } = await createAssetLockTransaction(platform, 1);
+
+      await client.getDAPIClient().core.broadcastTransaction(transaction.toBuffer());
+      await waitForBlocks(client.getDAPIClient(), 1);
+
+      const assetLockProof = await createAssetLockProof(platform, transaction);
+
+      // Creating normal transition
+      const {
+        identity: identityOne,
+        identityCreateTransition: identityCreateTransitionOne,
+        identityIndex: identityOneIndex,
+      } = await createIdentityCreateTransition(
+        platform, transaction, outputIndex, assetLockProof, privateKey,
+      );
+
+      // Creating transition that tries to spend the same transaction
+      const {
+        identity: identityTwo,
+        identityCreateTransition: identityCreateDoubleSpendTransition,
+      } = await createIdentityCreateTransition(
+        platform, transaction, outputIndex, assetLockProof, privateKey,
+      );
+
+      await client.getDAPIClient().platform.broadcastStateTransition(
+        identityCreateTransitionOne.toBuffer(),
+      );
+
+      walletAccount.storage.insertIdentityIdAtIndex(
+        walletAccount.walletId,
+        identityOne.getId().toString(),
+        identityOneIndex,
+      );
+
+      try {
+        await client.getDAPIClient().platform.broadcastStateTransition(
+          identityCreateDoubleSpendTransition.toBuffer(),
+        );
+
+        expect.fail('Error was not thrown');
+      } catch (e) {
+        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
+        expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
+      }
+    });
 
     it('should fail to create an identity with already used public key', async () => {
       const {
@@ -207,7 +266,7 @@ describe('Platform', () => {
         }
       });
 
-      it.skip('should fail top-up if instant lock is not valid', async () => {
+      it('should fail top-up if instant lock is not valid', async () => {
         await waitForBalanceToChange(walletAccount);
 
         const {
@@ -277,6 +336,44 @@ describe('Platform', () => {
         await client.platform.documents.broadcast({
           create: [document],
         }, identity);
+      });
+
+      it('should fail to top up an identity with already used asset lock output', async () => {
+        const platform = { client };
+        const {
+          transaction,
+          privateKey,
+          outputIndex,
+        } = await createAssetLockTransaction(platform, 1);
+
+        await client.getDAPIClient().core.broadcastTransaction(transaction.toBuffer());
+        await waitForBlocks(client.getDAPIClient(), 1);
+
+        const assetLockProof = await createAssetLockProof(platform, transaction);
+
+        // Creating normal transition
+        const identityTopUpTransitionOne = await createIdentityTopUpTransition(
+          platform, transaction, outputIndex, assetLockProof, privateKey, identity.getId(),
+        );
+        // Creating ST that tries to spend the same output
+        const conflictingTopUpStateTransition = await createIdentityTopUpTransition(
+          platform, transaction, outputIndex, assetLockProof, privateKey, identity.getId(),
+        );
+
+        await client.getDAPIClient().platform.broadcastStateTransition(
+          identityTopUpTransitionOne.toBuffer(),
+        );
+
+        try {
+          await client.getDAPIClient().platform.broadcastStateTransition(
+            conflictingTopUpStateTransition.toBuffer(),
+          );
+
+          expect.fail('Error was not thrown');
+        } catch (e) {
+          const [error] = JSON.parse(e.metadata.get('errors'));
+          expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
+        }
       });
     });
   });
