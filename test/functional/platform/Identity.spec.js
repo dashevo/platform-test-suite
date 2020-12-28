@@ -44,7 +44,7 @@ describe('Platform', () => {
       await waitForBalanceToChange(walletAccount);
     });
 
-    it('should fail to create an identity if instantLock is not valid', async () => {
+    it('should fail to create an identity if instantLock is not valid', async function it() {
       if (process.env.NETWORK === 'regtest') {
         this.skip('instant lock quorum is not active');
       }
