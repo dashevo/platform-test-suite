@@ -1,11 +1,11 @@
-# Dash Platform Test Suite
+# Xazab Platform Test Suite
 
-[![Latest Release](https://img.shields.io/github/v/release/dashevo/platform-test-suite)](https://github.com/dashevo/platform-test-suite/releases/latest)
-[![Build Status](https://img.shields.io/travis/com/dashevo/platform-test-suite)](https://travis-ci.com/dashevo/platform-test-suite)
-[![Release Date](https://img.shields.io/github/release-date/dashevo/platform-test-suite)](https://img.shields.io/github/release-date/dashevo/platform-test-suite)
+[![Latest Release](https://img.shields.io/github/v/release/xazab/platform-test-suite)](https://github.com/xazab/platform-test-suite/releases/latest)
+[![Build Status](https://img.shields.io/travis/com/xazab/platform-test-suite)](https://travis-ci.com/xazab/platform-test-suite)
+[![Release Date](https://img.shields.io/github/release-date/xazab/platform-test-suite)](https://img.shields.io/github/release-date/xazab/platform-test-suite)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen)](https://github.com/RichardLitt/standard-readme)
 
-The test suite for end-to-end and functional testing the Dash Platform by running some real-life scenarios against a Dash Network
+The test suite for end-to-end and functional testing the Xazab Platform by running some real-life scenarios against a Xazab Network
 
 ## Table of Contents
 - [Pre-Requisites](#pre-requisites)
@@ -15,7 +15,7 @@ The test suite for end-to-end and functional testing the Dash Platform by runnin
 
 ## Pre-requisites
 
-You may run test-suite against any platform compatible network, or even [local node](https://github.com/dashevo/mn-bootstrap).
+You may run test-suite against any platform compatible network, or even [local node](https://github.com/xazab/mn-bootstrap).
 To run locally make sure you have [Node.js](https://nodejs.org/) installed.
 To run using [Docker](https://www.docker.com/), make sure you have it installed.
 
@@ -66,7 +66,7 @@ Usage: test <seed> [options]
 Just run pre-built image using the same arguments as [running locally](#running-locally):
 
 ```sh
-$ docker run --network=host dashpay/platform-test-suite
+$ docker run --network=host xazab/platform-test-suite
 
 Run test suite
 
@@ -97,8 +97,8 @@ Usage: test <seed> [options]
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/dashevo/platform-test-suite/issues/new/choose) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/xazab/platform-test-suite/issues/new/choose) or submit PRs.
 
 ## License
 
-[MIT](LICENSE) &copy; Dash Core Group, Inc.
+[MIT](LICENSE) &copy; Dash Core Group, Inc. | &copy; Xazab Foundation

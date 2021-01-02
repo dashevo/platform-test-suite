@@ -32,7 +32,7 @@ install:
   - npm ci
   - cp .env.example .env
   # Get the latest version of travis-ci-tools
-  - curl -u $GITHUB_USER:$GITHUB_TOKEN -s https://api.github.com/repos/dashevo/travis-ci-tools/releases/latest | jq -r '.tarball_url' | xargs -I {} -n1 wget -O travis-ci-tools.tar.gz -q {}
+  - curl -u $GITHUB_USER:$GITHUB_TOKEN -s https://api.github.com/repos/xazab/travis-ci-tools/releases/latest | jq -r '.tarball_url' | xargs -I {} -n1 wget -O travis-ci-tools.tar.gz -q {}
   - mkdir ~/travis-ci-tools && tar -C ~/travis-ci-tools -xvf travis-ci-tools.tar.gz
   - export CI_TOOLS_DIR="$(ls ~/travis-ci-tools)"
   - cd ~/travis-ci-tools/$CI_TOOLS_DIR
@@ -55,4 +55,4 @@ deploy:
   script: bash scripts/travis-deploy.sh
   on:
     tags: true
-    repo: dashevo/platform-test-suite
+    repo: xazab/platform-test-suite

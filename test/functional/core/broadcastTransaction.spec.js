@@ -1,6 +1,6 @@
 const {
   PrivateKey,
-} = require('@dashevo/dashcore-lib');
+} = require('@xazab/xazabcore-lib');
 
 const createFaucetClient = require('../../../lib/test/createFaucetClient');
 

@@ -1,7 +1,7 @@
 const {
   Transaction,
   PrivateKey,
-} = require('@dashevo/dashcore-lib');
+} = require('@xazab/xazabcore-lib');
 
 const createFaucetClient = require('../../../lib/test/createFaucetClient');
 const wait = require('../../../lib/wait');

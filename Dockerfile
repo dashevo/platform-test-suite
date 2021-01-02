@@ -19,8 +19,8 @@ FROM node:12-alpine
 RUN apk add --no-cache bash \
                        git
 
-LABEL maintainer="Dash Developers <dev@dash.org>"
-LABEL description="Test suite for Dash Platform"
+LABEL maintainer="Xazab Developers <dev@xazab.xyz>"
+LABEL description="Test suite for Xazab Platform"
 
 # Copy NPM modules
 COPY package.json package-lock.json ./

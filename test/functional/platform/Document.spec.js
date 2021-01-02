@@ -1,10 +1,10 @@
 const { expect } = require('chai');
 
 const getDataContractFixture = require(
-  '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
+  '@xazab/dpp/lib/test/fixtures/getDataContractFixture',
 );
 const getIdentityFixture = require(
-  '@dashevo/dpp/lib/test/fixtures/getIdentityFixture',
+  '@xazab/dpp/lib/test/fixtures/getIdentityFixture',
 );
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');

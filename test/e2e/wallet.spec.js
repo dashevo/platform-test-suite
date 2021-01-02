@@ -1,15 +1,15 @@
 const {
   Mnemonic,
-} = require('@dashevo/dashcore-lib');
+} = require('@xazab/xazabcore-lib');
 
-const Dash = require('dash');
+const Xazab = require('xazab');
 
 const getDAPISeeds = require('../../lib/test/getDAPISeeds');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
 const waitForBalanceToChange = require('../../lib/test/waitForBalanceToChange');
 
-const { EVENTS } = Dash.WalletLib;
+const { EVENTS } = Xazab.WalletLib;
 
 describe('e2e', () => {
   describe('Wallet', function main() {
@@ -29,7 +29,7 @@ describe('e2e', () => {
     before(async () => {
       mnemonic = new Mnemonic();
       fundedWallet = await createClientWithFundedWallet();
-      emptyWallet = new Dash.Client({
+      emptyWallet = new Xazab.Client({
         seeds: getDAPISeeds(),
         network: process.env.NETWORK,
         wallet: {
@@ -93,7 +93,7 @@ describe('e2e', () => {
 
     describe('restored wallet', () => {
       it('should have all transaction from before at first', async () => {
-        restoredWallet = new Dash.Client({
+        restoredWallet = new Xazab.Client({
           wallet: {
             mnemonic,
           },

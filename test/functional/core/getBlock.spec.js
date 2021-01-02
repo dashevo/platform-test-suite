@@ -1,4 +1,4 @@
-const { Block } = require('@dashevo/dashcore-lib');
+const { Block } = require('@xazab/xazabcore-lib');
 
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 

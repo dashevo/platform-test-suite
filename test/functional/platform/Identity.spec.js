@@ -1,11 +1,11 @@
-const DashPlatformProtocol = require('@dashevo/dpp');
-const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
+const XazabPlatformProtocol = require('@xazab/dpp');
+const getDataContractFixture = require('@xazab/dpp/lib/test/fixtures/getDataContractFixture');
 
-const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
-const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
-const { default: createIdentityCreateTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdentityCreateTransition');
-const { default: createIdentityTopUpTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdnetityTopUpTransition');
-const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
+const { createFakeInstantLock } = require('xazab/build/src/utils/createFakeIntantLock');
+const { default: createAssetLockProof } = require('xazab/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
+const { default: createIdentityCreateTransition } = require('xazab/build/src/SDK/Client/Platform/methods/identities/internal/createIdentityCreateTransition');
+const { default: createIdentityTopUpTransition } = require('xazab/build/src/SDK/Client/Platform/methods/identities/internal/createIdnetityTopUpTransition');
+const { default: createAssetLockTransaction } = require('xazab/build/src/SDK/Client/Platform/createAssetLockTransaction');
 
 const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
@@ -21,7 +21,7 @@ describe('Platform', () => {
     let walletPublicKey;
 
     before(async () => {
-      dpp = new DashPlatformProtocol();
+      dpp = new XazabPlatformProtocol();
 
       client = await createClientWithFundedWallet();
       walletAccount = await client.getWalletAccount();

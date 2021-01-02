@@ -1,7 +1,7 @@
 {
-  "name": "@dashevo/plaform-test-suite",
+  "name": "@xazab/plaform-test-suite",
   "version": "0.17.0",
-  "description": "Dash Network end-to-end tests",
+  "description": "Xazab Network end-to-end tests",
   "private": true,
   "scripts": {
     "test": "mocha './test/**/*.spec.js'",
@@ -14,22 +14,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/dashevo/plaform-test-suite.git"
+    "url": "git+ssh://git@github.com/xazab/plaform-test-suite.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dashevo/plaform-test-suite/issues"
+    "url": "https://github.com/xazab/plaform-test-suite/issues"
   },
-  "homepage": "https://github.com/dashevo/plaform-test-suite#readme",
+  "homepage": "https://github.com/xazab/plaform-test-suite#readme",
   "dependencies": {
-    "@dashevo/dashcore-lib": "~0.19.19",
-    "@dashevo/dpns-contract": "~0.3.0-dev.6",
-    "@dashevo/dpp": "~0.17.0",
-    "@dashevo/grpc-common": "~0.3.2",
-    "@dashevo/wallet-lib": "~7.17.2",
+    "@xazab/xazabcore-lib": "~0.19.19",
+    "@xazab/dpns-contract": "~0.3.0-dev.6",
+    "@xazab/dpp": "~0.17.0",
+    "@xazab/grpc-common": "~0.3.2",
+    "@xazab/wallet-lib": "~7.17.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "3.17.0",
+    "xazab": "3.17.0",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",

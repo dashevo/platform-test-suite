@@ -1,5 +1,5 @@
 const getDataContractFixture = require(
-  '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
+  '@xazab/dpp/lib/test/fixtures/getDataContractFixture',
 );
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
