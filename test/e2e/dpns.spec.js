@@ -86,10 +86,10 @@ describe('DPNS', () => {
 
         expect.fail('should throw an error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
-        expect(error.message).to.equal('Action is not allowed');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Action is not allowed');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Action is not allowed');
       }
     });
 
@@ -101,10 +101,10 @@ describe('DPNS', () => {
 
         expect.fail('should throw an error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
-        expect(error.message).to.equal('Action is not allowed');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Action is not allowed');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Action is not allowed');
       }
     });
   });
@@ -126,9 +126,10 @@ describe('DPNS', () => {
 
         expect.fail('Should throw error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Can\'t create top level domain for this identity');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Can\'t create top level domain for this identity');
       }
     });
 
@@ -152,10 +153,10 @@ describe('DPNS', () => {
 
         expect.fail('Should throw error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
-        expect(error.message).to.equal('Parent domain is not present');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Parent domain is not present');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Parent domain is not present');
       }
     });
 
@@ -194,10 +195,10 @@ describe('DPNS', () => {
 
         expect.fail('should throw an error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
-        expect(error.message).to.equal('Action is not allowed');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Action is not allowed');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Action is not allowed');
       }
     });
 
@@ -209,10 +210,10 @@ describe('DPNS', () => {
 
         expect.fail('should throw an error');
       } catch (e) {
-        expect(e.code).to.equal(3);
-        const [error] = JSON.parse(e.metadata.get('errors'));
-        expect(error.name).to.equal('DataTriggerConditionError');
-        expect(error.message).to.equal('Action is not allowed');
+        expect(e.code).to.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DataTriggerConditionError: Action is not allowed');
+        expect(e.data.errors[0].name).to.equal('DataTriggerConditionError');
+        expect(e.data.errors[0].message).to.equal('Action is not allowed');
       }
     });
 
