@@ -124,7 +124,6 @@ describe('Platform', () => {
 
         expect.fail('Error was not thrown');
       } catch (e) {
-        console.dir(e);
         expect(e.code).to.be.equal(3);
         expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
         const [error] = e.data.errors;
@@ -166,7 +165,6 @@ describe('Platform', () => {
 
         expect.fail('Error was not thrown');
       } catch (e) {
-        console.dir(e);
         expect(e.code).to.be.equal(2);
         expect(e.message).to.be.equal('Invalid state transition: IdentityPublicKeyAlreadyExistsError: Identity public key already exists');
         const [error] = e.data.errors;
@@ -366,7 +364,6 @@ describe('Platform', () => {
 
           expect.fail('Error was not thrown');
         } catch (e) {
-          console.dir(e);
           expect(e.code).to.be.equal(3);
           expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
           const [error] = e.data.errors;
