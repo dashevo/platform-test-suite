@@ -74,11 +74,10 @@ describe('Platform', () => {
 
         expect.fail('should throw invalid argument error');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors')[0]);
+        expect(e.code).to.be.equal(3);
+        expect(e.message).to.be.equal('State Transition is invalid: InvalidDocumentTypeError: Contract doesn\'t contain type undefinedType');
+        const [error] = e.data.errors;
         expect(error.name).to.equal('InvalidDocumentTypeError');
-        expect(e.message).to.satisfy(
-          (msg) => msg.startsWith('3 INVALID_ARGUMENT: State Transition is invalid'),
-        );
       }
     });
 
@@ -137,7 +136,10 @@ describe('Platform', () => {
         }, identity);
         expect.fail('Error was not thrown');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(e.code).to.be.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DuplicateDocumentError: Duplicate Document found');
+
+        const [error] = e.data.errors;
         expect(error.name).to.equal('DuplicateDocumentError');
         expect(error.indexDefinition).to.deep.equal({
           unique: true,
@@ -221,7 +223,10 @@ describe('Platform', () => {
           replace: [storedDocument],
         }, identity);
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(e.code).to.be.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DocumentTimestampWindowViolationError: Duplicate Document found');
+
+        const [error] = e.data.errors;
         expect(error.name).to.equal('DocumentTimestampWindowViolationError');
       }
     });
@@ -249,7 +254,10 @@ describe('Platform', () => {
 
         expect.fail('Error was not thrown');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(e.code).to.be.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: DocumentTimestampWindowViolationError: Document createdAt timestamp are out of block time window and 2 more');
+
+        const [error] = e.data.errors;
         expect(error.name).to.equal('DocumentTimestampWindowViolationError');
       }
     });

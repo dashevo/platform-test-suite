@@ -67,12 +67,14 @@ describe('Platform', () => {
       );
 
       try {
-        await client.getDAPIClient().platform.broadcastStateTransition(
-          invalidIdentityCreateTransition.toBuffer(),
+        await client.platform.broadcastStateTransition(
+          invalidIdentityCreateTransition,
         );
         expect.fail('Error was not thrown');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        expect(e.code).to.be.equal(3);
+        expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionNotFoundError: Contract doesn\'t contain type undefinedType');
+        const [error] = e.data.errors;
         expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
       }
     });
@@ -98,8 +100,8 @@ describe('Platform', () => {
         client.platform, transaction, outputIndex, assetLockProof, privateKey,
       );
 
-      await client.getDAPIClient().platform.broadcastStateTransition(
-        identityCreateTransitionOne.toBuffer(),
+      await client.platform.broadcastStateTransition(
+        identityCreateTransitionOne,
       );
 
       walletAccount.storage.insertIdentityIdAtIndex(
@@ -116,13 +118,16 @@ describe('Platform', () => {
       );
 
       try {
-        await client.getDAPIClient().platform.broadcastStateTransition(
-          identityCreateDoubleSpendTransition.toBuffer(),
+        await client.platform.broadcastStateTransition(
+          identityCreateDoubleSpendTransition,
         );
 
         expect.fail('Error was not thrown');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        console.dir(e);
+        expect(e.code).to.be.equal(3);
+        expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
+        const [error] = e.data.errors;
         expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
       }
     });
@@ -155,13 +160,16 @@ describe('Platform', () => {
       );
 
       try {
-        await client.getDAPIClient().platform.broadcastStateTransition(
-          duplicateIdentityCreateTransition.toBuffer(),
+        await client.platform.broadcastStateTransition(
+          duplicateIdentityCreateTransition,
         );
 
         expect.fail('Error was not thrown');
       } catch (e) {
-        const [error] = JSON.parse(e.metadata.get('errors'));
+        console.dir(e);
+        expect(e.code).to.be.equal(2);
+        expect(e.message).to.be.equal('Invalid state transition: IdentityPublicKeyAlreadyExistsError: Identity public key already exists');
+        const [error] = e.data.errors;
         expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
         expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
       }
@@ -247,7 +255,8 @@ describe('Platform', () => {
 
           expect.fail('Error was not thrown');
         } catch (e) {
-          expect(e.details).to.equal('Failed precondition: Not enough credits');
+          expect(e.code).to.be.equal(9);
+          expect(e.message).to.be.equal('Failed precondition: Not enough credits');
         }
       });
 
@@ -276,13 +285,15 @@ describe('Platform', () => {
         );
 
         try {
-          await client.getDAPIClient().platform.broadcastStateTransition(
-            identityTopUpTransition.toBuffer(),
+          await client.platform.broadcastStateTransition(
+            identityTopUpTransition,
           );
 
           expect.fail('Error was not thrown');
         } catch (e) {
-          const [error] = JSON.parse(e.metadata.get('errors'));
+          expect(e.code).to.be.equal(3);
+          expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionNotFoundError: Contract doesn\'t contain type undefinedType');
+          const [error] = e.data.errors;
           expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
         }
       });
@@ -344,18 +355,21 @@ describe('Platform', () => {
           client.platform, transaction, outputIndex, assetLockProof, privateKey, identity.getId(),
         );
 
-        await client.getDAPIClient().platform.broadcastStateTransition(
-          identityTopUpTransitionOne.toBuffer(),
+        await client.platform.broadcastStateTransition(
+          identityTopUpTransitionOne,
         );
 
         try {
-          await client.getDAPIClient().platform.broadcastStateTransition(
-            conflictingTopUpStateTransition.toBuffer(),
+          await client.platform.broadcastStateTransition(
+            conflictingTopUpStateTransition,
           );
 
           expect.fail('Error was not thrown');
         } catch (e) {
-          const [error] = JSON.parse(e.metadata.get('errors'));
+          console.dir(e);
+          expect(e.code).to.be.equal(3);
+          expect(e.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
+          const [error] = e.data.errors;
           expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
         }
       });
