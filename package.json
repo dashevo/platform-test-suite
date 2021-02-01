@@ -1,6 +1,6 @@
 {
   "name": "@dashevo/plaform-test-suite",
-  "version": "0.17.0",
+  "version": "0.18.0-dev.1",
   "description": "Dash Network end-to-end tests",
   "private": true,
   "scripts": {
@@ -29,7 +29,7 @@
     "@dashevo/wallet-lib": "~7.18.0-dev.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "github:dashevo/js-dash-sdk#feat-wait-for-st-result",
+    "dash": "github:dashevo/js-dash-sdk#v0.18-dev",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
