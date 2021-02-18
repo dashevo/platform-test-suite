@@ -36,6 +36,7 @@ install:
   - curl -u $GITHUB_USER:$GITHUB_TOKEN -s https://api.github.com/repos/dashevo/travis-ci-tools/releases/latest | jq -r '.tarball_url' | xargs -I {} -n1 wget -O travis-ci-tools.tar.gz -q {}
   - mkdir ~/travis-ci-tools && tar -C ~/travis-ci-tools -xvf travis-ci-tools.tar.gz
   - export CI_TOOLS_DIR="$(ls ~/travis-ci-tools)"
+  - export DOCKER_DRIVE_ID="$(docker ps -aqf 'name=mn_evo_services_drive_abci_1')"
   - cd ~/travis-ci-tools/$CI_TOOLS_DIR
   - npm ci && npm link
 
@@ -52,7 +53,6 @@ script: >
   docker run --network="host" platform-test-suite:local 127.0.0.1:3000:3010 -k=$FAUCET_PRIVATE_KEY -n=regtest --dpns-tld-identity-private-key=$DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY --dpns-tld-identity-id=$DPNS_TOP_LEVEL_IDENTITY_ID --dpns-contract-id=$DPNS_CONTRACT_ID
 
 after_success:
-  - $DOCKER_DRIVE_ID = docker ps -aqf 'name=mn_evo_services_drive_abci_1'
   - docker logs $DOCKER_DRIVE_ID | grep -C 77 'FATAL\|ERROR'
 
 deploy:
