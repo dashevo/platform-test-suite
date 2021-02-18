@@ -81,7 +81,7 @@ describe('e2e', () => {
 
         bobIdentity = await bobClient.platform.identities.register(10);
 
-        expect(bobIdentity).to.be.instanceOf(Identity);
+        expect(bobIdentity.constructor.name).to.be.equal('Identity');
       });
 
       it('should publish "Contacts" data contract', async () => {
@@ -138,7 +138,7 @@ describe('e2e', () => {
 
         aliceIdentity = await aliceClient.platform.identities.register(10);
 
-        expect(aliceIdentity).to.be.instanceOf(Identity);
+        expect(aliceIdentity.constructor.name).to.be.equal('Identity');
       });
 
       it('should create profile in "Contacts" app', async () => {
