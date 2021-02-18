@@ -1,4 +1,3 @@
-const Identity = require('@dashevo/dpp/lib/identity/Identity');
 const Identifier = require('@dashevo/dpp/lib/Identifier');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
