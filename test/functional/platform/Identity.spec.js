@@ -27,7 +27,7 @@ describe('Platform', () => {
       walletAccount = await client.getWalletAccount();
       ({
         publicKey: walletPublicKey,
-      } = walletAccount.getIdentityHDKeyByIndex(0, 0));
+      } = walletAccount.identities.getIdentityHDKeyByIndex(0, 0));
     });
 
     after(async () => {
