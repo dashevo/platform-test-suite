@@ -44,7 +44,7 @@ describe('Platform', () => {
       await waitForBalanceToChange(walletAccount);
     });
 
-    it('should fail to create an identity if instantLock is not valid', async function it() {
+    it('should fail to create an identity if instantLock is not valid', async () => {
       const {
         transaction,
         privateKey,
