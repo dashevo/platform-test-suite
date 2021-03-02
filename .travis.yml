@@ -1,4 +1,4 @@
-dist: bionic
+dist: focal
 language: node_js
 
 node_js:
@@ -16,7 +16,7 @@ services:
 addons:
   apt:
     packages:
-      - docker-ce
+      - docker.io
       - jq
 
 env:
