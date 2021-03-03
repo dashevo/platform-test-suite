@@ -1,7 +1,6 @@
 # [0.18.0](https://github.com/dashevo/plaform-test-suite/compare/v0.17.0...v0.18.0) (2021-03-03)
 
 
-
 ### Features
 
 * use SDK with new ST acknowledgment ([#96](https://github.com/dashevo/platform-test-suite/pull/96))
