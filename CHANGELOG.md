@@ -8,8 +8,8 @@
 
 ### Bug Fixes
 
-* removed unused identity variable ([81f4839](https://github.com/dashevo/plaform-test-suite/commit/81f4839bc67a8fdcb0df6283dae3276a72c579d7))
 * identity was used in a wrong way ([f115468](https://github.com/dashevo/plaform-test-suite/commit/f1154689e5a9c451a625a77c5b8c929e118a7fc6))
+* removed unused identity variable ([81f4839](https://github.com/dashevo/plaform-test-suite/commit/81f4839bc67a8fdcb0df6283dae3276a72c579d7))
 
 
 
