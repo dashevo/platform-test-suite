@@ -29,7 +29,7 @@
     "@dashevo/wallet-lib": "~7.18.0-dev.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "github:dashevo/js-dash-sdk#wait-for-instant-lock",
+    "dash": "~3.18.0-dev.3",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
