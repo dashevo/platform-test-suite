@@ -175,9 +175,7 @@ describe('Platform', () => {
 
       expect(broadcastError.code).to.be.equal(2);
       expect(broadcastError.message).to.be.equal('Invalid state transition: IdentityPublicKeyAlreadyExistsError: Identity public key already exists');
-      
       const [error] = broadcastError.data.errors;
-      
       expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
       expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
     });
