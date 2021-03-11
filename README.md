@@ -102,4 +102,3 @@ Feel free to dive in! [Open an issue](https://github.com/dashevo/platform-test-s
 ## License
 
 [MIT](LICENSE) &copy; Dash Core Group, Inc.
-
