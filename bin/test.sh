@@ -18,6 +18,7 @@ Usage: test <seed> [options]
               --dpns-contract-id=contract_id                - dpns contract id
   -t          --timeout                                     - test timeout in milliseconds
   -h          --help                                        - show help
+              --travis                                      - run in travis
 
   Possible scopes:
   e2e
@@ -31,6 +32,7 @@ Usage: test <seed> [options]
 
 DAPI_SEED="$1"
 network="testnet"
+mocha_exec_path="node_modules/.bin/mocha"
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -66,6 +68,9 @@ case ${i} in
     ;;
     -t=*|--timeout=*)
     timeout="${i#*=}"
+    ;;
+    --travis)
+    mocha_exec_path="mocha"
     ;;
 esac
 done
@@ -159,7 +164,8 @@ then
   cmd="${cmd} DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY=${identity_private_key}"
 fi
 
-cmd="${cmd} NODE_ENV=test node_modules/.bin/mocha ${scope_dirs}"
+cmd="${cmd} NODE_ENV=test ${mocha_exec_path} ${scope_dirs}"
+echo $cmd;
 
 if [ -n "$timeout" ]
 then
