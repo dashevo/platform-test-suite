@@ -5,6 +5,7 @@ const createClientWithFundedWallet = require('../../lib/test/createClientWithFun
 const getRandomDomain = () => crypto.randomBytes(10).toString('hex');
 
 describe('DPNS', () => {
+
   let failed = false;
   let client;
   let identity;
