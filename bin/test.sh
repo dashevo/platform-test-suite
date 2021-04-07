@@ -165,7 +165,6 @@ then
 fi
 
 cmd="${cmd} NODE_ENV=test ${mocha_exec_path} ${scope_dirs}"
-echo $cmd;
 
 if [ -n "$timeout" ]
 then
