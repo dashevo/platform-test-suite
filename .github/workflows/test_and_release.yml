@@ -84,7 +84,7 @@ jobs:
   release:
     name: Release Docker Image
     runs-on: ubuntu-20.04
-    needs: test_suite
+    needs: test
     if: ${{ github.event_name == 'release' }}
     steps:
       - uses: actions/checkout@v2
