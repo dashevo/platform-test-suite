@@ -73,7 +73,7 @@ jobs:
           echo "NETWORK=regtest" >> .env
           echo "DPNS_CONTRACT_ID=${{ env.dpns-contract-id }}" >> .env
           echo "DPNS_TOP_LEVEL_IDENTITY_ID=${{ env.dpns-top-level-identity-id }}" >> .env
-          echo "DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY=${{ dpns-top-level-identity-private-key }} >> .env
+          echo "DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY=${{ env.dpns-top-level-identity-private-key }} >> .env
 
       - name: Build Platform Test Suite Docker image
         run: docker build -t platform-test-suite:local
