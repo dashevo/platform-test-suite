@@ -76,7 +76,7 @@ jobs:
           echo "DPNS_TOP_LEVEL_IDENTITY_PRIVATE_KEY=${{ env.dpns-top-level-identity-private-key }} >> .env
 
       - name: Build Platform Test Suite Docker image
-        run: docker build -t platform-test-suite:local
+        run: docker build -t platform-test-suite:local .
 
       - name: Run tests
         run: docker run --network="host" --volume .env:/usr/src/app/.env platform-test-suite:local
