@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    name: Platform Test Suite
+    name: Run Platform Test Suite
     runs-on: ubuntu-20.04
     timeout-minutes: 60
     steps:
@@ -82,7 +82,7 @@ jobs:
           --dpns-contract-id=${{ env.dpns-contract-id }}
 
   release:
-    name: Docker image
+    name: Release Docker image
     runs-on: ubuntu-20.04
     needs: test
     if: ${{ github.event_name == 'release' }}
