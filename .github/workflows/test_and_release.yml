@@ -151,7 +151,7 @@ jobs:
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
 
-      - name: Temporary fix for Docker cache action
+      - name: Run temporary fix for Docker cache action
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
