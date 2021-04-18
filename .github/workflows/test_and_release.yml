@@ -45,7 +45,7 @@ jobs:
           concurrency: 8
 
       - name: Parse variables from PR body
-        uses: dashevo/gh-action-runtime-vars@master
+        uses: dashevo/gh-action-runtime-vars@debug-pr-body
         id: runtime-vars
         if: ${{ contains(github.event.pull_request.body, '/set-var')}}
 
