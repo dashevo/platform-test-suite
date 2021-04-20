@@ -46,7 +46,7 @@ describe('Core', () => {
 
       expect(masternode.status).to.be.a('string');
       expect(masternode.proTxHash).to.be.a('string');
-      expect(masternode.posePenalty).to.be.a('string');
+      expect(masternode.posePenalty).to.be.a('number');
       expect(masternode.isSynced).to.be.a('boolean');
       expect(masternode.syncProgress).to.be.a('number');
 
