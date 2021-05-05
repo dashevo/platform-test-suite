@@ -1,3 +1,24 @@
+# [0.19.0](https://github.com/dashevo/plaform-test-suite/compare/v0.18.0...v0.19.0) (2021-05-05)
+
+
+### Features
+
+* integrate Chain Asset Lock Proofs ([#115](https://github.com/dashevo/plaform-test-suite/issues/115))
+* update to new `getStatus` endpoint ([#111](https://github.com/dashevo/plaform-test-suite/issues/111))
+* remove fallbacks from regtest mode ([#103](https://github.com/dashevo/plaform-test-suite/issues/103))
+
+
+### Bug Fixes
+
+* getStatus type assertion ([#119](https://github.com/dashevo/plaform-test-suite/issues/119))
+* Identity Chainlock tests are failing against Palinka ([#120](https://github.com/dashevo/plaform-test-suite/issues/120))
+* invalid `wallet-lib` version was set ([#122](https://github.com/dashevo/plaform-test-suite/issues/122))
+* wrong docker image name ([#117](https://github.com/dashevo/plaform-test-suite/issues/117))
+* not patched version of protobufjs is used ([#114](https://github.com/dashevo/plaform-test-suite/issues/114))
+* bash script could not run mocha in github actions ([#105](https://github.com/dashevo/plaform-test-suite/issues/105))
+
+
+
 # [0.18.0](https://github.com/dashevo/plaform-test-suite/compare/v0.17.0...v0.18.0) (2021-03-03)
 
 
