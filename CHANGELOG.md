@@ -4,14 +4,13 @@
 ### Features
 
 * integrate Chain Asset Lock Proofs ([#115](https://github.com/dashevo/plaform-test-suite/issues/115), [#120](https://github.com/dashevo/plaform-test-suite/issues/120), [#122](https://github.com/dashevo/plaform-test-suite/issues/122))
-* update to new `getStatus` endpoint ([#111](https://github.com/dashevo/plaform-test-suite/issues/111), [#119](https://github.com/dashevo/plaform-test-suite/issues/119))
+* update to new `getStatus` endpoint ([#111](https://github.com/dashevo/plaform-test-suite/issues/111), [#119](https://github.com/dashevo/plaform-test-suite/issues/119), [#114](https://github.com/dashevo/plaform-test-suite/issues/114))
 * remove fallbacks from regtest mode ([#103](https://github.com/dashevo/plaform-test-suite/issues/103))
+* CI with Github Actions ([#108](https://github.com/dashevo/plaform-test-suite/issues/108), [#117](https://github.com/dashevo/plaform-test-suite/issues/117))
 
 
 ### Bug Fixes
 
-* wrong docker image name ([#117](https://github.com/dashevo/plaform-test-suite/issues/117))
-* not patched version of protobufjs is used ([#114](https://github.com/dashevo/plaform-test-suite/issues/114))
 * bash script could not run mocha in github actions ([#105](https://github.com/dashevo/plaform-test-suite/issues/105))
 
 
