@@ -77,8 +77,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.code).to.be.equal(3);
       expect(broadcastError.message).to.be.equal('State Transition is invalid: InvalidIdentityAssetLockProofSignatureError: Invalid Asset lock proof signature');
+      expect(broadcastError.code).to.be.equal(3);
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('InvalidIdentityAssetLockProofSignatureError');
     });
@@ -132,8 +132,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.code).to.be.equal(3);
       expect(broadcastError.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
+      expect(broadcastError.code).to.be.equal(3);
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
     });
@@ -175,8 +175,8 @@ describe('Platform', () => {
 
       expect(broadcastError).to.exist();
 
-      expect(broadcastError.code).to.be.equal(2);
       expect(broadcastError.message).to.be.equal('Invalid state transition: IdentityPublicKeyAlreadyExistsError: Identity public key already exists');
+      expect(broadcastError.code).to.be.equal(2);
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
       expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
@@ -352,8 +352,8 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.code).to.be.equal(9);
         expect(broadcastError.message).to.be.equal('Failed precondition: Not enough credits');
+        expect(broadcastError.code).to.be.equal(9);
       });
 
       it.skip('should fail top-up if instant lock is not valid', async () => {
@@ -391,8 +391,8 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.code).to.be.equal(3);
         expect(broadcastError.message).to.be.equal('State Transition is invalid: InvalidIdentityAssetLockProofSignatureError: Invalid Asset lock proof signature');
+        expect(broadcastError.code).to.be.equal(3);
         const [error] = broadcastError.data.errors;
         expect(error.name).to.equal('IdentityAssetLockTransactionNotFoundError');
       });
@@ -473,8 +473,8 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.code).to.be.equal(3);
         expect(broadcastError.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
+        expect(broadcastError.code).to.be.equal(3);
         const [error] = broadcastError.data.errors;
         expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
       });
