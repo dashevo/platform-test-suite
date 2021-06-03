@@ -82,8 +82,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.code).to.be.equal(3);
       expect(broadcastError.message).to.be.equal('State Transition is invalid: InvalidDocumentTypeError: Contract doesn\'t contain type undefinedType');
+      expect(broadcastError.code).to.be.equal(3);
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('InvalidDocumentTypeError');
     });
@@ -153,8 +153,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.code).to.be.equal(2);
       expect(broadcastError.message).to.be.equal('Invalid state transition: DuplicateDocumentError: Duplicate Document found');
+      expect(broadcastError.code).to.be.equal(2);
 
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('DuplicateDocumentError');
@@ -287,8 +287,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.code).to.be.equal(2);
       expect(broadcastError.message).to.be.equal('Invalid state transition: DocumentTimestampWindowViolationError: Document createdAt timestamp are out of block time window and 2 more');
+      expect(broadcastError.code).to.be.equal(2);
 
       const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('DocumentTimestampWindowViolationError');
