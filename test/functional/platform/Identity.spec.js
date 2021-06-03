@@ -232,7 +232,7 @@ describe('Platform', () => {
       expect(identityId).to.deep.equal(identity.getId());
     });
 
-    describe('chainLock', () => {
+    describe.skip('chainLock', () => {
       let chainLockIdentity;
 
       it('should create identity using chainLock', async () => {
