@@ -26,7 +26,7 @@
     "@dashevo/wallet-lib": "~7.20.0-dev.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "github:dashevo/js-dash-sdk#update-dapi-client-and-wallet-lib-20-1",
+    "dash": "~3.20.0-dev.1",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
