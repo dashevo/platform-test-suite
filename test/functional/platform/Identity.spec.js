@@ -22,6 +22,7 @@ describe('Platform', () => {
 
     before(async () => {
       dpp = new DashPlatformProtocol();
+      await dpp.initialize();
 
       client = await createClientWithFundedWallet();
       walletAccount = await client.getWalletAccount();

@@ -48,6 +48,7 @@ describe('Platform', () => {
     it('should fail to create new document with an unknown type', async function it() {
       // Add undefined document type for
       client.getApps().get('customContracts').contract.documents.undefinedType = {
+        type: 'object',
         properties: {
           name: {
             type: 'string',
