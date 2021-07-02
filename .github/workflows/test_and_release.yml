@@ -67,7 +67,7 @@ jobs:
           ls -lha buildkit-cache
 
       - name: Load buildkit state from cache
-        uses: dashevo/gh-action-cache-buildkit-state@v1
+        uses: dashevo/gh-action-cache-buildkit-state@output-debug
         with:
           builder: buildx_buildkit_${{ steps.buildx.outputs.name }}0
           cache-path: $(pwd)/buildkit-cache
