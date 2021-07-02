@@ -99,6 +99,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          load: true
           tags: platform-test-suite:local
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
