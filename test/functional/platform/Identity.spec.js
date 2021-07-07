@@ -273,7 +273,7 @@ describe('Platform', () => {
             break;
           }
 
-          await wait(1000);
+          await wait(5000);
         }
 
         const identityCreateTransitionData = await createIdentityCreateTransition(
