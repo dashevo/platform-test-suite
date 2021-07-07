@@ -11,6 +11,7 @@ const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
+const wait = require('../../../lib/wait');
 
 describe('Platform', () => {
   describe('Identity', () => {
@@ -237,7 +238,7 @@ describe('Platform', () => {
       expect(identityId).to.deep.equal(identity.getId());
     });
 
-    describe.skip('chainLock', () => {
+    describe('chainLock', () => {
       let chainLockIdentity;
 
       it('should create identity using chainLock', async () => {
@@ -261,7 +262,19 @@ describe('Platform', () => {
           outPoint,
         );
 
-        await waitForBlocks(client.getDAPIClient(), 1);
+        let coreChainLockedHeight = 0;
+        while (coreChainLockedHeight < chain.blocksCount) {
+          const identityResponse = await client.platform.identities.get(identity.getId());
+
+          const metadata = identityResponse.getMetadata();
+          coreChainLockedHeight = metadata.getCoreChainLockedHeight();
+
+          if (coreChainLockedHeight >= chain.blocksCount) {
+            break;
+          }
+
+          await wait(5000);
+        }
 
         const identityCreateTransitionData = await createIdentityCreateTransition(
           client.platform, assetLockProof, privateKey,
@@ -273,31 +286,9 @@ describe('Platform', () => {
 
         ({ identity: chainLockIdentity } = identityCreateTransitionData);
 
-        try {
-          await client.platform.broadcastStateTransition(
-            identityCreateTransition,
-          );
-        } catch (e) {
-          if (e.constructor.name === 'StateTransitionBroadcastError' && e.data.errors[0] && e.data.errors[0].name === 'InvalidIdentityAssetLockProofCoreHeightError') {
-            const stateTransitionError = e.data.errors[0];
-
-            const {
-              proofCoreChainLockedHeight,
-              currentCoreChainLockedHeight,
-            } = stateTransitionError;
-
-            await waitForBlocks(
-              client.getDAPIClient(),
-              proofCoreChainLockedHeight - currentCoreChainLockedHeight + 1,
-            );
-
-            await client.platform.broadcastStateTransition(
-              identityCreateTransition,
-            );
-          } else {
-            throw e;
-          }
-        }
+        await client.platform.broadcastStateTransition(
+          identityCreateTransition,
+        );
 
         expect(chainLockIdentity).to.exist();
 
