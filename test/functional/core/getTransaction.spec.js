@@ -34,11 +34,13 @@ describe('Core', () => {
       expect(receivedTx.hash).to.deep.equal(transaction.id);
     });
 
-    it('should respond with null if transaction was not found', async () => {
+    it('should throw NotFound error if transaction was not found', async () => {
       const nonExistentId = Buffer.alloc(32).toString('hex');
 
       try {
         await faucetClient.getDAPIClient().core.getTransaction(nonExistentId);
+
+        expect.fail('should throw NotFound');
       } catch (e) {
         expect(e).to.be.an.instanceOf(NotFoundError);
       }
