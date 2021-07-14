@@ -42,7 +42,7 @@ describe('Core', () => {
 
         expect.fail('should throw NotFound');
       } catch (e) {
-        expect(e).to.be.an.instanceOf(NotFoundError);f
+        expect(e).to.be.an.instanceOf(NotFoundError);
       }
     });
   });
