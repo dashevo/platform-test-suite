@@ -225,6 +225,40 @@ describe('Platform', () => {
         .to.be.greaterThan(fetchedDocument.getCreatedAt().getTime());
     });
 
+    it('should be able to prove that a document was updated', async () => {
+      const [storedDocument] = await client.platform.documents.get(
+        'customContracts.indexedDocument',
+        { where: [['$id', '==', document.getId()]] },
+      );
+
+      storedDocument.set('firstName', 'updatedName');
+
+      const documentsBatchTransition = await client.platform.documents.broadcast({
+        replace: [storedDocument],
+      }, identity);
+
+      documentsBatchTransition.transitions[0].data.firstName = 'nameToProve';
+      documentsBatchTransition.transitions[0].updatedAt = new Date();
+      documentsBatchTransition.transitions[0].revision += 1;
+      const signedTransition = await signStateTransition(
+        client.platform, documentsBatchTransition, identity,
+      );
+
+      const proof = await client.platform.broadcastStateTransition(signedTransition);
+
+      expect(proof.rootTreeProof).to.be.an.instanceof(Uint8Array);
+      expect(proof.rootTreeProof.length).to.be.greaterThan(0);
+
+      expect(proof.storeTreeProof).to.be.an.instanceof(Uint8Array);
+      expect(proof.storeTreeProof.length).to.be.greaterThan(0);
+
+      expect(proof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
+      expect(proof.signatureLLMQHash.length).to.be.equal(32);
+
+      expect(proof.signature).to.be.an.instanceof(Uint8Array);
+      expect(proof.signature.length).to.be.equal(96);
+    });
+
     it('should fail to update document with timestamp in violated time frame', async () => {
       const [storedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
