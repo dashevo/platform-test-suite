@@ -13,6 +13,11 @@
 * get non existing transaction test was not failing properly ([#140](https://github.com/dashevo/platform-test-suite/issues/140))
 
 
+### BREAKING CHANGES
+
+* not compatible with Dash Platform v0.19 and lower
+
+
 
 # [0.19.0](https://github.com/dashevo/platform-test-suite/compare/v0.18.0...v0.19.0) (2021-05-05)
 
