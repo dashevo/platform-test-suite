@@ -15,7 +15,7 @@
 
 ### BREAKING CHANGES
 
-* not compatible with platform v19
+* not compatible with Dash Platform v0.19 and lower
 
 
 
