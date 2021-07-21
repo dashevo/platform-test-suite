@@ -1,3 +1,20 @@
+# [0.20.0](https://github.com/dashevo/platform-test-suite/compare/v0.19.0...v0.20.0) (2021-07-21)
+
+
+### Features
+
+* check the proof format for `waitForStateTrasitionResult` ([#141](https://github.com/dashevo/platform-test-suite/issues/141))
+* re-introduce chainlock tests  ([#138](https://github.com/dashevo/platform-test-suite/issues/138))
+* update dependencies ([#133](https://github.com/dashevo/platform-test-suite/issues/133))
+* change an order of error check to provide better and faster debug info ([#129](https://github.com/dashevo/platform-test-suite/issues/129))
+
+
+### Bug Fixes
+
+* get non existing transaction test was not failing properly ([#140](https://github.com/dashevo/platform-test-suite/issues/140))
+
+
+
 # [0.19.0](https://github.com/dashevo/platform-test-suite/compare/v0.18.0...v0.19.0) (2021-05-05)
 
 
