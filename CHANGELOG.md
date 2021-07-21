@@ -4,8 +4,7 @@
 ### Features
 
 * check the proof format for `waitForStateTrasitionResult` ([#141](https://github.com/dashevo/platform-test-suite/issues/141))
-* re-introduce chainlock tests  ([#138](https://github.com/dashevo/platform-test-suite/issues/138))
-* update dependencies ([#133](https://github.com/dashevo/platform-test-suite/issues/133))
+* improve chainlock tests  ([#138](https://github.com/dashevo/platform-test-suite/issues/138))
 * change an order of error check to provide better and faster debug info ([#129](https://github.com/dashevo/platform-test-suite/issues/129))
 
 
