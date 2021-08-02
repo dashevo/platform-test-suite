@@ -479,8 +479,19 @@ describe('Platform', () => {
     });
 
     describe('Proofs', () => {
-      it('should be able to get and verify proof that identity exists with getIdentity', () => {
+      it('should be able to get and verify proof that identity exists with getIdentity', async () => {
+        identity = await client.platform.identities.register(5);
 
+        expect(identity).to.exist();
+
+        await waitForBalanceToChange(walletAccount);
+
+        const identityProof = await client.getDAPIClient().platform.getIdentity(
+          identity.getId(), { prove: true },
+        );
+
+        expect(identityProof).to.exist();
+        console.dir(identityProof);
       });
 
       it('should be able to verify proof that identity does not exist', () => {
