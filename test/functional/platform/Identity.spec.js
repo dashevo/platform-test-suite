@@ -1,6 +1,8 @@
 const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
+const { verifyProof } = require('@dashevo/merk');
+
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
 const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
 const { default: createIdentityCreateTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdentityCreateTransition');
@@ -473,6 +475,23 @@ describe('Platform', () => {
         expect(broadcastError.code).to.be.equal(3);
         const [error] = broadcastError.data.errors;
         expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
+      });
+    });
+
+    describe('Proofs', () => {
+      it('should be able to get and verify proof that identity exists with getIdentity', () => {
+
+      });
+
+      it('should be able to verify proof that identity does not exist', () => {
+
+      });
+
+      it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', () => {
+
+      });
+      it('should be able to verify identityIds with getIdentityIdsByPublicKeyHashes', () => {
+
       });
     });
   });
