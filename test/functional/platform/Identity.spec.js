@@ -2,6 +2,7 @@ const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const { verifyProof } = require('@dashevo/merk');
+const { MerkleTree } = require('merkletreejs');
 
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
 const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
@@ -14,6 +15,9 @@ const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange
 
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 const wait = require('../../../lib/wait');
+
+const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
+const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
 
 describe('Platform', () => {
   describe('Identity', () => {
@@ -490,8 +494,37 @@ describe('Platform', () => {
           identity.getId(), { prove: true },
         );
 
-        expect(identityProof).to.exist();
-        console.dir(identityProof);
+        const fullProof = identityProof.proof;
+
+        expect(fullProof).to.exist();
+
+        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+
+        expect(fullProof.storeTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.storeTreeProof.length).to.be.greaterThan(0);
+
+        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
+
+        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signature.length).to.be.equal(96);
+
+        const rootHashes = parseRootTreeProof(fullProof.rootTreeProof);
+        const parsedStoreTreeProof = parseStoreTreeProof(fullProof.storeTreeProof);
+
+        expect(identity.getId()).to.be.deep.equal(parsedStoreTreeProof.values[0].id);
+
+        console.dir(rootHashes);
+        console.dir(parsedStoreTreeProof);
+
+        const verificationResult = verifyProof(
+          fullProof.storeTreeProof,
+          [identity.getId()],
+          rootHashes[rootHashes.length - 1].data,
+        );
+
+        console.dir(verificationResult);
       });
 
       it('should be able to verify proof that identity does not exist', () => {
