@@ -80,7 +80,6 @@ describe('Platform', () => {
         }, identity);
       } catch (e) {
         broadcastError = e;
-
       }
 
       expect(broadcastError).to.exist();
