@@ -2,7 +2,7 @@ const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
 
 const { verifyProof } = require('@dashevo/merk');
-const { MerkleTree } = require('merkletreejs');
+// const { MerkleTree } = require('merkletreejs');
 
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
 const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
