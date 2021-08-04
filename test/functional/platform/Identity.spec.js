@@ -19,7 +19,7 @@ const wait = require('../../../lib/wait');
 
 const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
-const proofHashFunction = require('../../../lib/proofHashFunction');
+const { init: initHashFunction, hashFunction: proofHashFunction } = require('../../../lib/proofHashFunction');
 
 describe('Platform', () => {
   describe('Identity', () => {
@@ -32,6 +32,8 @@ describe('Platform', () => {
     before(async () => {
       dpp = new DashPlatformProtocol();
       await dpp.initialize();
+
+      await initHashFunction();
 
       client = await createClientWithFundedWallet();
       walletAccount = await client.getWalletAccount();
