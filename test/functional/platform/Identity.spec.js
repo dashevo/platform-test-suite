@@ -520,10 +520,13 @@ describe('Platform', () => {
         console.dir(rootHashes);
         console.dir(parsedStoreTreeProof);
 
-        const executionResult = executeProof(fullProof);
+        const { rootHash: identityLeafRoot } = executeProof(fullProof.storeTreeProof);
+        const identityLeafRootHash = proofHashFunction(identityLeafRoot);
 
         console.log('Execution result:');
-        console.dir(executionResult);
+        console.dir(identityLeafRoot);
+        console.dir(identityLeafRootHash);
+        console.log(rootHashes.findIndex((hash) => hash.toString('hex') === identityLeafRootHash.toString('hex')));
 
         const verificationResult = verifyProof(
           fullProof.storeTreeProof,
