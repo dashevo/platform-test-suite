@@ -1,8 +1,9 @@
 const DashPlatformProtocol = require('@dashevo/dpp');
 const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataContractFixture');
+const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
 
-const { verifyProof } = require('@dashevo/merk');
-// const { MerkleTree } = require('merkletreejs');
+const { verifyProof, executeProof } = require('@dashevo/merk');
+const { MerkleTree } = require('merkletreejs');
 
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
 const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
@@ -18,6 +19,7 @@ const wait = require('../../../lib/wait');
 
 const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
+const proofHashFunction = require('../../../lib/proofHashFunction');
 
 describe('Platform', () => {
   describe('Identity', () => {
@@ -518,6 +520,11 @@ describe('Platform', () => {
         console.dir(rootHashes);
         console.dir(parsedStoreTreeProof);
 
+        const executionResult = executeProof(fullProof);
+
+        console.log('Execution result:');
+        console.dir(executionResult);
+
         const verificationResult = verifyProof(
           fullProof.storeTreeProof,
           [identity.getId()],
@@ -527,8 +534,66 @@ describe('Platform', () => {
         console.dir(verificationResult);
       });
 
-      it('should be able to verify proof that identity does not exist', () => {
+      it('should be able to verify proof that identity does not exist', async () => {
+        // The same as above, but for an identity id that doesn't exist
 
+        const fakeIdentityId = generateRandomIdentifier();
+
+        const identityProof = await client.getDAPIClient().platform.getIdentity(
+          fakeIdentityId, { prove: true },
+        );
+
+        const fullProof = identityProof.proof;
+
+        expect(fullProof).to.exist();
+
+        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+
+        expect(fullProof.storeTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.storeTreeProof.length).to.be.greaterThan(0);
+
+        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
+
+        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signature.length).to.be.equal(96);
+
+        const rootHashes = parseRootTreeProof(fullProof.rootTreeProof);
+        const parsedStoreTreeProof = parseStoreTreeProof(fullProof.storeTreeProof);
+
+        console.dir(rootHashes);
+        console.dir(parsedStoreTreeProof);
+
+        const identitiesFromProof = parsedStoreTreeProof.values;
+
+        const valueIds = identitiesFromProof.map((identityValue) => identityValue.id.toString('hex'));
+
+        // The proof will contain left and right values to the empty place
+        expect(valueIds.indexOf(fakeIdentityId.toString('hex'))).to.be.equal(-1);
+
+        const { rootHash: identityLeafRoot } = executeProof(fullProof.storeTreeProof);
+
+        const identityIdsToProve = [fakeIdentityId];
+
+        const verificationResult = verifyProof(
+          fullProof.storeTreeProof,
+          identityIdsToProve,
+          identityLeafRoot,
+        );
+
+        // We pass one key
+        expect(verificationResult.length).to.be.equal(1);
+        // Identity with id at index 0 doesn't exist
+        expect(verificationResult[0]).to.be.null();
+
+        const leaves = rootHashes.map((hash) => hash.data);
+        const tree = new MerkleTree(leaves, proofHashFunction);
+        const root = tree.getRoot().toString('hex');
+        const leaf = identityLeafRoot;
+        // const proof = tree.getProof(leaf);
+
+        expect(tree.verify(leaves, leaf, root)).to.be.true(); // true
       });
 
       it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', () => {
