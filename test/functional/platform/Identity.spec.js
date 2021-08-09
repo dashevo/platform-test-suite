@@ -528,12 +528,12 @@ describe('Platform', () => {
         console.log('Execution result:');
         console.dir(identityLeafRoot);
         console.dir(identityLeafRootHash);
-        console.log(rootHashes.findIndex((hash) => hash.toString('hex') === identityLeafRootHash.toString('hex')));
+        console.log(rootHashes.findIndex((hash) => hash.data.toString('hex') === identityLeafRootHash.toString('hex')));
 
         const verificationResult = verifyProof(
           fullProof.storeTreeProof,
           [identity.getId()],
-          rootHashes[rootHashes.length - 1].data,
+          identityLeafRoot,
         );
 
         console.dir(verificationResult);
@@ -550,6 +550,7 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
+        // <Buffer 0e f9 0c f9 a0 0b d1 db 57 0b 33 72 d7 60 14 e4 e4 9a 3f 89 3a c2 7a c8 83 7a c8 b6 76 c9 bd 63>
         expect(fullProof).to.exist();
 
         expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
@@ -564,10 +565,10 @@ describe('Platform', () => {
         expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
         expect(fullProof.signature.length).to.be.equal(96);
 
-        const rootHashes = parseRootTreeProof(fullProof.rootTreeProof);
+        const rootTreeProof = parseRootTreeProof(fullProof.rootTreeProof);
         const parsedStoreTreeProof = parseStoreTreeProof(fullProof.storeTreeProof);
 
-        console.dir(rootHashes);
+        console.dir(rootTreeProof);
         console.dir(parsedStoreTreeProof);
 
         const identitiesFromProof = parsedStoreTreeProof.values;
@@ -592,13 +593,20 @@ describe('Platform', () => {
         // Identity with id at index 0 doesn't exist
         expect(verificationResult[0]).to.be.null();
 
-        const leaves = rootHashes.map((hash) => hash.data);
-        const tree = new MerkleTree(leaves, proofHashFunction);
+        const rootTreeProofHashes = rootTreeProof.map((hash) => hash.data);
+        const tree = new MerkleTree(rootTreeProofHashes, proofHashFunction, { isBitcoinTree: true });
         const root = tree.getRoot().toString('hex');
         const leaf = identityLeafRoot;
         // const proof = tree.getProof(leaf);
 
-        expect(tree.verify(leaves, leaf, root)).to.be.true(); // true
+        const root2 = tree.getRoot();
+        const proof = tree.getProof(rootTreeProofHashes[2]);
+        const empty = new MerkleTree([], proofHashFunction, { isBitcoinTree: true });
+        const verified = empty.verify(proof, rootTreeProofHashes[2], root2);
+
+        expect(verified).to.be.true();
+        // a: get root
+        expect(empty.verify(rootTreeProofHashes, leaf, rootTreeProofHashes[0])).to.be.true(); // true
       });
 
       it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', () => {
