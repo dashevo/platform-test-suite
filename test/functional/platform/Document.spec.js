@@ -249,8 +249,9 @@ describe('Platform', () => {
       expect(proof.rootTreeProof).to.be.an.instanceof(Uint8Array);
       expect(proof.rootTreeProof.length).to.be.greaterThan(0);
 
-      expect(proof.storeTreeProof).to.be.an.instanceof(Uint8Array);
-      expect(proof.storeTreeProof.length).to.be.greaterThan(0);
+      expect(proof.storeTreeProofs).to.exist();
+      expect(proof.storeTreeProofs.documentsProof).to.be.an.instanceof(Uint8Array);
+      expect(proof.storeTreeProofs.documentsProof.length).to.be.greaterThan(0);
 
       expect(proof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
       expect(proof.signatureLLMQHash.length).to.be.equal(32);
