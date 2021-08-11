@@ -90,7 +90,7 @@ jobs:
           override-dashmate-branch: ${{ env.DASHMATE_BRANCH }}
 
       - name: Start Dash local network
-        uses: dashevo/gh-action-start-local-network@v1
+        uses: dashevo/gh-action-start-local-network@test-20s-block-interval
         id: start-local-network
         with:
           drive-branch: ${{ env.DRIVE_BRANCH }}
