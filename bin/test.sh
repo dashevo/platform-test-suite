@@ -194,6 +194,4 @@ then
   cmd="${cmd} --timeout ${timeout}"
 fi
 
-echo $cmd
-
 eval $cmd
