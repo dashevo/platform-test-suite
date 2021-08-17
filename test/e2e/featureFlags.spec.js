@@ -99,7 +99,7 @@ describe('e2e', () => {
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= updateConsensusParamsFeatureFlag.enableAtHeight);
 
-        await wait(20000);
+        await wait(30000);
 
         let newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
 
@@ -128,7 +128,7 @@ describe('e2e', () => {
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= revertConsensusParamsFeatureFlag.enableAtHeight);
 
-        await wait(20000);
+        await wait(30000);
 
         newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
 
