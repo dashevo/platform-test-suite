@@ -96,6 +96,73 @@ describe('e2e', () => {
         expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
         expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
       });
+
+      it('should return back consensus params', async function it() {
+        if (process.env.NETWORK !== 'regtest') {
+          this.skip();
+        }
+
+        identity = await ownerClient.platform.identities.get(
+          process.env.FEATURE_FLAGS_IDENTITY_ID,
+        );
+
+        const { blockHeight: lastBlockHeight } = identity.getMetadata();
+
+        const block = oldConsensusParams.getBlock();
+        const evidence = oldConsensusParams.getEvidence();
+
+        updateConsensusParamsFeatureFlag = {
+          enableAtHeight: lastBlockHeight + 2,
+          block: {
+            maxBytes: +block.maxBytes,
+          },
+          evidence: {
+            maxAgeNumBlocks: +evidence.maxAgeNumBlocks,
+            maxAgeDuration: {
+              seconds: Math.trunc(evidence.maxAgeDuration / 1000000000),
+              nanos: (evidence.maxAgeDuration % 1000000000),
+            },
+            maxBytes: +evidence.maxBytes,
+          },
+        };
+
+        const document = await ownerClient.platform.documents.create(
+          'featureFlags.updateConsensusParams',
+          identity,
+          updateConsensusParamsFeatureFlag,
+        );
+
+        await ownerClient.platform.documents.broadcast({
+          create: [document],
+        }, identity);
+
+        // wait for block
+        let height;
+        do {
+          const someIdentity = await ownerClient.platform.identities.get(
+            process.env.FEATURE_FLAGS_IDENTITY_ID,
+          );
+
+          ({ blockHeight: height } = someIdentity.getMetadata());
+        } while (height <= updateConsensusParamsFeatureFlag.enableAtHeight);
+
+        await wait(30000);
+
+        const newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
+
+        const updatedBlock = newConsensusParams.getBlock();
+
+        expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
+
+        const { seconds } = evidence.maxAgeDuration;
+        const nanos = `${evidence.maxAgeDuration.nanos}`.padStart(9, '0');
+
+        const updatedEvidence = newConsensusParams.getEvidence();
+
+        expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
+        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
+        expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
+      });
     });
   });
 });
