@@ -101,7 +101,6 @@ describe('e2e', () => {
 
         await wait(20000);
 
-
         let newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
 
         const { block, evidence } = updateConsensusParamsFeatureFlag;
