@@ -9,6 +9,7 @@ describe('e2e', () => {
       let oldConsensusParams;
       let ownerClient;
       let updateConsensusParamsFeatureFlag;
+      let revertConsensusParamsFeatureFlag;
       let identity;
 
       before(async () => {
@@ -50,69 +51,9 @@ describe('e2e', () => {
             maxBytes: +evidence.maxBytes + 1,
           },
         };
-      });
 
-      it('should update consensus params', async function it() {
-        if (process.env.NETWORK !== 'regtest') {
-          this.skip();
-        }
-
-        const document = await ownerClient.platform.documents.create(
-          'featureFlags.updateConsensusParams',
-          identity,
-          updateConsensusParamsFeatureFlag,
-        );
-
-        await ownerClient.platform.documents.broadcast({
-          create: [document],
-        }, identity);
-
-        // wait for block
-        let height;
-        do {
-          const someIdentity = await ownerClient.platform.identities.get(
-            process.env.FEATURE_FLAGS_IDENTITY_ID,
-          );
-
-          ({ blockHeight: height } = someIdentity.getMetadata());
-        } while (height <= updateConsensusParamsFeatureFlag.enableAtHeight);
-
-        await wait(30000);
-
-        const newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
-
-        const { block, evidence } = updateConsensusParamsFeatureFlag;
-
-        const updatedBlock = newConsensusParams.getBlock();
-
-        expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
-
-        const { seconds } = evidence.maxAgeDuration;
-        const nanos = `${evidence.maxAgeDuration.nanos}`.padStart(9, '0');
-
-        const updatedEvidence = newConsensusParams.getEvidence();
-
-        expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
-        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
-        expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
-      });
-
-      it('should return back consensus params', async function it() {
-        if (process.env.NETWORK !== 'regtest') {
-          this.skip();
-        }
-
-        identity = await ownerClient.platform.identities.get(
-          process.env.FEATURE_FLAGS_IDENTITY_ID,
-        );
-
-        const { blockHeight: lastBlockHeight } = identity.getMetadata();
-
-        const block = oldConsensusParams.getBlock();
-        const evidence = oldConsensusParams.getEvidence();
-
-        updateConsensusParamsFeatureFlag = {
-          enableAtHeight: lastBlockHeight + 2,
+        revertConsensusParamsFeatureFlag = {
+          enableAtHeight: lastBlockHeight + 4,
           block: {
             maxBytes: +block.maxBytes,
           },
@@ -125,18 +66,30 @@ describe('e2e', () => {
             maxBytes: +evidence.maxBytes,
           },
         };
+      });
 
-        const document = await ownerClient.platform.documents.create(
+      it('should update consensus params', async function it() {
+        if (process.env.NETWORK !== 'regtest') {
+          this.skip();
+        }
+
+        const documentUpdate = await ownerClient.platform.documents.create(
           'featureFlags.updateConsensusParams',
           identity,
           updateConsensusParamsFeatureFlag,
         );
 
+        const documentRevert = await ownerClient.platform.documents.create(
+          'featureFlags.updateConsensusParams',
+          identity,
+          revertConsensusParamsFeatureFlag,
+        );
+
         await ownerClient.platform.documents.broadcast({
-          create: [document],
+          create: [documentUpdate, documentRevert],
         }, identity);
 
-        // wait for block
+        // wait for block and check consensus params were changed
         let height;
         do {
           const someIdentity = await ownerClient.platform.identities.get(
@@ -146,15 +99,45 @@ describe('e2e', () => {
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= updateConsensusParamsFeatureFlag.enableAtHeight);
 
-        await wait(30000);
+        await wait(20000);
 
-        const newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
 
-        const updatedBlock = newConsensusParams.getBlock();
+        let newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
+
+        const { block, evidence } = updateConsensusParamsFeatureFlag;
+
+        let updatedBlock = newConsensusParams.getBlock();
 
         expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
 
-        const updatedEvidence = newConsensusParams.getEvidence();
+        const { seconds } = evidence.maxAgeDuration;
+        const nanos = `${evidence.maxAgeDuration.nanos}`.padStart(9, '0');
+
+        let updatedEvidence = newConsensusParams.getEvidence();
+
+        expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
+        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
+        expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
+
+        // wait for block and check consensus params were reverted
+
+        do {
+          const someIdentity = await ownerClient.platform.identities.get(
+            process.env.FEATURE_FLAGS_IDENTITY_ID,
+          );
+
+          ({ blockHeight: height } = someIdentity.getMetadata());
+        } while (height <= revertConsensusParamsFeatureFlag.enableAtHeight);
+
+        await wait(20000);
+
+        newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
+
+        updatedBlock = newConsensusParams.getBlock();
+
+        expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
+
+        updatedEvidence = newConsensusParams.getEvidence();
 
         expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
         expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${evidence.maxAgeDuration}`);
