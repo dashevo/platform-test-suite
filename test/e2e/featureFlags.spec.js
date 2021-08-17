@@ -154,13 +154,10 @@ describe('e2e', () => {
 
         expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
 
-        const { seconds } = evidence.maxAgeDuration;
-        const nanos = `${evidence.maxAgeDuration.nanos}`.padStart(9, '0');
-
         const updatedEvidence = newConsensusParams.getEvidence();
 
         expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
-        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
+        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${evidence.maxAgeDuration}`);
         expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
       });
     });
