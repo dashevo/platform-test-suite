@@ -1,9 +1,8 @@
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
-const wait = require('../../lib/wait');
 
 describe('e2e', () => {
   describe('Feature flags', function main() {
-    this.timeout(600000);
+    this.timeout(900000);
 
     describe('updateConsensusParams', () => {
       let oldConsensusParams;
@@ -99,9 +98,9 @@ describe('e2e', () => {
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= updateConsensusParamsFeatureFlag.enableAtHeight);
 
-        await wait(30000);
-
-        let newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
+        let newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams(
+          updateConsensusParamsFeatureFlag.enableAtHeight + 1,
+        );
 
         const { block, evidence } = updateConsensusParamsFeatureFlag;
 
@@ -119,7 +118,6 @@ describe('e2e', () => {
         expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
 
         // wait for block and check consensus params were reverted
-
         do {
           const someIdentity = await ownerClient.platform.identities.get(
             process.env.FEATURE_FLAGS_IDENTITY_ID,
@@ -128,19 +126,21 @@ describe('e2e', () => {
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= revertConsensusParamsFeatureFlag.enableAtHeight);
 
-        await wait(30000);
-
-        newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams();
+        newConsensusParams = await ownerClient.getDAPIClient().platform.getConsensusParams(
+          revertConsensusParamsFeatureFlag.enableAtHeight + 1,
+        );
 
         updatedBlock = newConsensusParams.getBlock();
+        const oldBlock = oldConsensusParams.getBlock();
 
-        expect(updatedBlock.getMaxBytes()).to.equal(`${block.maxBytes}`);
+        expect(updatedBlock.getMaxBytes()).to.equal(`${oldBlock.maxBytes}`);
 
         updatedEvidence = newConsensusParams.getEvidence();
+        const oldEvidence = oldConsensusParams.getEvidence();
 
-        expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
-        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${evidence.maxAgeDuration}`);
-        expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
+        expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${oldEvidence.maxAgeNumBlocks}`);
+        expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${oldEvidence.maxAgeDuration}`);
+        expect(updatedEvidence.getMaxBytes()).to.equal(`${oldEvidence.maxBytes}`);
       });
     });
   });
