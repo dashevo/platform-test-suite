@@ -1,6 +1,6 @@
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
-describe('e2e', () => {
+describe('Platform', () => {
   describe('Feature flags', function main() {
     this.timeout(900000);
 
