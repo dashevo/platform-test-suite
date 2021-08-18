@@ -1,4 +1,4 @@
-const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
+const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('e2e', () => {
   describe('Feature flags', function main() {
@@ -68,7 +68,7 @@ describe('e2e', () => {
       });
 
       it('should update consensus params', async function it() {
-        if (process.env.NETWORK !== 'regtest') {
+        if (process.env.NETWORK !== 'regtest' && process.env.NETWORK !== 'testnet') {
           this.skip();
         }
 
