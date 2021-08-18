@@ -21,7 +21,8 @@
   "dependencies": {
     "@dashevo/dashcore-lib": "~0.19.25",
     "@dashevo/dpns-contract": "github:dashevo/dpns-contract#update-dpp",
-    "@dashevo/dpp": "~0.20.0",
+    "@dashevo/feature-flags-contract": "github:dashevo/dpns-contract#update-dpp",
+    "@dashevo/dpp": "~0.20.1",
     "@dashevo/grpc-common": "~0.4.0",
     "@dashevo/wallet-lib": "~7.21.0-dev.4",
     "chai": "^4.2.0",
