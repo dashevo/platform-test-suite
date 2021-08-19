@@ -3,7 +3,6 @@ const getDataContractFixture = require('@dashevo/dpp/lib/test/fixtures/getDataCo
 const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
 
 const { verifyProof, executeProof } = require('@dashevo/merk');
-const { MerkleTree } = require('merkletreejs');
 
 const { createFakeInstantLock } = require('dash/build/src/utils/createFakeIntantLock');
 const { default: createAssetLockProof } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createAssetLockProof');
@@ -19,7 +18,7 @@ const wait = require('../../../lib/wait');
 
 const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
-const { init: initHashFunction, hashFunction: proofHashFunction } = require('../../../lib/proofHashFunction');
+const { init: initHashFunction } = require('../../../lib/proofHashFunction');
 
 describe('Platform', () => {
   describe('Identity', () => {
@@ -504,9 +503,12 @@ describe('Platform', () => {
 
         expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
         expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+        expect(fullProof.storeTreeProofs).to.exist();
 
-        expect(fullProof.storeTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.storeTreeProof.length).to.be.greaterThan(0);
+        const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
+
+        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
+        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
 
         expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
         expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
@@ -514,29 +516,32 @@ describe('Platform', () => {
         expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
         expect(fullProof.signature.length).to.be.equal(96);
 
-        const rootHashes = parseRootTreeProof(fullProof.rootTreeProof);
-        const parsedStoreTreeProof = parseStoreTreeProof(fullProof.storeTreeProof);
+        const parsedStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
 
         expect(identity.getId()).to.be.deep.equal(parsedStoreTreeProof.values[0].id);
 
-        console.dir(rootHashes);
-        console.dir(parsedStoreTreeProof);
-
-        const { rootHash: identityLeafRoot } = executeProof(fullProof.storeTreeProof);
-        const identityLeafRootHash = proofHashFunction(identityLeafRoot);
-
-        console.log('Execution result:');
-        console.dir(identityLeafRoot);
-        console.dir(identityLeafRootHash);
-        console.log(rootHashes.findIndex((hash) => hash.data.toString('hex') === identityLeafRootHash.toString('hex')));
+        const { rootHash: identityLeafRoot } = executeProof(identitiesProofBuffer);
 
         const verificationResult = verifyProof(
-          fullProof.storeTreeProof,
+          identitiesProofBuffer,
           [identity.getId()],
           identityLeafRoot,
         );
 
-        console.dir(verificationResult);
+        // We pass one key
+        expect(verificationResult.length).to.be.equal(1);
+        // Identity with id at index 0 doesn't exist
+        expect(verificationResult[0]).to.be.not.null();
+
+        const recoveredIdentity = client.platform.dpp
+          .identity.createFromBuffer(verificationResult[0]);
+
+        // Deep equal won't work in this case, because identity returned by the register
+        const actualIdentity = identity.toJSON();
+        // Because the actual identity state is before the registration, and the
+        // balance wasn't added to it yet
+        actualIdentity.balance = 4462;
+        expect(recoveredIdentity.toJSON()).to.be.deep.equal(actualIdentity);
       });
 
       it('should be able to verify proof that identity does not exist', async () => {
@@ -550,14 +555,16 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
-        // <Buffer 0e f9 0c f9 a0 0b d1 db 57 0b 33 72 d7 60 14 e4 e4 9a 3f 89 3a c2 7a c8 83 7a c8 b6 76 c9 bd 63>
         expect(fullProof).to.exist();
 
         expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
         expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
 
-        expect(fullProof.storeTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.storeTreeProof.length).to.be.greaterThan(0);
+        expect(fullProof.storeTreeProofs).to.exist();
+
+        const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
+        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
+        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
 
         expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
         expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
@@ -565,11 +572,8 @@ describe('Platform', () => {
         expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
         expect(fullProof.signature.length).to.be.equal(96);
 
-        const rootTreeProof = parseRootTreeProof(fullProof.rootTreeProof);
-        const parsedStoreTreeProof = parseStoreTreeProof(fullProof.storeTreeProof);
-
-        console.dir(rootTreeProof);
-        console.dir(parsedStoreTreeProof);
+        // const rootTreeProof = parseRootTreeProof(fullProof.rootTreeProof);
+        const parsedStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
 
         const identitiesFromProof = parsedStoreTreeProof.values;
 
@@ -578,12 +582,12 @@ describe('Platform', () => {
         // The proof will contain left and right values to the empty place
         expect(valueIds.indexOf(fakeIdentityId.toString('hex'))).to.be.equal(-1);
 
-        const { rootHash: identityLeafRoot } = executeProof(fullProof.storeTreeProof);
+        const { rootHash: identityLeafRoot } = executeProof(identitiesProofBuffer);
 
         const identityIdsToProve = [fakeIdentityId];
 
         const verificationResult = verifyProof(
-          fullProof.storeTreeProof,
+          identitiesProofBuffer,
           identityIdsToProve,
           identityLeafRoot,
         );
@@ -592,21 +596,6 @@ describe('Platform', () => {
         expect(verificationResult.length).to.be.equal(1);
         // Identity with id at index 0 doesn't exist
         expect(verificationResult[0]).to.be.null();
-
-        const rootTreeProofHashes = rootTreeProof.map((hash) => hash.data);
-        const tree = new MerkleTree(rootTreeProofHashes, proofHashFunction, { isBitcoinTree: true });
-        const root = tree.getRoot().toString('hex');
-        const leaf = identityLeafRoot;
-        // const proof = tree.getProof(leaf);
-
-        const root2 = tree.getRoot();
-        const proof = tree.getProof(rootTreeProofHashes[2]);
-        const empty = new MerkleTree([], proofHashFunction, { isBitcoinTree: true });
-        const verified = empty.verify(proof, rootTreeProofHashes[2], root2);
-
-        expect(verified).to.be.true();
-        // a: get root
-        expect(empty.verify(rootTreeProofHashes, leaf, rootTreeProofHashes[0])).to.be.true(); // true
       });
 
       it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', () => {
