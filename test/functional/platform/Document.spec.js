@@ -65,10 +65,10 @@ describe('Platform', () => {
         },
       );
 
-      // mock validateStructure to skip validation in SDK
-      this.sinon.stub(client.platform.dpp.stateTransition, 'validateStructure');
+      // mock validateBasic to skip validation in SDK
+      this.sinon.stub(client.platform.dpp.stateTransition, 'validateBasic');
 
-      client.platform.dpp.stateTransition.validateStructure.returns({
+      client.platform.dpp.stateTransition.validateBasic.returns({
         isValid: () => true,
       });
 
