@@ -10,6 +10,7 @@ const { default: createIdentityCreateTransition } = require('dash/build/src/SDK/
 const { default: createIdentityTopUpTransition } = require('dash/build/src/SDK/Client/Platform/methods/identities/internal/createIdnetityTopUpTransition');
 const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
 
+const { PrivateKey } = require('@dashevo/dashcore-lib');
 const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
@@ -531,10 +532,11 @@ describe('Platform', () => {
         // We pass one key
         expect(verificationResult.length).to.be.equal(1);
         // Identity with id at index 0 doesn't exist
-        expect(verificationResult[0]).to.be.not.null();
+        const recoveredIdentityBuffer = verificationResult[0];
+        expect(recoveredIdentityBuffer).to.be.an.instanceof(Uint8Array);
 
         const recoveredIdentity = client.platform.dpp
-          .identity.createFromBuffer(verificationResult[0]);
+          .identity.createFromBuffer(recoveredIdentityBuffer);
 
         // Deep equal won't work in this case, because identity returned by the register
         const actualIdentity = identity.toJSON();
@@ -598,8 +600,107 @@ describe('Platform', () => {
         expect(verificationResult[0]).to.be.null();
       });
 
-      it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', () => {
+      it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', async () => {
+        const identityAtIndex6 = await client.platform.identities.register(6);
+        const identityAtIndex8 = await client.platform.identities.register(8);
+        // eslint-disable-next-line no-underscore-dangle
+        const nonIncludedIdentityPubKeyHash = new PrivateKey().toPublicKey()._getID();
 
+        expect(identityAtIndex6).to.exist();
+        expect(identityAtIndex8).to.exist();
+
+        await waitForBalanceToChange(walletAccount);
+
+        const identityProof = await client.getDAPIClient().platform.getIdentitiesByPublicKeyHashes(
+          [identityAtIndex6, nonIncludedIdentityPubKeyHash, identityAtIndex8], { prove: true },
+        );
+
+        const fullProof = identityProof.proof;
+
+        expect(fullProof).to.exist();
+
+        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+        expect(fullProof.storeTreeProofs).to.exist();
+
+        const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
+        const publicKeyHashesProofBuffer = fullProof.storeTreeProofs
+          .getPublicKeyHashesToIdentityIdsProof();
+
+        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
+        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
+
+        expect(publicKeyHashesProofBuffer).to.be.an.instanceof(Uint8Array);
+        expect(publicKeyHashesProofBuffer.length).to.be.greaterThan(0);
+
+        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
+
+        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signature.length).to.be.equal(96);
+
+        const parsedIdentitiesStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
+        const parsedPublicKeyHashesStoreTreeProof = parseStoreTreeProof(publicKeyHashesProofBuffer);
+
+        // Existing identities should be in the identitiesProof, as it also serves
+        // as an inclusion proof
+        expect(identityAtIndex6.getId())
+          .to.be.deep.equal(parsedIdentitiesStoreTreeProof.values[0].id);
+        expect(identityAtIndex8.getId())
+          .to.be.deep.equal(parsedIdentitiesStoreTreeProof.values[1].id);
+
+        // Non-existig public key hash should be included into the identityIdsProof, as it serves as
+        // a non-inclusion proof for the public keys
+        expect(parsedPublicKeyHashesStoreTreeProof.values.length)
+          .to.be.equal(1);
+
+        const { rootHash: identityLeafRoot } = executeProof(identitiesProofBuffer);
+        const { rootHash: identityIdsLeafRoot } = executeProof(publicKeyHashesProofBuffer);
+
+        /* Inclusion proof */
+
+        const inclusionVerificationResult = verifyProof(
+          identitiesProofBuffer,
+          [identityAtIndex6.getId(), identityAtIndex8.getId],
+          identityLeafRoot,
+        );
+
+        expect(inclusionVerificationResult.length).to.be.equal(2);
+
+        const firstRecoveredIdentityBuffer = inclusionVerificationResult[0];
+        const secondRecoveredIdentityBuffer = inclusionVerificationResult[1];
+        expect(firstRecoveredIdentityBuffer).to.be.an.instanceof(Uint8Array);
+        expect(secondRecoveredIdentityBuffer).to.be.an.instanceof(Uint8Array);
+
+        const firstRecoveredIdentity = client.platform.dpp
+          .identity.createFromBuffer(firstRecoveredIdentityBuffer);
+
+        const secondRecoveredIdentity = client.platform.dpp
+          .identity.createFromBuffer(secondRecoveredIdentityBuffer);
+
+        // Deep equal won't work in this case, because identity returned by the register
+        const actualIdentityAtKey6 = identityAtIndex6.toJSON();
+        const actualIdentityAtKey8 = identityAtIndex8.toJSON();
+        // Because the actual identity state is before the registration, and the
+        // balance wasn't added to it yet
+        actualIdentityAtKey6.balance = 4462;
+        actualIdentityAtKey8.balance = 4462;
+
+        expect(firstRecoveredIdentity.toJSON()).to.be.deep.equal(actualIdentityAtKey6);
+        expect(secondRecoveredIdentity.toJSON()).to.be.deep.equal(actualIdentityAtKey8);
+
+        /* Non-inclusion proof */
+
+        const nonInclusionVerificationResult = verifyProof(
+          publicKeyHashesProofBuffer,
+          [nonIncludedIdentityPubKeyHash],
+          identityIdsLeafRoot,
+        );
+
+        expect(nonInclusionVerificationResult.length).to.be.equal(1);
+
+        const nonIncludedIdentityId = nonInclusionVerificationResult[0];
+        expect(nonIncludedIdentityId).to.be(null);
       });
       it('should be able to verify identityIds with getIdentityIdsByPublicKeyHashes', () => {
 
