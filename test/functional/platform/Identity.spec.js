@@ -487,12 +487,29 @@ describe('Platform', () => {
     });
 
     describe('Proofs', () => {
-      it('should be able to get and verify proof that identity exists with getIdentity', async () => {
-        identity = await client.platform.identities.register(5);
+      let identityAtKey5;
+      let identityAtKey6;
+      let identityAtKey8;
+      let nonIncludedIdentityPubKeyHash;
+      let identity6PublicKeyHash;
+      let identity8PublicKeyHash;
 
-        expect(identity).to.exist();
+      before(async () => {
+        identityAtKey5 = await client.platform.identities.register(5);
+        identityAtKey6 = await client.platform.identities.register(6);
+        identityAtKey8 = await client.platform.identities.register(8);
 
         await waitForBalanceToChange(walletAccount);
+
+        nonIncludedIdentityPubKeyHash = new PrivateKey().toPublicKey().hash;
+
+        // Public key hashes
+        identity6PublicKeyHash = identityAtKey6.getPublicKeyById(0).hash();
+        identity8PublicKeyHash = identityAtKey8.getPublicKeyById(0).hash();
+      });
+
+      it('should be able to get and verify proof that identity exists with getIdentity', async () => {
+        identity = identityAtKey5;
 
         const identityProof = await client.getDAPIClient().platform.getIdentity(
           identity.getId(), { prove: true },
@@ -550,7 +567,6 @@ describe('Platform', () => {
 
       it('should be able to verify proof that identity does not exist', async () => {
         // The same as above, but for an identity id that doesn't exist
-
         const fakeIdentityId = generateRandomIdentifier();
 
         const identityProof = await client.getDAPIClient().platform.getIdentity(
@@ -604,27 +620,11 @@ describe('Platform', () => {
       });
 
       it('should be able to verify that multiple identities exist with getIdentitiesByPublicKeyHashes', async () => {
-        /* Preparing test data */
-
-        const identityAtKey6 = await client.platform.identities.register(6);
-        const identityAtKey8 = await client.platform.identities.register(8);
-
-        // Public key hashes
-        const identity6PublicKeyHash = identityAtKey6.getPublicKeyById(0).hash();
-        const identity8PublicKeyHash = identityAtKey8.getPublicKeyById(0).hash();
-        // eslint-disable-next-line no-underscore-dangle
-        const nonIncludedIdentityPubKeyHash = new PrivateKey().toPublicKey().hash;
-
         const publicKeyHashes = [
           identity6PublicKeyHash,
           nonIncludedIdentityPubKeyHash,
           identity8PublicKeyHash,
         ];
-
-        expect(identityAtKey6).to.exist();
-        expect(identityAtKey8).to.exist();
-
-        await waitForBalanceToChange(walletAccount);
 
         /* Requesting identities by public key hashes and verifying the structure */
 
@@ -659,7 +659,6 @@ describe('Platform', () => {
         /* Parsing values from the proof */
 
         const parsedIdentitiesStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
-        const parsedPublicKeyHashesStoreTreeProof = parseStoreTreeProof(publicKeyHashesProofBuffer);
 
         // Existing identities should be in the identitiesProof, as it also serves
         // as an inclusion proof
@@ -759,8 +758,71 @@ describe('Platform', () => {
         const nonIncludedIdentityId = nonInclusionVerificationResult[0];
         expect(nonIncludedIdentityId).to.be.null();
       });
-      it('should be able to verify identityIds with getIdentityIdsByPublicKeyHashes', () => {
 
+      it('should be able to verify identityIds with getIdentityIdsByPublicKeyHashes', async () => {
+        const publicKeyHashes = [
+          identity6PublicKeyHash,
+          nonIncludedIdentityPubKeyHash,
+          identity8PublicKeyHash,
+        ];
+
+        /* Requesting identities by public key hashes and verifying the structure */
+
+        const identityProof = await client.getDAPIClient().platform.getIdentityIdsByPublicKeyHashes(
+          publicKeyHashes, { prove: true },
+        );
+
+        const fullProof = identityProof.proof;
+
+        expect(fullProof).to.exist();
+
+        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+        expect(fullProof.storeTreeProofs).to.exist();
+
+        const publicKeyHashesProofBuffer = fullProof.storeTreeProofs
+          .getPublicKeyHashesToIdentityIdsProof();
+
+        expect(publicKeyHashesProofBuffer).to.be.an.instanceof(Uint8Array);
+        expect(publicKeyHashesProofBuffer.length).to.be.greaterThan(0);
+
+        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
+
+        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
+        expect(fullProof.signature.length).to.be.equal(96);
+
+        /* Extracting root */
+
+        const {
+          rootHash: publicKeyHashesToIdentityIdsLeafRoot,
+        } = executeProof(publicKeyHashesProofBuffer);
+
+        /* Verifying proof */
+
+        // Note that you first has to parse values from the
+        // proof and find identity ids you were looking for
+        const verificationResult = verifyProof(
+          publicKeyHashesProofBuffer,
+          publicKeyHashes,
+          publicKeyHashesToIdentityIdsLeafRoot,
+        );
+
+        expect(verificationResult.length).to.be.equal(3);
+
+        const firstIdentityId = verificationResult[0];
+        const secondIdentityId = verificationResult[1];
+        const thirdIdentityId = verificationResult[2];
+
+        expect(firstIdentityId).to.be.an.instanceof(Uint8Array);
+        // In the verifyProof call, non existing key is passed as a second element
+        // and verifyProof returns values sorted in the same way as they were
+        // passed to the function
+        expect(secondIdentityId).to.be.null();
+        expect(thirdIdentityId).to.be.an.instanceof(Uint8Array);
+
+        expect(firstIdentityId).to.be.deep.equal(identityAtKey6.getId());
+        expect(thirdIdentityId).to.be.deep.equal(identityAtKey8.getId());
       });
     });
   });
