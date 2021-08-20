@@ -17,7 +17,8 @@ const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 const wait = require('../../../lib/wait');
 
-const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
+// const parseRootTreeProof = require('../../../lib/parseRootTreeProof');
+const testProofStructure = require('../../../lib/test/testProofStructure');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
 const { init: initHashFunction } = require('../../../lib/proofHashFunction');
 
@@ -517,22 +518,9 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
-        expect(fullProof).to.exist();
-
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
-        expect(fullProof.storeTreeProofs).to.exist();
+        testProofStructure(expect, fullProof);
 
         const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
-
-        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
 
         const parsedStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
 
@@ -575,22 +563,9 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
-        expect(fullProof).to.exist();
-
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
-
-        expect(fullProof.storeTreeProofs).to.exist();
+        testProofStructure(expect, fullProof);
 
         const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
-        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
 
         // const rootTreeProof = parseRootTreeProof(fullProof.rootTreeProof);
         const parsedStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
@@ -634,27 +609,11 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
-        expect(fullProof).to.exist();
-
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
-        expect(fullProof.storeTreeProofs).to.exist();
+        testProofStructure(expect, fullProof);
 
         const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
         const publicKeyHashesProofBuffer = fullProof.storeTreeProofs
           .getPublicKeyHashesToIdentityIdsProof();
-
-        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(publicKeyHashesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(publicKeyHashesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
 
         /* Parsing values from the proof */
 
@@ -774,23 +733,10 @@ describe('Platform', () => {
 
         const fullProof = identityProof.proof;
 
-        expect(fullProof).to.exist();
-
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
-        expect(fullProof.storeTreeProofs).to.exist();
+        testProofStructure(expect, fullProof);
 
         const publicKeyHashesProofBuffer = fullProof.storeTreeProofs
           .getPublicKeyHashesToIdentityIdsProof();
-
-        expect(publicKeyHashesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(publicKeyHashesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
 
         /* Extracting root */
 

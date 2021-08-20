@@ -5,7 +5,7 @@ const getDataContractFixture = require(
 const { executeProof, verifyProof } = require('@dashevo/merk');
 const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
-const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
+const testProofStructure = require('../../../lib/test/testProofStructure');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
 
 describe('Platform', () => {
@@ -62,37 +62,27 @@ describe('Platform', () => {
     });
 
     describe('Proofs', () => {
-      it('should be able to get and verify proof that identity exists with getIdentity', async () => {
-        // dataContractFixture = getDataContractFixture();
+      it('should be able to get and verify proof that data contract exists with getIdentity', async () => {
         const dataContractId = dataContractFixture.getId();
-        // await client.platform.contracts.broadcast(dataContractFixture, identity);
 
-        const identityProof = await client.getDAPIClient().platform.getDataContract(
+        const dataContractWithProof = await client.getDAPIClient().platform.getDataContract(
           dataContractId, { prove: true },
         );
 
-        const fullProof = identityProof.proof;
+        const fullProof = dataContractWithProof.proof;
 
-        expect(fullProof).to.exist();
-
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
-        expect(fullProof.storeTreeProofs).to.exist();
+        testProofStructure(expect, fullProof);
 
         const dataContractsProofBuffer = fullProof.storeTreeProofs.getDataContractsProof();
 
-        expect(dataContractsProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(dataContractsProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
-
         const parsedStoreTreeProof = parseStoreTreeProof(dataContractsProofBuffer);
 
-        expect(dataContractId).to.be.deep.equal(parsedStoreTreeProof.values[0].id);
+        expect(parsedStoreTreeProof.values.length).to.be.equal(1);
+
+        const restoredDataContract = await client.platform.dpp
+          .dataContract.createFromBuffer(parsedStoreTreeProof.values[0]);
+
+        expect(restoredDataContract.toJSON()).to.be.deep.equal(dataContractFixture.toJSON());
 
         const { rootHash: dataContractsLeafRoot } = executeProof(dataContractsProofBuffer);
 
@@ -104,72 +94,42 @@ describe('Platform', () => {
 
         // We pass one key
         expect(verificationResult.length).to.be.equal(1);
-        // Identity with id at index 0 doesn't exist
+
         const recoveredDataContractBuffer = verificationResult[0];
         expect(recoveredDataContractBuffer).to.be.an.instanceof(Uint8Array);
 
-        const recoveredDataContract = client.platform.dpp
+        const recoveredDataContract = await client.platform.dpp
           .dataContract.createFromBuffer(recoveredDataContractBuffer);
 
-        // Deep equal won't work in this case, because identity returned by the register
-        const actualDataContract = dataContractFixture.toJSON();
-        // Because the actual identity state is before the registration, and the
-        // balance wasn't added to it yet
-        actualDataContract.balance = 4462;
-        expect(recoveredDataContract.toJSON()).to.be.deep.equal(actualDataContract);
+        expect(recoveredDataContract.toJSON()).to.be.deep.equal(dataContractFixture.toJSON());
       });
 
-      it('should be able to verify proof that identity does not exist', async () => {
+      it('should be able to verify proof that data contract does not exist', async () => {
         // The same as above, but for an identity id that doesn't exist
 
-        const fakeIdentityId = generateRandomIdentifier();
+        const dataContractId = generateRandomIdentifier();
 
-        const identityProof = await client.getDAPIClient().platform.getIdentity(
-          fakeIdentityId, { prove: true },
+        const dataContractWithProof = await client.getDAPIClient().platform.getDataContract(
+          dataContractId, { prove: true },
         );
 
-        const fullProof = identityProof.proof;
+        const fullProof = dataContractWithProof.proof;
 
-        expect(fullProof).to.exist();
+        testProofStructure(expect, fullProof);
 
-        expect(fullProof.rootTreeProof).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.rootTreeProof.length).to.be.greaterThan(0);
+        const dataContractsProofBuffer = fullProof.storeTreeProofs.getDataContractsProof();
 
-        expect(fullProof.storeTreeProofs).to.exist();
-
-        const identitiesProofBuffer = fullProof.storeTreeProofs.getIdentitiesProof();
-        expect(identitiesProofBuffer).to.be.an.instanceof(Uint8Array);
-        expect(identitiesProofBuffer.length).to.be.greaterThan(0);
-
-        expect(fullProof.signatureLLMQHash).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signatureLLMQHash.length).to.be.equal(32);
-
-        expect(fullProof.signature).to.be.an.instanceof(Uint8Array);
-        expect(fullProof.signature.length).to.be.equal(96);
-
-        // const rootTreeProof = parseRootTreeProof(fullProof.rootTreeProof);
-        const parsedStoreTreeProof = parseStoreTreeProof(identitiesProofBuffer);
-
-        const identitiesFromProof = parsedStoreTreeProof.values;
-
-        const valueIds = identitiesFromProof.map((identityValue) => identityValue.id.toString('hex'));
-
-        // The proof will contain left and right values to the empty place
-        expect(valueIds.indexOf(fakeIdentityId.toString('hex'))).to.be.equal(-1);
-
-        const { rootHash: identityLeafRoot } = executeProof(identitiesProofBuffer);
-
-        const identityIdsToProve = [fakeIdentityId];
+        const { rootHash: dataContractsLeafRoot } = executeProof(dataContractsProofBuffer);
 
         const verificationResult = verifyProof(
-          identitiesProofBuffer,
-          identityIdsToProve,
-          identityLeafRoot,
+          dataContractsProofBuffer,
+          [dataContractId],
+          dataContractsLeafRoot,
         );
 
         // We pass one key
         expect(verificationResult.length).to.be.equal(1);
-        // Identity with id at index 0 doesn't exist
+        // Data contract doesn't exist, so result is null
         expect(verificationResult[0]).to.be.null();
       });
     });
