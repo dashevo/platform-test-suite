@@ -24,7 +24,7 @@
     "@dashevo/feature-flags-contract": "github:dashevo/feature-flags-contract#update-dpp",
     "@dashevo/dpp": "~0.21.0-dev.2",
     "@dashevo/grpc-common": "~0.4.0",
-    "@dashevo/wallet-lib": "~7.21.0-dev.5",
+    "@dashevo/wallet-lib": "github:dashevo/wallet-lib#fix-storage",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dash": "github:dashevo/js-dash-sdk#feat/driveProtocolVersion",
