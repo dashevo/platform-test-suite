@@ -2,7 +2,11 @@ const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
 
+const { executeProof, verifyProof } = require('@dashevo/merk');
+const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
+const testProofStructure = require('../../../lib/test/testProofStructure');
+const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
 
 describe('Platform', () => {
   describe('Data Contract', function main() {
@@ -55,6 +59,79 @@ describe('Platform', () => {
 
       expect(fetchedDataContract).to.be.not.null();
       expect(dataContractFixture.toJSON()).to.deep.equal(fetchedDataContract.toJSON());
+    });
+
+    describe('Proofs', () => {
+      it('should be able to get and verify proof that data contract exists with getIdentity', async () => {
+        const dataContractId = dataContractFixture.getId();
+
+        const dataContractWithProof = await client.getDAPIClient().platform.getDataContract(
+          dataContractId, { prove: true },
+        );
+
+        const fullProof = dataContractWithProof.proof;
+
+        testProofStructure(expect, fullProof);
+
+        const dataContractsProofBuffer = fullProof.storeTreeProofs.getDataContractsProof();
+
+        const parsedStoreTreeProof = parseStoreTreeProof(dataContractsProofBuffer);
+
+        expect(parsedStoreTreeProof.values.length).to.be.equal(1);
+
+        const restoredDataContract = await client.platform.dpp
+          .dataContract.createFromBuffer(parsedStoreTreeProof.values[0]);
+
+        expect(restoredDataContract.toJSON()).to.be.deep.equal(dataContractFixture.toJSON());
+
+        const { rootHash: dataContractsLeafRoot } = executeProof(dataContractsProofBuffer);
+
+        const verificationResult = verifyProof(
+          dataContractsProofBuffer,
+          [dataContractId],
+          dataContractsLeafRoot,
+        );
+
+        // We pass one key
+        expect(verificationResult.length).to.be.equal(1);
+
+        const recoveredDataContractBuffer = verificationResult[0];
+        expect(recoveredDataContractBuffer).to.be.an.instanceof(Uint8Array);
+
+        const recoveredDataContract = await client.platform.dpp
+          .dataContract.createFromBuffer(recoveredDataContractBuffer);
+
+        expect(recoveredDataContract.toJSON()).to.be.deep.equal(dataContractFixture.toJSON());
+      });
+
+      it('should be able to verify proof that data contract does not exist', async () => {
+        // The same as above, but for an identity id that doesn't exist
+
+        const dataContractId = generateRandomIdentifier();
+
+        const dataContractWithProof = await client.getDAPIClient().platform.getDataContract(
+          dataContractId, { prove: true },
+        );
+
+        const fullProof = dataContractWithProof.proof;
+
+        testProofStructure(expect, fullProof);
+
+        const dataContractsProofBuffer = fullProof.storeTreeProofs.getDataContractsProof();
+
+        const { rootHash: dataContractsLeafRoot } = executeProof(dataContractsProofBuffer);
+
+        const verificationResult = verifyProof(
+          dataContractsProofBuffer,
+          [dataContractId],
+          dataContractsLeafRoot,
+        );
+
+        // We pass one key
+        expect(verificationResult.length).to.be.equal(1);
+        // Data contract doesn't exist, so result is null
+        expect(verificationResult[0]).to.be.null();
+      });
     });
   });
 });
