@@ -27,7 +27,7 @@
     "@dashevo/wallet-lib": "github:dashevo/wallet-lib#update-dpp",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dash": "github:dashevo/js-dash-sdk#feat/driveProtocolVersion",
+    "dash": "~3.21.0-dev.5",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
