@@ -42,7 +42,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      const [error] = JSON.parse(broadcastError.message.replace('StateTransition is invalid - ', ''));
+
+      const [error] = broadcastError.data.errors;
       expect(error.name).to.equal('IdentityNotFoundError');
     });
 
