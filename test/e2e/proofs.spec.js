@@ -124,8 +124,6 @@ describe('e2e', () => {
         treeLayers[1][2],
       ]);
 
-      console.log('App hash:', reconstructedAppHash);
-
       expect(identityProofRoot).to.be.equal(reconstructedAppHash);
       expect(keysProofRoot).to.be.equal(reconstructedAppHash);
       expect(contractsProofRoot).to.be.equal(reconstructedAppHash);
