@@ -84,7 +84,7 @@ describe('Platform', () => {
 
       expect(broadcastError).to.exist();
       expect(
-        /INVALID_ARGUMENT: Data Contract \w doesn't define document with type undefinedType/
+        /INVALID_ARGUMENT: Data Contract \w* doesn't define document with type undefinedType/
           .test(broadcastError.message),
       ).to.be.true();
       expect(broadcastError.code).to.be.equal(1024);
