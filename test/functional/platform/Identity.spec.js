@@ -351,8 +351,11 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.message).to.be.equal('6 ALREADY_EXISTS: State transition already in chain');
-        expect(broadcastError.code).to.be.equal(-32603);
+        expect(
+          /FAILED_PRECONDITION: Failed precondition: Current credits balance \d* is not enough to pay \d* fee/
+            .test(broadcastError.message),
+        ).to.be.true();
+        expect(broadcastError.code).to.be.equal(3000);
       });
 
       it.skip('should fail top-up if instant lock is not valid', async () => {
