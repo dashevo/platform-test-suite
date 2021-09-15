@@ -90,10 +90,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('State Transition is invalid: InvalidIdentityAssetLockProofSignatureError: Invalid Asset lock proof signature');
-      expect(broadcastError.code).to.be.equal(3);
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('InvalidIdentityAssetLockProofSignatureError');
+      expect(broadcastError.message).to.be.equal('3 INVALID_ARGUMENT: Invalid instant lock proof signature');
+      expect(broadcastError.code).to.be.equal(1042);
     });
 
     it('should fail to create an identity with already used asset lock output', async () => {
@@ -145,10 +143,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
-      expect(broadcastError.code).to.be.equal(3);
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
+      expect(broadcastError.message).to.satisfy((msg) => msg.startsWith('3 INVALID_ARGUMENT: Asset lock transaction'));
+      expect(broadcastError.code).to.be.equal(1033);
     });
 
     it('should fail to create an identity with already used public key', async () => {
@@ -187,12 +183,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-
-      expect(broadcastError.message).to.be.equal('Invalid state transition: IdentityPublicKeyAlreadyExistsError: Identity public key already exists');
-      expect(broadcastError.code).to.be.equal(2);
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('IdentityPublicKeyAlreadyExistsError');
-      expect(Buffer.from(error.publicKeyHash)).to.deep.equal(identity.getPublicKeyById(0).hash());
+      expect(broadcastError.message).to.be.equal(`Identity public key ${identity.getPublicKeyById(0).hash().toString('hex')} already exists`);
+      expect(broadcastError.code).to.be.equal(4012);
     });
 
     it('should be able to get newly created identity', async () => {
@@ -359,8 +351,11 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.message).to.be.equal('Failed precondition: Not enough credits');
-        expect(broadcastError.code).to.be.equal(9);
+        expect(
+          /FAILED_PRECONDITION: Failed precondition: Current credits balance \d* is not enough to pay \d* fee/
+            .test(broadcastError.message),
+        ).to.be.true();
+        expect(broadcastError.code).to.be.equal(3000);
       });
 
       it.skip('should fail top-up if instant lock is not valid', async () => {
@@ -480,10 +475,8 @@ describe('Platform', () => {
         }
 
         expect(broadcastError).to.exist();
-        expect(broadcastError.message).to.be.equal('State Transition is invalid: IdentityAssetLockTransactionOutPointAlreadyExistsError: Asset lock transaction outPoint already exists');
-        expect(broadcastError.code).to.be.equal(3);
-        const [error] = broadcastError.data.errors;
-        expect(error.name).to.equal('IdentityAssetLockTransactionOutPointAlreadyExistsError');
+        expect(broadcastError.message).to.satisfy((msg) => msg.startsWith('3 INVALID_ARGUMENT: Asset lock transaction'));
+        expect(broadcastError.code).to.be.equal(1033);
       });
     });
 
