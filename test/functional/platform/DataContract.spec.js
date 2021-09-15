@@ -41,10 +41,8 @@ describe('Platform', () => {
         broadcastError = e;
       }
 
-      expect(broadcastError).to.exist();
-
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('IdentityNotFoundError');
+      expect(broadcastError.message).to.equal(`16 UNAUTHENTICATED: Identity ${dataContractFixture.getOwnerId().toString()} not found`);
+      expect(broadcastError.code).to.equal(2000);
     });
 
     it('should create new data contract with previously created identity as an owner', async () => {
