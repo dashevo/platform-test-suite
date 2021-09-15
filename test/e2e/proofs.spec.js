@@ -5,7 +5,7 @@ const createClientWithoutWallet = require('../../lib/test/createClientWithoutWal
 const hashFunction = require('../../lib/proofHashFunction');
 
 describe('e2e', () => {
-  describe('Proofs', () => {
+  describe('Root Tree Proof', () => {
     let blake3;
     let dashClient;
 
@@ -21,6 +21,23 @@ describe('e2e', () => {
     });
 
     it('should be correct for all endpoints', async () => {
+      // This test requests all endpoints instead of having multiple test for each endpoint
+      // on purpose.
+      //
+      // The reason being is that when verifying merkle proof, you usually need some value to
+      // compare it to, and platform doesn't provide one. There are two ways to verify that
+      // the root tree proof is working: either by knowing its root in advance, or by
+      // verifying it's signature that is also included in the response.
+      // Verifying signature requires verifying the header chain, which is not currently implemented
+      // in the JS SDK (Although it is implemented in Java and iOS SDK).
+      // So we left with only one option: to know the proof in advance.
+      // Platform doesn't give it directly, but we can reconstruct it from
+      // store tree leaves. This if fine in this case because this test doesn't test
+      // store tree proofs (every endpoint has its own separate store tree proof test).
+      // By making requests to all endpoints we can recover all leaves hashes, and construct
+      // the original root tree from it. Then we can get the root from that tree and use it
+      // as a reference root when verifying the root tree proof.
+
       const dapiClient = await dashClient.getDAPIClient();
       const contractId = Identifier.from(process.env.DPNS_CONTRACT_ID);
       const identityId = Identifier.from(process.env.DPNS_TOP_LEVEL_IDENTITY_ID);
