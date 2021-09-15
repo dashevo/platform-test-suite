@@ -3,7 +3,7 @@ const {
   PrivateKey,
 } = require('@dashevo/dashcore-lib');
 
-const NotFoundError = require('@dashevo/dapi-client/lib/methods/errors/NotFoundError');
+const NotFoundError = require('@dashevo/dapi-client/lib/errors/response/NotFoundError');
 
 const createFaucetClient = require('../../../lib/test/createFaucetClient');
 const wait = require('../../../lib/wait');

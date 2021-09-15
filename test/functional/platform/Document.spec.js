@@ -83,10 +83,11 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('State Transition is invalid: InvalidDocumentTypeError: Contract doesn\'t contain type undefinedType');
-      expect(broadcastError.code).to.be.equal(3);
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('InvalidDocumentTypeError');
+      expect(
+        /INVALID_ARGUMENT: Data Contract \w* doesn't define document with type undefinedType/
+          .test(broadcastError.message),
+      ).to.be.true();
+      expect(broadcastError.code).to.be.equal(1024);
     });
 
     it('should fail to create a new document with an unknown owner', async () => {
@@ -154,18 +155,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('Invalid state transition: DuplicateDocumentError: Duplicate Document found');
-      expect(broadcastError.code).to.be.equal(2);
-
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('DuplicateDocumentError');
-      expect(error.indexDefinition).to.deep.equal({
-        unique: true,
-        properties: [
-          { $ownerId: 'asc' },
-          { firstName: 'desc' },
-        ],
-      });
+      expect(/Document \w* has duplicate unique properties \$ownerId, firstName with other documents/.test(broadcastError.message)).to.be.true();
+      expect(broadcastError.code).to.be.equal(4009);
     });
 
     it('should be able to create new document', async () => {
@@ -289,11 +280,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('Invalid state transition: DocumentTimestampWindowViolationError: Document updatedAt timestamp are out of block time window');
-      expect(broadcastError.code).to.be.equal(2);
-
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('DocumentTimestampWindowViolationError');
+      expect(/Document \w* updatedAt timestamp .* are out of block time window from .* and .*/.test(broadcastError.message)).to.be.true();
+      expect(broadcastError.code).to.be.equal(4008);
     });
 
     it('should fail to create a new document with timestamp in violated time frame', async () => {
@@ -323,11 +311,8 @@ describe('Platform', () => {
       }
 
       expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('Invalid state transition: DocumentTimestampWindowViolationError: Document createdAt timestamp are out of block time window and 2 more');
-      expect(broadcastError.code).to.be.equal(2);
-
-      const [error] = broadcastError.data.errors;
-      expect(error.name).to.equal('DocumentTimestampWindowViolationError');
+      expect(/Document \w* createdAt timestamp .* are out of block time window from .* and .*/.test(broadcastError.message)).to.be.true();
+      expect(broadcastError.code).to.be.equal(4008);
     });
   });
 });
