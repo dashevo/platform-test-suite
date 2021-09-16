@@ -33,7 +33,7 @@
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
-    "merkletreejs": "^0.2.24",
+    "js-merkle": "^0.1.5",
     "mocha": "^7.2.0",
     "semver": "^7.3.2",
     "sinon": "^9.2.0",
