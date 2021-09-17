@@ -4,6 +4,8 @@ const getDataContractFixture = require(
 
 const { executeProof, verifyProof } = require('@dashevo/merk');
 const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
+const IdentityNotFoundError = require('@dashevo/dpp/lib/errors/consensus/signature/IdentityNotFoundError');
+const { StateTransitionBroadcastError } = require('dash/build/src/errors/StateTransitionBroadcastError');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 const testProofStructure = require('../../../lib/test/testProofStructure');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
@@ -41,8 +43,8 @@ describe('Platform', () => {
         broadcastError = e;
       }
 
-      expect(broadcastError.message).to.equal(`16 UNAUTHENTICATED: Identity ${dataContractFixture.getOwnerId().toString()} not found`);
-      expect(broadcastError.code).to.equal(2000);
+      expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+      expect(broadcastError.getCause()).to.be.an.instanceOf(IdentityNotFoundError);
     });
 
     it('should create new data contract with previously created identity as an owner', async () => {
