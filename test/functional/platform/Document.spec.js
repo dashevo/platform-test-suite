@@ -9,6 +9,8 @@ const getIdentityFixture = require(
 
 const { signStateTransition } = require('dash/build/src/SDK/Client/Platform/signStateTransition');
 
+const InvalidDocumentTypeError = require('@dashevo/dpp/lib/errors/consensus/basic/document/InvalidDocumentTypeError');
+const { StateTransitionBroadcastError } = require('dash/build/src/errors/StateTransitionBroadcastError');
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', () => {
@@ -82,12 +84,8 @@ describe('Platform', () => {
         broadcastError = e;
       }
 
-      expect(broadcastError).to.exist();
-      expect(
-        /INVALID_ARGUMENT: Data Contract \w* doesn't define document with type undefinedType/
-          .test(broadcastError.message),
-      ).to.be.true();
-      expect(broadcastError.code).to.be.equal(1024);
+      expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+      expect(broadcastError.getCause()).to.be.an.instanceOf(InvalidDocumentTypeError);
     });
 
     it('should fail to create a new document with an unknown owner', async () => {

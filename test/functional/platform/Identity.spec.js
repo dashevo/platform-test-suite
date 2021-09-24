@@ -11,6 +11,12 @@ const { default: createIdentityTopUpTransition } = require('dash/build/src/SDK/C
 const { default: createAssetLockTransaction } = require('dash/build/src/SDK/Client/Platform/createAssetLockTransaction');
 
 const { PrivateKey } = require('@dashevo/dashcore-lib');
+const { StateTransitionBroadcastError } = require('dash/build/src/errors/StateTransitionBroadcastError');
+const InvalidInstantAssetLockProofSignatureError = require('@dashevo/dpp/lib/errors/consensus/basic/identity/InvalidInstantAssetLockProofSignatureError');
+const IdentityAssetLockTransactionOutPointAlreadyExistsError = require('@dashevo/dpp/lib/errors/consensus/basic/identity/IdentityAssetLockTransactionOutPointAlreadyExistsError');
+const BalanceIsNotEnoughError = require('@dashevo/dpp/lib/errors/consensus/fee/BalanceIsNotEnoughError');
+const IdentityPublicKeyAlreadyExistsError = require('@dashevo/dpp/lib/errors/consensus/state/identity/IdentityPublicKeyAlreadyExistsError');
+
 const waitForBlocks = require('../../../lib/waitForBlocks');
 const waitForBalanceToChange = require('../../../lib/test/waitForBalanceToChange');
 
@@ -89,9 +95,10 @@ describe('Platform', () => {
         broadcastError = e;
       }
 
-      expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.be.equal('3 INVALID_ARGUMENT: Invalid instant lock proof signature');
-      expect(broadcastError.code).to.be.equal(1042);
+      expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+      expect(broadcastError.getCause()).to.be.an.instanceOf(
+        InvalidInstantAssetLockProofSignatureError,
+      );
     });
 
     it('should fail to create an identity with already used asset lock output', async () => {
@@ -142,9 +149,10 @@ describe('Platform', () => {
         broadcastError = e;
       }
 
-      expect(broadcastError).to.exist();
-      expect(broadcastError.message).to.satisfy((msg) => msg.startsWith('3 INVALID_ARGUMENT: Asset lock transaction'));
-      expect(broadcastError.code).to.be.equal(1033);
+      expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+      expect(broadcastError.getCause()).to.be.an.instanceOf(
+        IdentityAssetLockTransactionOutPointAlreadyExistsError,
+      );
     });
 
     it('should fail to create an identity with already used public key', async () => {
@@ -184,7 +192,9 @@ describe('Platform', () => {
 
       expect(broadcastError).to.exist();
       expect(broadcastError.message).to.be.equal(`Identity public key ${identity.getPublicKeyById(0).hash().toString('hex')} already exists`);
-      expect(broadcastError.code).to.be.equal(4012);
+      expect(broadcastError.getCause()).to.be.an.instanceOf(
+        IdentityPublicKeyAlreadyExistsError,
+      );
     });
 
     it('should be able to get newly created identity', async () => {
@@ -350,12 +360,10 @@ describe('Platform', () => {
           broadcastError = e;
         }
 
-        expect(broadcastError).to.exist();
-        expect(
-          /FAILED_PRECONDITION: Failed precondition: Current credits balance \d* is not enough to pay \d* fee/
-            .test(broadcastError.message),
-        ).to.be.true();
-        expect(broadcastError.code).to.be.equal(3000);
+        expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+        expect(broadcastError.getCause()).to.be.an.instanceOf(
+          BalanceIsNotEnoughError,
+        );
       });
 
       it.skip('should fail top-up if instant lock is not valid', async () => {
@@ -474,9 +482,10 @@ describe('Platform', () => {
           broadcastError = e;
         }
 
-        expect(broadcastError).to.exist();
-        expect(broadcastError.message).to.satisfy((msg) => msg.startsWith('3 INVALID_ARGUMENT: Asset lock transaction'));
-        expect(broadcastError.code).to.be.equal(1033);
+        expect(broadcastError).to.be.an.instanceOf(StateTransitionBroadcastError);
+        expect(broadcastError.getCause()).to.be.an.instanceOf(
+          IdentityAssetLockTransactionOutPointAlreadyExistsError,
+        );
       });
     });
 
