@@ -31,8 +31,6 @@ Usage: test <seed> [options]
   functional:core
   functional:platform"
 
-echo "$@"
-
 DAPI_SEED="$1"
 network="testnet"
 
@@ -79,9 +77,6 @@ case ${i} in
     ;;
 esac
 done
-
-echo "$ff_identity_id"
-echo "$ff_contract_id"
 
 if [ -z "$DAPI_SEED" ] || [[ $DAPI_SEED == -* ]]
 then
