@@ -28,6 +28,8 @@ describe('Core', () => {
 
       await faucetWalletAccount.broadcastTransaction(transaction);
 
+      await wait(5000);
+
       const result = await faucetClient.getDAPIClient().core.getTransaction(transaction.id);
       const receivedTx = new Transaction(result.getTransaction());
 
