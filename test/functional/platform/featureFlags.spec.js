@@ -47,7 +47,7 @@ describe('Platform', () => {
               seconds: Math.trunc(evidence.maxAgeDuration / 1000000000) + 1,
               nanos: (evidence.maxAgeDuration % 1000000000) + 1,
             },
-            maxBytes: +evidence.maxBytes + 1,
+            // maxBytes: +evidence.maxBytes + 1,
           },
         };
 
@@ -62,7 +62,7 @@ describe('Platform', () => {
               seconds: Math.trunc(evidence.maxAgeDuration / 1000000000),
               nanos: (evidence.maxAgeDuration % 1000000000),
             },
-            maxBytes: +evidence.maxBytes,
+            // maxBytes: +evidence.maxBytes,
           },
         };
       });
@@ -115,7 +115,7 @@ describe('Platform', () => {
 
         expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${evidence.maxAgeNumBlocks}`);
         expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${seconds}${nanos}`);
-        expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
+        // expect(updatedEvidence.getMaxBytes()).to.equal(`${evidence.maxBytes}`);
 
         // wait for block and check consensus params were reverted
         do {
@@ -140,7 +140,7 @@ describe('Platform', () => {
 
         expect(updatedEvidence.getMaxAgeNumBlocks()).to.equal(`${oldEvidence.maxAgeNumBlocks}`);
         expect(updatedEvidence.getMaxAgeDuration()).to.equal(`${oldEvidence.maxAgeDuration}`);
-        expect(updatedEvidence.getMaxBytes()).to.equal(`${oldEvidence.maxBytes}`);
+        // expect(updatedEvidence.getMaxBytes()).to.equal(`${oldEvidence.maxBytes}`);
       });
     });
   });
