@@ -47,6 +47,7 @@ describe('Platform', () => {
               seconds: Math.trunc(evidence.maxAgeDuration / 1000000000) + 1,
               nanos: (evidence.maxAgeDuration % 1000000000) + 1,
             },
+            // on schnaps, maxBytes default value is empty, and we can't revert it back
             // maxBytes: +evidence.maxBytes + 1,
           },
         };
