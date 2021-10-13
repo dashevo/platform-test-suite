@@ -46,7 +46,7 @@ describe('Core', () => {
 
         expect.fail('should throw NotFound error');
       } catch (e) {
-        expect(e.message).to.equal('5 NOT_FOUND: Invalid block height');
+        expect(e.message).to.equal('Invalid block height');
         expect(e.code).to.equal(5);
       }
     });
@@ -57,7 +57,7 @@ describe('Core', () => {
 
         expect.fail('should throw NotFound error');
       } catch (e) {
-        expect(e.message).to.equal('5 NOT_FOUND: Block not found');
+        expect(e.message).to.equal('Block not found');
         expect(e.code).to.equal(5);
       }
     });

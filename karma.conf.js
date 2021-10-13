@@ -9,6 +9,11 @@ const { parsed: envs } = dotenvSafe.config({
 
 module.exports = (config) => {
   config.set({
+    client: {
+      mocha: {
+        timeout: 650000,
+      },
+    },
     frameworks: ['mocha', 'chai'],
     files: [
       'lib/test/karma/loader.js',
@@ -21,8 +26,8 @@ module.exports = (config) => {
       resolve: {
         fallback: {
           fs: false,
-          http: false,
-          https: false,
+          http: require.resolve('stream-http'),
+          https: require.resolve('https-browserify'),
           crypto: require.resolve('crypto-browserify'),
           buffer: require.resolve('buffer/'),
           assert: require.resolve('assert-browserify'),
@@ -30,7 +35,7 @@ module.exports = (config) => {
           path: require.resolve('path-browserify'),
           url: require.resolve('url/'),
           os: require.resolve('os-browserify/browser'),
-          zlib: false,
+          zlib: require.resolve('browserify-zlib'),
         },
       },
       plugins: [
@@ -49,6 +54,8 @@ module.exports = (config) => {
     browsers: ['ChromeHeadless', 'FirefoxHeadless'],
     singleRun: false,
     concurrency: Infinity,
+    browserNoActivityTimeout: 900000,
+    browserDisconnectTimeout: 900000,
     plugins: [
       'karma-mocha',
       'karma-mocha-reporter',
