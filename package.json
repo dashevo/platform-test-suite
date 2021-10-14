@@ -34,7 +34,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "crypto-browserify": "^3.12.0",
-    "dash": "github:dashevo/js-dash-sdk#bump-version",
+    "dash": "~3.21.0-dev.13",
     "dirty-chai": "^2.0.1",
     "dotenv-safe": "^8.2.0",
     "github-api": "^3.3.0",
