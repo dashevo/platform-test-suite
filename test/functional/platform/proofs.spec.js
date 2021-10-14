@@ -4,10 +4,10 @@ const { executeProof, verifyProof } = require('@dashevo/merk');
 const { PrivateKey } = require('@dashevo/dashcore-lib');
 
 const generateRandomIdentifier = require('@dashevo/dpp/lib/test/utils/generateRandomIdentifier');
-const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 const hashFunction = require('../../../lib/proofHashFunction');
 const testProofStructure = require('../../../lib/test/testProofStructure');
 const parseStoreTreeProof = require('../../../lib/parseStoreTreeProof');
+const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', () => {
   describe('Proofs', () => {
@@ -19,7 +19,9 @@ describe('Platform', () => {
       await hashFunction.init();
       blake3 = hashFunction.hashFunction;
 
-      dashClient = await createClientWithoutWallet();
+      dashClient = await createClientWithFundedWallet();
+
+      await dashClient.platform.initialize();
 
       contractId = Identifier.from(process.env.DPNS_CONTRACT_ID);
     });
@@ -31,15 +33,19 @@ describe('Platform', () => {
     describe('Store Tree Proofs', () => {
       describe('Data Contract', () => {
         it('should be able to get and verify proof that data contract exists with getIdentity', async () => {
-          const dataContractWithProof = await dashClient.getDAPIClient().platform.getDataContract(
-            contractId, { prove: true },
-          );
+          const dataContractResponseWithProof = await dashClient.getDAPIClient()
+            .platform.getDataContract(
+              contractId, { prove: true },
+            );
 
-          const dataContract = await dashClient.getDAPIClient().platform.getDataContract(
+          const dataContractResponse = await dashClient.getDAPIClient().platform.getDataContract(
             contractId,
           );
 
-          const fullProof = dataContractWithProof.proof;
+          const dataContract = await dashClient.platform.dpp
+            .dataContract.createFromBuffer(dataContractResponse.getDataContract());
+
+          const fullProof = dataContractResponseWithProof.getProof();
 
           testProofStructure(expect, fullProof);
 
