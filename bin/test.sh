@@ -13,6 +13,7 @@ Usage: test <seed> [options]
   -s=a,b,c    --scope=a,b,c                                 - test scope to run
   -k=key      --faucet-key=key                              - faucet private key string
   -n=network  --network=network                             - use regtest, devnet or testnet
+              --skip-sync-before-height=H                   - start sync funding wallet from specific height
               --dpns-tld-identity-private-key=private_key   - top level identity private key
               --dpns-tld-identity-id=tld_identity_id        - top level identity id
               --dpns-contract-id=tld_contract_id            - dpns contract id
@@ -56,6 +57,9 @@ case ${i} in
     ;;
     -n=*|--network=*)
     network="${i#*=}"
+    ;;
+    --skip-sync-before-height=*)
+    skip_sync_before_height="${i#*=}"
     ;;
     --dpns-tld-identity-private-key=*)
     identity_private_key="${i#*=}"
@@ -150,6 +154,11 @@ fi
 if [ -n "$network" ]
 then
   cmd="${cmd} NETWORK=${network}"
+fi
+
+if [ -n "$skip_sync_before_height" ]
+then
+  cmd="${cmd} SKIP_SYNC_BEFORE_HEIGHT=${skip_sync_before_height}"
 fi
 
 if [ -n "$tld_contract_id" ]
