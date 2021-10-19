@@ -41,17 +41,14 @@ Usage: test <seed> [options]
   <seed> can be IP or IP:port
 
   Options:
-              --npm-install=pkg                               - install npm package before running the suite
-  -s=a,b,c    --scope=a,b,c                                   - test scope to run
-  -k=key      --faucet-key=key                                - faucet private key string
-  -n=network  --network=network                               - use regtest, devnet or testnet
-              --dpns-tld-identity-private-key=private_key     - top level identity private key
-              --dpns-tld-identity-id=identity_id              - top level identity id
-              --dpns-contract-id=contract_id                  - dpns contract id
-              --dashpay-tld-identity-private-key=private_key  - top level identity private key
-              --dashpay-tld-identity-id=identity_id           - top level identity id
-              --dashpay-contract-id=contract_id               - dashpay contract id
-  -h          --help                                          - show help
+              --npm-install=pkg                             - install npm package before running the suite
+  -s=a,b,c    --scope=a,b,c                                 - test scope to run
+  -k=key      --faucet-key=key                              - faucet private key string
+  -n=network  --network=network                             - use regtest, devnet or testnet
+              --dpns-tld-identity-private-key=private_key   - top level identity private key
+              --dpns-tld-identity-id=identity_id            - top level identity id
+              --dpns-contract-id=contract_id                - dpns contract id
+  -h          --help                                        - show help
 
   Possible scopes:
   e2e
@@ -78,17 +75,14 @@ Usage: test <seed> [options]
   <seed> can be IP or IP:port
 
   Options:
-              --npm-install=pkg                               - install npm package before running the suite
-  -s=a,b,c    --scope=a,b,c                                   - test scope to run
-  -k=key      --faucet-key=key                                - faucet private key string
-  -n=network  --network=network                               - use regtest, devnet or testnet
-              --dpns-tld-identity-private-key=private_key     - top level identity private key
-              --dpns-tld-identity-id=identity_id              - top level identity id
-              --dpns-contract-id=contract_id                  - dpns contract id
-              --dashpay-tld-identity-private-key=private_key  - top level identity private key
-              --dashpay-tld-identity-id=identity_id           - top level identity id
-              --dashpay-contract-id=contract_id               - dashpay contract id
-  -h          --help                                          - show help
+              --npm-install=pkg                             - install npm package before running the suite
+  -s=a,b,c    --scope=a,b,c                                 - test scope to run
+  -k=key      --faucet-key=key                              - faucet private key string
+  -n=network  --network=network                             - use regtest, devnet or testnet
+              --dpns-tld-identity-private-key=private_key   - top level identity private key
+              --dpns-tld-identity-id=identity_id            - top level identity id
+              --dpns-contract-id=contract_id                - dpns contract id
+  -h          --help                                        - show help
 
   Possible scopes:
   e2e

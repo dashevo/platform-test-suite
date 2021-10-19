@@ -9,20 +9,17 @@ Usage: test <seed> [options]
   <seed> can be IP or IP:port
 
   Options:
-              --npm-install=pkg                                 - install npm package before running the suite
-  -s=a,b,c    --scope=a,b,c                                     - test scope to run
-  -k=key      --faucet-key=key                                  - faucet private key string
-  -n=network  --network=network                                 - use regtest, devnet or testnet
-              --dpns-tld-identity-private-key=private_key       - top level identity private key
-              --dpns-tld-identity-id=tld_identity_id            - top level identity id
-              --dpns-contract-id=tld_contract_id                - dpns contract id
-              --dashpay-tld-identity-private-key=dp_private_key - top level identity private key
-              --dashpay-tld-identity-id=dp_identity_id          - top level identity id
-              --dashpay-contract-id=dp_contract_id              - dashpay contract id
-              --feature-flags-identity-id=ff_identity_id        - feature-flags contract id
-              --feature-flags-contract-id=ff_contract_id        - feature-flags contract id
-  -t          --timeout                                         - test timeout in milliseconds
-  -h          --help                                            - show help
+              --npm-install=pkg                             - install npm package before running the suite
+  -s=a,b,c    --scope=a,b,c                                 - test scope to run
+  -k=key      --faucet-key=key                              - faucet private key string
+  -n=network  --network=network                             - use regtest, devnet or testnet
+              --dpns-tld-identity-private-key=private_key   - top level identity private key
+              --dpns-tld-identity-id=tld_identity_id        - top level identity id
+              --dpns-contract-id=tld_contract_id            - dpns contract id
+              --feature-flags-identity-id=ff_identity_id    - feature-flags contract id
+              --feature-flags-contract-id=ff_contract_id    - feature-flags contract id
+  -t          --timeout                                     - test timeout in milliseconds
+  -h          --help                                        - show help
 
   Possible scopes:
   e2e
@@ -67,15 +64,6 @@ case ${i} in
     tld_identity_id="${i#*=}"
     ;;
     --dpns-contract-id=*)
-    tld_contract_id="${i#*=}"
-    ;;
-    --dashpay-tld-identity-private-key=*)
-    identity_private_key="${i#*=}"
-    ;;
-    --dashpay-tld-identity-id=*)
-    tld_identity_id="${i#*=}"
-    ;;
-    --dashpay-contract-id=*)
     tld_contract_id="${i#*=}"
     ;;
     --feature-flags-identity-id=*)
@@ -172,16 +160,6 @@ fi
 if [ -n "$tld_identity_id" ]
 then
   cmd="${cmd} DPNS_TOP_LEVEL_IDENTITY_ID=${tld_identity_id}"
-fi
-
-if [ -n "$dp_tld_contract_id" ]
-then
-  cmd="${cmd} DASHPAY_CONTRACT_ID=${dp_tld_contract_id}"
-fi
-
-if [ -n "$dp_tld_identity_id" ]
-then
-  cmd="${cmd} DASHPAY_TOP_LEVEL_IDENTITY_ID=${dp_tld_identity_id}"
 fi
 
 if [ -n "$ff_identity_id" ]

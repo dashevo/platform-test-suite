@@ -120,9 +120,6 @@ jobs:
           --dpns-tld-identity-private-key=${{ steps.start-local-network.outputs.dpns-top-level-identity-private-key }} \
           --dpns-tld-identity-id=${{ steps.start-local-network.outputs.dpns-top-level-identity-id }} \
           --dpns-contract-id=${{ steps.start-local-network.outputs.dpns-contract-id }} \
-          --dashpay-tld-identity-private-key=${{ steps.start-local-network.outputs.dashpay-top-level-identity-private-key }} \
-          --dashpay-tld-identity-id=${{ steps.start-local-network.outputs.dashpay-top-level-identity-id }} \
-          --dashpay-contract-id=${{ steps.start-local-network.outputs.dashpay-contract-id }} \
           --feature-flags-identity-id=${{ steps.start-local-network.outputs.feature-flags-identity-id }} \
           --feature-flags-contract-id=${{ steps.start-local-network.outputs.feature-flags-contract-id }}
 
