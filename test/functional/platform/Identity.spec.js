@@ -243,7 +243,9 @@ describe('Platform', () => {
     describe('chainLock', () => {
       let chainLockIdentity;
 
-      it('should create identity using chainLock', async () => {
+      it('should create identity using chainLock', async function createIdentityUsingChainLock() {
+        this.timeout(850000);
+
         const {
           transaction,
           privateKey,
@@ -264,9 +266,13 @@ describe('Platform', () => {
           outPoint,
         );
 
+        await wait(10000);
+
         let coreChainLockedHeight = 0;
         while (coreChainLockedHeight < chain.blocksCount) {
           const identityResponse = await client.platform.identities.get(identity.getId());
+
+          expect(identityResponse).to.exist();
 
           const metadata = identityResponse.getMetadata();
           coreChainLockedHeight = metadata.getCoreChainLockedHeight();
@@ -298,6 +304,8 @@ describe('Platform', () => {
       });
 
       it('should be able to get newly created identity', async () => {
+        await wait(20000);
+
         const fetchedIdentity = await client.platform.identities.get(
           chainLockIdentity.getId(),
         );

@@ -124,6 +124,8 @@ describe('Platform', () => {
             process.env.FEATURE_FLAGS_IDENTITY_ID,
           );
 
+          expect(someIdentity).to.exist();
+
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= revertConsensusParamsFeatureFlag.enableAtHeight);
 

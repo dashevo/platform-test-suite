@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
+
 const getIdentityFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getIdentityFixture',
 );
@@ -11,6 +12,9 @@ const { signStateTransition } = require('dash/build/src/SDK/Client/Platform/sign
 
 const InvalidDocumentTypeError = require('@dashevo/dpp/lib/errors/consensus/basic/document/InvalidDocumentTypeError');
 const { StateTransitionBroadcastError } = require('dash/build/src/errors/StateTransitionBroadcastError');
+
+const wait = require('../../../lib/wait');
+
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', () => {
@@ -116,6 +120,8 @@ describe('Platform', () => {
     });
 
     it('should fail to create a document that violates unique index constraint', async () => {
+      await wait(20000);
+
       const sharedDocumentData = {
         firstName: 'Some First Name',
       };
@@ -173,26 +179,34 @@ describe('Platform', () => {
     });
 
     it('should fetch created document', async () => {
+      await wait(20000);
+
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
         { where: [['$id', '==', document.getId()]] },
       );
 
-      expect(document.toJSON()).to.deep.equal(fetchedDocument.toJSON());
+      expect(fetchedDocument).to.exist();
+      expect(document.toObject()).to.deep.equal(fetchedDocument.toObject());
       expect(fetchedDocument.getUpdatedAt().getTime())
         .to.be.equal(fetchedDocument.getCreatedAt().getTime());
     });
 
     it('should be able to fetch created document by created timestamp', async () => {
+      await wait(20000);
+
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
         { where: [['$createdAt', '==', document.getCreatedAt().getTime()]] },
       );
 
-      expect(document.toJSON()).to.deep.equal(fetchedDocument.toJSON());
+      expect(fetchedDocument).to.exist();
+      expect(document.toObject()).to.deep.equal(fetchedDocument.toObject());
     });
 
     it('should be able to update document', async () => {
+      await wait(20000);
+
       const [storedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
         { where: [['$id', '==', document.getId()]] },
