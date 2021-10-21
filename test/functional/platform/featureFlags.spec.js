@@ -69,8 +69,8 @@ describe('Platform', () => {
       });
 
       it('should update consensus params', async function it() {
-        if (process.env.NETWORK !== 'regtest' && process.env.NETWORK !== 'testnet') {
-          this.skip();
+        if (process.env.NETWORK === 'mainnet') {
+          this.skip('it\'s dangerous to run this test on mainnet');
         }
 
         const documentUpdate = await ownerClient.platform.documents.create(
@@ -123,8 +123,6 @@ describe('Platform', () => {
           const someIdentity = await ownerClient.platform.identities.get(
             process.env.FEATURE_FLAGS_IDENTITY_ID,
           );
-
-          expect(someIdentity).to.exist();
 
           ({ blockHeight: height } = someIdentity.getMetadata());
         } while (height <= revertConsensusParamsFeatureFlag.enableAtHeight);

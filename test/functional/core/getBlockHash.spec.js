@@ -1,6 +1,6 @@
 const createClientWithoutWallet = require('../../../lib/test/createClientWithoutWallet');
 
-describe('Core', () => {
+describe.skip('Core', () => {
   describe('getBlockHash', () => {
     let client;
     let lastBlockHeight;

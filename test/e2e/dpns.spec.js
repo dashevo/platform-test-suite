@@ -2,6 +2,8 @@ const crypto = require('crypto');
 
 const createClientWithFundedWallet = require('../../lib/test/createClientWithFundedWallet');
 
+const wait = require('../../lib/wait');
+
 const getRandomDomain = () => crypto.randomBytes(10).toString('hex');
 
 describe('DPNS', () => {
@@ -69,6 +71,11 @@ describe('DPNS', () => {
       createdTLD = await ownerClient.platform.names.register(newTopLevelDomain, {
         dashAliasIdentityId: identity.getId(),
       }, identity);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
 
       expect(createdTLD).to.exist();
       expect(createdTLD.getType()).to.equal('domain');
@@ -141,6 +148,11 @@ describe('DPNS', () => {
         dashUniqueIdentityId: identity.getId(),
       }, identity);
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       expect(registeredDomain.getType()).to.equal('domain');
       expect(registeredDomain.getData().label).to.equal(secondLevelDomain);
       expect(registeredDomain.getData().normalizedParentDomainName).to.equal(topLevelDomain);
@@ -156,7 +168,7 @@ describe('DPNS', () => {
           dashAliasIdentityId: identity.getId(),
         }, identity);
 
-        expect.fail('Should throw error');
+        expect.fail('should throw error');
       } catch (e) {
         broadcastError = e;
       }

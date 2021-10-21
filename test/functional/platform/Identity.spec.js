@@ -115,6 +115,11 @@ describe('Platform', () => {
         identityCreateTransitionOne,
       );
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       walletAccount.storage.insertIdentityIdAtIndex(
         walletAccount.walletId,
         identityOne.getId().toString(),
@@ -193,10 +198,10 @@ describe('Platform', () => {
 
       expect(fetchedIdentity).to.be.not.null();
 
-      const fetchedIdentityWithoutBalance = fetchedIdentity.toJSON();
+      const fetchedIdentityWithoutBalance = fetchedIdentity.toObject();
       delete fetchedIdentityWithoutBalance.balance;
 
-      const localIdentityWithoutBalance = identity.toJSON();
+      const localIdentityWithoutBalance = identity.toObject();
       delete localIdentityWithoutBalance.balance;
 
       expect(fetchedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
@@ -219,10 +224,10 @@ describe('Platform', () => {
         { skipValidation: true },
       );
 
-      const receivedIdentityWithoutBalance = receivedIdentity.toJSON();
+      const receivedIdentityWithoutBalance = receivedIdentity.toObject();
       delete receivedIdentityWithoutBalance.balance;
 
-      const localIdentityWithoutBalance = identity.toJSON();
+      const localIdentityWithoutBalance = identity.toObject();
       delete localIdentityWithoutBalance.balance;
 
       expect(receivedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
@@ -240,12 +245,12 @@ describe('Platform', () => {
       expect(identityId).to.deep.equal(identity.getId());
     });
 
-    describe('chainLock', () => {
+    describe('chainLock', function describe() {
       let chainLockIdentity;
 
-      it('should create identity using chainLock', async function createIdentityUsingChainLock() {
-        this.timeout(850000);
+      this.timeout(850000);
 
+      it('should create identity using chainLock', async () => {
         const {
           transaction,
           privateKey,
@@ -265,8 +270,6 @@ describe('Platform', () => {
           chain.blocksCount,
           outPoint,
         );
-
-        await wait(10000);
 
         let coreChainLockedHeight = 0;
         while (coreChainLockedHeight < chain.blocksCount) {
@@ -298,14 +301,15 @@ describe('Platform', () => {
           identityCreateTransition,
         );
 
-        expect(chainLockIdentity).to.exist();
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         await waitForBalanceToChange(walletAccount);
       });
 
       it('should be able to get newly created identity', async () => {
-        await wait(20000);
-
         const fetchedIdentity = await client.platform.identities.get(
           chainLockIdentity.getId(),
         );
@@ -331,6 +335,11 @@ describe('Platform', () => {
         dataContractFixture = getDataContractFixture(identity.getId());
 
         await client.platform.contracts.broadcast(dataContractFixture, identity);
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         client.getApps().set('customContracts', {
           contractId: dataContractFixture.getId(),
@@ -438,6 +447,11 @@ describe('Platform', () => {
         await client.platform.documents.broadcast({
           create: [document],
         }, identity);
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
       });
 
       it('should fail to top up an identity with already used asset lock output', async () => {
@@ -468,6 +482,11 @@ describe('Platform', () => {
         await client.platform.broadcastStateTransition(
           identityTopUpTransitionOne,
         );
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         let broadcastError;
 
