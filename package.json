@@ -27,7 +27,7 @@
     "@dashevo/feature-flags-contract": "^0.2.1",
     "@dashevo/grpc-common": "~0.5.4",
     "@dashevo/merk": "github:dashevo/node-merk",
-    "@dashevo/wallet-lib": "github:dashevo/wallet-lib#update-dependencies",
+    "@dashevo/wallet-lib": "~7.21.0",
     "assert-browserify": "^2.0.0",
     "blake3": "^2.1.4",
     "buffer": "^6.0.3",
