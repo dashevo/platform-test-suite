@@ -115,6 +115,11 @@ describe('Platform', () => {
         identityCreateTransitionOne,
       );
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       walletAccount.storage.insertIdentityIdAtIndex(
         walletAccount.walletId,
         identityOne.getId().toString(),
@@ -193,10 +198,10 @@ describe('Platform', () => {
 
       expect(fetchedIdentity).to.be.not.null();
 
-      const fetchedIdentityWithoutBalance = fetchedIdentity.toJSON();
+      const fetchedIdentityWithoutBalance = fetchedIdentity.toObject();
       delete fetchedIdentityWithoutBalance.balance;
 
-      const localIdentityWithoutBalance = identity.toJSON();
+      const localIdentityWithoutBalance = identity.toObject();
       delete localIdentityWithoutBalance.balance;
 
       expect(fetchedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
@@ -219,10 +224,10 @@ describe('Platform', () => {
         { skipValidation: true },
       );
 
-      const receivedIdentityWithoutBalance = receivedIdentity.toJSON();
+      const receivedIdentityWithoutBalance = receivedIdentity.toObject();
       delete receivedIdentityWithoutBalance.balance;
 
-      const localIdentityWithoutBalance = identity.toJSON();
+      const localIdentityWithoutBalance = identity.toObject();
       delete localIdentityWithoutBalance.balance;
 
       expect(receivedIdentityWithoutBalance).to.deep.equal(localIdentityWithoutBalance);
@@ -240,8 +245,10 @@ describe('Platform', () => {
       expect(identityId).to.deep.equal(identity.getId());
     });
 
-    describe('chainLock', () => {
+    describe('chainLock', function describe() {
       let chainLockIdentity;
+
+      this.timeout(850000);
 
       it('should create identity using chainLock', async () => {
         const {
@@ -268,6 +275,8 @@ describe('Platform', () => {
         while (coreChainLockedHeight < chain.blocksCount) {
           const identityResponse = await client.platform.identities.get(identity.getId());
 
+          expect(identityResponse).to.exist();
+
           const metadata = identityResponse.getMetadata();
           coreChainLockedHeight = metadata.getCoreChainLockedHeight();
 
@@ -292,7 +301,10 @@ describe('Platform', () => {
           identityCreateTransition,
         );
 
-        expect(chainLockIdentity).to.exist();
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         await waitForBalanceToChange(walletAccount);
       });
@@ -323,6 +335,11 @@ describe('Platform', () => {
         dataContractFixture = getDataContractFixture(identity.getId());
 
         await client.platform.contracts.broadcast(dataContractFixture, identity);
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         client.getApps().set('customContracts', {
           contractId: dataContractFixture.getId(),
@@ -430,6 +447,11 @@ describe('Platform', () => {
         await client.platform.documents.broadcast({
           create: [document],
         }, identity);
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
       });
 
       it('should fail to top up an identity with already used asset lock output', async () => {
@@ -460,6 +482,11 @@ describe('Platform', () => {
         await client.platform.broadcastStateTransition(
           identityTopUpTransitionOne,
         );
+
+        // Additional wait time to mitigate testnet latency
+        if (process.env.NETWORK === 'testnet') {
+          await wait(5000);
+        }
 
         let broadcastError;
 

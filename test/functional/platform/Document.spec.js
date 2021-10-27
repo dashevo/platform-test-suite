@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const getDataContractFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getDataContractFixture',
 );
+
 const getIdentityFixture = require(
   '@dashevo/dpp/lib/test/fixtures/getIdentityFixture',
 );
@@ -11,6 +12,9 @@ const { signStateTransition } = require('dash/build/src/SDK/Client/Platform/sign
 
 const InvalidDocumentTypeError = require('@dashevo/dpp/lib/errors/consensus/basic/document/InvalidDocumentTypeError');
 const { StateTransitionBroadcastError } = require('dash/build/src/errors/StateTransitionBroadcastError');
+
+const wait = require('../../../lib/wait');
+
 const createClientWithFundedWallet = require('../../../lib/test/createClientWithFundedWallet');
 
 describe('Platform', () => {
@@ -27,9 +31,19 @@ describe('Platform', () => {
 
       identity = await client.platform.identities.register(10);
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       dataContractFixture = getDataContractFixture(identity.getId());
 
       await client.platform.contracts.broadcast(dataContractFixture, identity);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
 
       client.getApps().set('customContracts', {
         contractId: dataContractFixture.getId(),
@@ -133,6 +147,11 @@ describe('Platform', () => {
         create: [firstDocument],
       }, identity);
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       const secondDocument = await client.platform.documents.create(
         'customContracts.indexedDocument',
         identity,
@@ -170,6 +189,11 @@ describe('Platform', () => {
       await client.platform.documents.broadcast({
         create: [document],
       }, identity);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
     });
 
     it('should fetch created document', async () => {
@@ -178,7 +202,8 @@ describe('Platform', () => {
         { where: [['$id', '==', document.getId()]] },
       );
 
-      expect(document.toJSON()).to.deep.equal(fetchedDocument.toJSON());
+      expect(fetchedDocument).to.exist();
+      expect(document.toObject()).to.deep.equal(fetchedDocument.toObject());
       expect(fetchedDocument.getUpdatedAt().getTime())
         .to.be.equal(fetchedDocument.getCreatedAt().getTime());
     });
@@ -189,7 +214,8 @@ describe('Platform', () => {
         { where: [['$createdAt', '==', document.getCreatedAt().getTime()]] },
       );
 
-      expect(document.toJSON()).to.deep.equal(fetchedDocument.toJSON());
+      expect(fetchedDocument).to.exist();
+      expect(document.toObject()).to.deep.equal(fetchedDocument.toObject());
     });
 
     it('should be able to update document', async () => {
@@ -203,6 +229,11 @@ describe('Platform', () => {
       await client.platform.documents.broadcast({
         replace: [storedDocument],
       }, identity);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
 
       const [fetchedDocument] = await client.platform.documents.get(
         'customContracts.indexedDocument',
@@ -226,6 +257,11 @@ describe('Platform', () => {
         replace: [storedDocument],
       }, identity);
 
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
+
       documentsBatchTransition.transitions[0].data.firstName = 'nameToProve';
       documentsBatchTransition.transitions[0].updatedAt = new Date();
       documentsBatchTransition.transitions[0].revision += 1;
@@ -234,6 +270,11 @@ describe('Platform', () => {
       );
 
       const proof = await client.platform.broadcastStateTransition(signedTransition);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
 
       expect(proof.rootTreeProof).to.be.an.instanceof(Uint8Array);
       expect(proof.rootTreeProof.length).to.be.greaterThan(0);
@@ -264,6 +305,11 @@ describe('Platform', () => {
       const documentsBatchTransition = await client.platform.documents.broadcast({
         replace: [storedDocument],
       }, identity);
+
+      // Additional wait time to mitigate testnet latency
+      if (process.env.NETWORK === 'testnet') {
+        await wait(5000);
+      }
 
       documentsBatchTransition.transitions[0].updatedAt = updatedAt;
       documentsBatchTransition.transitions[0].revision += 1;
