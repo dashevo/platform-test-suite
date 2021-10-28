@@ -69,8 +69,8 @@ describe('Platform', () => {
       });
 
       it('should update consensus params', async function it() {
-        if (process.env.NETWORK !== 'regtest' && process.env.NETWORK !== 'testnet') {
-          this.skip();
+        if (process.env.NETWORK === 'mainnet') {
+          this.skip('it\'s dangerous to run this test on mainnet');
         }
 
         const documentUpdate = await ownerClient.platform.documents.create(
